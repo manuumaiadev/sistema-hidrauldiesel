@@ -53,19 +53,12 @@
   .stat-sub { font-size: 12px; color: var(--muted); }
 
   .filters { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .filter-btn { font-family: var(--font); font-size: 12.5px; font-weight: 500; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all .15s; }
-  .filter-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .filter-select { height: 38px; padding: 0 32px 0 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; font-family: var(--font); font-size: 13px; color: #374151; cursor: pointer; outline: none; min-width: 200px; appearance: auto; }
+  .filter-select:focus { border-color: #1B2D5B; }
   /* Ativo genérico (Todas) */
-  .filter-btn.active                           { background: var(--navy);  color: #fff; border-color: var(--navy);  }
-  /* Ativo por status — mesma cor do badge */
-  .filter-btn[data-filter="orcamento"].active          { background: #7C3AED; border-color: #7C3AED; }
-  .filter-btn[data-filter="aprovado"].active           { background: #22C55E; border-color: #22C55E; }
-  .filter-btn[data-filter="em-execucao"].active        { background: #EAB308; border-color: #EAB308; }
-  .filter-btn[data-filter="servico-finalizado"].active { background: #F97316; border-color: #F97316; }
-  .filter-btn[data-filter="faturada"].active           { background: #1D4ED8; border-color: #1D4ED8; }
-  .filter-btn[data-filter="encerrada"].active          { background: #DC2626; border-color: #DC2626; }
-  .filter-btn[data-filter="cancelada"].active          { background: #6B7280; border-color: #6B7280; }
-  .filters-right { margin-left: auto; }
+  .filters-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .date-label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .date-label input[type="date"] { font-family: var(--font); font-size: 12.5px; padding: 4px 8px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
 
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }

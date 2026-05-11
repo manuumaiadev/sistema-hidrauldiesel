@@ -167,3 +167,33 @@ td { padding: 11px 16px; font-size: 13px; vertical-align: middle; }
   padding: 4px 10px;
 }
   .bling-info-tag { font-size: 12px; font-weight: 600; background: #FEF9C3; color: #854D0E; padding: 5px 12px; border-radius: 20px; border: 1px solid #FDE68A; }
+
+/* ===== MODAL NOVO CLIENTE ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+.modal-cliente { background: var(--surface); border-radius: 14px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+.modal-cliente-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+.modal-cliente-title { font-size: 16px; font-weight: 600; }
+.modal-fechar-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color .12s; }
+.modal-fechar-btn:hover { color: var(--text); }
+
+.tipo-toggle { display: flex; gap: 0; margin: 18px 24px 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.tipo-btn { flex: 1; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 7px 0; background: transparent; border: none; cursor: pointer; color: var(--muted); transition: background .12s, color .12s; }
+.tipo-btn.active { background: var(--navy); color: #fff; }
+
+.modal-section-title { font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 18px 24px 10px; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px; }
+.modal-field { display: flex; flex-direction: column; gap: 5px; }
+.modal-field label { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.modal-field input { font-family: var(--font); font-size: 13.5px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; outline: none; transition: border-color .15s; }
+.modal-field input:focus { border-color: var(--navy); background: #fff; }
+.modal-field input::placeholder { color: #C4C2BB; }
+.modal-field-full  { grid-column: 1 / -1; }
+.modal-field-2col  { grid-column: span 2; }
+.modal-field-uf    { grid-column: span 1; max-width: 80px; }
+.req { color: var(--red); }
+
+.cli-erro { margin: 12px 24px 0; padding: 10px 14px; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; font-size: 13px; color: #991B1B; }
+
+.modal-cliente-footer { display: flex; gap: 10px; justify-content: flex-end; padding: 20px 24px; border-top: 1px solid var(--border); margin-top: 18px; }
+.btn-primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+.btn-primary:hover { background: #152347; border-color: #152347; }

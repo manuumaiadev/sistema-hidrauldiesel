@@ -1,22 +1,22 @@
 // ── Constantes de status ────────────────────────────────────
 const coresStatus = {
-  orcamento:          '#7C3AED',
-  aprovado:           '#22C55E',
-  em_execucao:        '#EAB308',
-  servico_finalizado: '#F97316',
-  faturada:           '#1D4ED8',
-  encerrada:          '#DC2626',
-  cancelada:          '#6B7280'
+  orcamento:              '#7C3AED',
+  enviada_cliente:        '#0EA5E9',
+  aprovado:               '#22C55E',
+  em_execucao:            '#EAB308',
+  autorizada_faturamento: '#F97316',
+  finalizada:             '#DC2626',
+  cancelada:              '#6B7280'
 };
 
 const nomesStatus = {
-  orcamento:          'Orçamento',
-  aprovado:           'Aprovado pelo Cliente',
-  em_execucao:        'Em Execução',
-  servico_finalizado: 'Serviço Finalizado',
-  faturada:           'Faturada',
-  encerrada:          'Encerrada',
-  cancelada:          'Cancelada'
+  orcamento:              'Orçamento',
+  enviada_cliente:        'Enviada para o Cliente',
+  aprovado:               'Aprovada',
+  em_execucao:            'Em andamento',
+  autorizada_faturamento: 'Autorizada para Faturamento',
+  finalizada:             'Finalizada',
+  cancelada:              'Cancelada'
 };
 
 // ── Estado ──────────────────────────────────────────────────
@@ -51,10 +51,11 @@ function renderizarOS(lista) {
     const cor   = coresStatus[os.status] || '#6B7280';
     const nome  = nomesStatus[os.status] || os.status;
     const veiculo = [os.modelo, os.ano, os.placa].filter(Boolean).join(' — ');
+    const numeroExibido = os.numero_os || os.numero;
 
     return `
       <tr data-status="${os.status}">
-        <td><span class="os-num">#${os.numero}</span></td>
+        <td><span class="os-num">#${numeroExibido}</span></td>
         <td>
           <div class="cliente-nome">${os.cliente_nome || '—'}</div>
           <div class="cliente-veiculo">${veiculo || '—'}</div>
@@ -76,14 +77,16 @@ function renderizarOS(lista) {
 // ── Filtro combinado ────────────────────────────────────────
 function filtrar() {
   const termo = document.getElementById('search-input').value.toLowerCase().trim();
-  // Botões usam hifens (ex: "em-execucao"), API retorna underscores ("em_execucao")
-  const statusFiltro = filtroAtivo.replace(/-/g, '_');
-
+  const de    = document.getElementById('filter-de').value;
+  const ate   = document.getElementById('filter-ate').value;
   const lista = todasOS.filter(os => {
-    const passaFiltro = filtroAtivo === 'todas' || os.status === statusFiltro;
-    const texto = [os.numero, os.cliente_nome, os.modelo, os.placa].join(' ').toLowerCase();
+    const passaFiltro = filtroAtivo === 'todas' || os.status === filtroAtivo;
+    const texto = [os.numero, os.numero_os, os.cliente_nome, os.modelo, os.placa].join(' ').toLowerCase();
     const passaBusca = termo === '' || texto.includes(termo);
-    return passaFiltro && passaBusca;
+    const dataOS = os.criado_em ? os.criado_em.slice(0, 10) : '';
+    const passaDe  = !de  || dataOS >= de;
+    const passaAte = !ate || dataOS <= ate;
+    return passaFiltro && passaBusca && passaDe && passaAte;
   });
 
   renderizarOS(lista);
@@ -103,10 +106,10 @@ function atualizarCards(lista) {
   const aprovados   = lista.filter(os => os.status === 'aprovado').length;
   const emExecucao  = lista.filter(os => os.status === 'em_execucao').length;
   const finalizadas = lista.filter(os => {
-    return os.status === 'encerrada' && new Date(os.criado_em).toDateString() === hoje;
+    return os.status === 'finalizada' && new Date(os.criado_em).toDateString() === hoje;
   }).length;
   const faturadoHoje = lista
-    .filter(os => os.status === 'encerrada' && new Date(os.criado_em).toDateString() === hoje)
+    .filter(os => os.status === 'finalizada' && new Date(os.criado_em).toDateString() === hoje)
     .reduce((acc, os) => acc + Number(os.valor_total), 0);
 
   document.getElementById('stat-aprovados').textContent       = aprovados;
@@ -145,18 +148,28 @@ window.verOS = function (id) {
   window.location.href = `../orcamento/?id=${id}`;
 };
 
-// ── Filtros por status ──────────────────────────────────────
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    filtroAtivo = btn.dataset.filter;
-    filtrar();
-  });
+// ── Filtro por status ────────────────────────────────────────
+document.getElementById('filter-status').addEventListener('change', function () {
+  filtroAtivo = this.value;
+  filtrar();
 });
 
 // ── Busca por texto ─────────────────────────────────────────
 document.getElementById('search-input').addEventListener('input', filtrar);
+
+// ── Filtros de data ──────────────────────────────────────────
+document.getElementById('filter-de').addEventListener('change', filtrar);
+document.getElementById('filter-ate').addEventListener('change', filtrar);
+
+// ── Limpar filtros ───────────────────────────────────────────
+document.getElementById('btn-limpar').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-de').value    = '';
+  document.getElementById('filter-ate').value   = '';
+  document.getElementById('filter-status').value = 'todas';
+  filtroAtivo = 'todas';
+  filtrar();
+});
 
 // ── Init ────────────────────────────────────────────────────
 carregarOS();

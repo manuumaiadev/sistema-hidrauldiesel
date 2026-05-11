@@ -1,0 +1,46 @@
+/* Nav submenu — compartilhado por todas as páginas */
+.nav-group { display: flex; flex-direction: column; }
+
+.nav-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+.nav-group-toggle:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-group-toggle svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+.nav-group.has-active .nav-group-toggle { color: rgba(255,255,255,0.9); }
+.nav-group.has-active .nav-group-toggle svg { opacity: 1; }
+
+.nav-arrow { margin-left: auto; font-size: 11px; opacity: 0.6; transition: transform .2s; }
+
+.nav-submenu {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(255,255,255,0.15);
+  margin-left: 20px;
+  margin-top: 2px;
+}
+.nav-submenu.open { display: flex; }
+
+.nav-submenu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: rgba(255,255,255,0.55);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.nav-submenu-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-submenu-item.active { background: rgba(255,255,255,0.12); color: #fff; font-weight: 500; }

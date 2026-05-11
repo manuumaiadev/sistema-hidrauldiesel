@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="hd-dashboard.css">
 <script src="../shared/hd-api.js"></script>
 <script src="../shared/hd-auth.js"></script>
+  <link rel="stylesheet" href="../shared/hd-nav.css">
 </head>
 <body>
 
@@ -26,26 +27,35 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Ordens de serviço
     </a>
-    <a href="../clientes/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Clientes
-    </a>
-    <a href="../estoque/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      Estoque
-    </a>
-    <a href="../servicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-      Serviços
-    </a>
-    <a href="../mecanicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-      Mecânicos
-    </a>
-    <a href="../comissionamento/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Comissionamento
-    </a>
+
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros
+        <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários
+        <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
         <a href="../historico/">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       Histórico
@@ -57,7 +67,7 @@
     </button>
   </nav>
   <div class="sidebar-bottom">
-    <strong>João Mecânico</strong>
+    <strong id="sidebar-user">—</strong>
     Hidrauldiesel
   </div>
 </aside>
@@ -74,7 +84,7 @@
         <button class="period-tab active">Semana</button>
         <button class="period-tab">Mês</button>
       </div>
-      <button class="btn btn-primary">
+      <button class="btn btn-primary" onclick="window.location.href='../orcamento/'">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         Novo orçamento
       </button>
@@ -85,9 +95,9 @@
 
     <div class="sync-bar">
       <span class="sync-dot"></span>
-      <span>Bling sincronizado · <strong>última atualização há 3 min</strong></span>
+      <span>Bling · <strong id="sync-status">clique para sincronizar</strong></span>
       <div class="sync-right">
-        <button class="btn" style="font-size:12px;padding:4px 10px">
+        <button class="btn" style="font-size:12px;padding:4px 10px" onclick="sincronizarBling()">
           <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           Sincronizar agora
         </button>
@@ -108,7 +118,7 @@
         <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-conc-bar" style="width:0%;background:var(--navy)"></div></div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Em Execução</div>
+        <div class="kpi-label">Em andamento</div>
         <div class="kpi-value" id="kpi-execucao" style="color:var(--andamento)">—</div>
         <div class="kpi-trend trend-neutral" id="kpi-exec-sub">OS em andamento</div>
         <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-exec-bar" style="width:0%;background:var(--andamento)"></div></div>
@@ -139,11 +149,12 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">OS por tipo de serviço</span>
-          <span class="card-sub">semana atual</span>
+          <span class="card-title">OS por status</span>
+          <span class="card-sub">total acumulado</span>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="position:relative">
           <div class="chart-wrap"><canvas id="tipoChart"></canvas></div>
+          <div id="tipo-chart-empty" style="display:none;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px">Nenhuma OS registrada ainda.</div>
         </div>
       </div>
       <div class="card">
@@ -152,19 +163,10 @@
           <span class="card-sub">OS na semana</span>
         </div>
         <div class="card-body">
-          <div class="mec-list" id="mec-list">
-            <div class="mec-item">
-              <div class="mec-row"><span class="mec-nome">André Lima</span><span class="mec-count">10 OS · R$ 7.840</span></div>
-              <div class="mec-progress"><div class="mec-fill" style="width:100%;background:var(--navy)"></div></div>
-            </div>
-          </div>
+          <div class="mec-list" id="mec-list"></div>
           <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
             <div style="font-size:12.5px;font-weight:600;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Em aberto agora</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="display:flex;align-items:center;gap:6px"><span class="os-dot em-execucao"></span>André Lima</span><span style="color:var(--muted)">Civic — suspensão</span></div>
-              <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="display:flex;align-items:center;gap:6px"><span class="os-dot em-execucao"></span>João Silva</span><span style="color:var(--muted)">HB20 — elétrica</span></div>
-              <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="display:flex;align-items:center;gap:6px"><span class="os-dot aprovado"></span>Pedro Rocha</span><span style="color:var(--muted)">Gol — aguard. peça</span></div>
-            </div>
+            <div id="aberto-list" style="display:flex;flex-direction:column;gap:8px"></div>
           </div>
         </div>
       </div>
@@ -176,14 +178,7 @@
           <span class="card-title">Últimas OS</span>
           <a href="../lista-os/" style="font-size:12.5px;color:var(--muted);text-decoration:none">Ver todas →</a>
         </div>
-        <div class="os-list" id="os-list">
-          <div class="os-item"><span class="os-dot encerrada"></span><div class="os-info"><div class="os-cliente">Renato Alves</div><div class="os-detalhe">HB20 2022 · Suspensão traseira</div></div><span class="os-num">#0087</span><span class="os-valor">R$ 870</span></div>
-          <div class="os-item"><span class="os-dot encerrada"></span><div class="os-info"><div class="os-cliente">Patrícia Souza</div><div class="os-detalhe">Corolla 2020 · Alinhamento</div></div><span class="os-num">#0086</span><span class="os-valor">R$ 180</span></div>
-          <div class="os-item"><span class="os-dot em-execucao"></span><div class="os-info"><div class="os-cliente">Carlos Mendonça</div><div class="os-detalhe">Civic 2021 · Revisão + freios</div></div><span class="os-num">#0089</span><span class="os-valor">R$ 420</span></div>
-          <div class="os-item"><span class="os-dot em-execucao"></span><div class="os-info"><div class="os-cliente">Marcos Pereira</div><div class="os-detalhe">Strada 2023 · Correia dentada</div></div><span class="os-num">#0085</span><span class="os-valor">R$ 650</span></div>
-          <div class="os-item"><span class="os-dot aprovado"></span><div class="os-info"><div class="os-cliente">Fernanda Lopes</div><div class="os-detalhe">Gol 2019 · Freios dianteiros</div></div><span class="os-num">#0088</span><span class="os-valor">R$ 310</span></div>
-          <div class="os-item"><span class="os-dot orcamento"></span><div class="os-info"><div class="os-cliente">André Costa</div><div class="os-detalhe">Sandero 2018 · Aguardando aprovação</div></div><span class="os-num">#ORC-031</span><span class="os-valor" style="color:var(--orcamento)">R$ 540</span></div>
-        </div>
+        <div class="os-list" id="os-list"></div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:14px">
@@ -192,21 +187,11 @@
             <span class="card-title">Estoque crítico</span>
             <span class="bling-badge">⚡ Bling</span>
           </div>
-          <div class="estoque-list">
-            <div class="estoque-item"><div style="flex:1"><div class="estoque-nome">Pastilha freio dianteira Jurid</div><div class="estoque-cod">SKU: FRE-8821</div></div><span class="estoque-qty" style="color:#DC2626">2 un.</span><span class="estoque-badge badge-critico">Crítico</span></div>
-            <div class="estoque-item"><div style="flex:1"><div class="estoque-nome">Óleo 5W30 sintético 1L</div><div class="estoque-cod">SKU: OLE-5001</div></div><span class="estoque-qty" style="color:var(--aberta)">5 un.</span><span class="estoque-badge badge-baixo">Baixo</span></div>
-            <div class="estoque-item"><div style="flex:1"><div class="estoque-nome">Filtro de ar Honda Civic</div><div class="estoque-cod">SKU: FIL-2204</div></div><span class="estoque-qty" style="color:var(--aberta)">4 un.</span><span class="estoque-badge badge-baixo">Baixo</span></div>
-            <div class="estoque-item"><div style="flex:1"><div class="estoque-nome">Correia dentada Gates</div><div class="estoque-cod">SKU: COR-0119</div></div><span class="estoque-qty">18 un.</span><span class="estoque-badge badge-ok">OK</span></div>
-          </div>
+          <div class="estoque-list" id="estoque-list"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">Atividade recente</span></div>
-          <div class="ativ-list">
-            <div class="ativ-item"><div class="ativ-icon" style="background:var(--concluida-bg)">✓</div><div><div class="ativ-desc">OS <strong>#0087</strong> concluída · Renato Alves</div><div class="ativ-time">há 22 min · saída enviada ao Bling</div></div></div>
-            <div class="ativ-item"><div class="ativ-icon" style="background:var(--orcamento-bg)">📋</div><div><div class="ativ-desc">Orçamento <strong>#ORC-031</strong> criado · André Costa</div><div class="ativ-time">há 1h 10min</div></div></div>
-            <div class="ativ-item"><div class="ativ-icon" style="background:var(--andamento-bg)">🔧</div><div><div class="ativ-desc">OS <strong>#0085</strong> iniciada · Pedro Rocha</div><div class="ativ-time">há 2h 30min</div></div></div>
-            <div class="ativ-item"><div class="ativ-icon" style="background:#FEF9C3">⚡</div><div><div class="ativ-desc">Estoque sincronizado com o Bling</div><div class="ativ-time">há 3h · 142 produtos atualizados</div></div></div>
-          </div>
+          <div class="ativ-list" id="ativ-list"></div>
         </div>
       </div>
     </div>
@@ -215,5 +200,45 @@
 </main>
 
 <script src="hd-dashboard.js"></script>
+  <script>
+  (function() {
+    var path = window.location.pathname;
+    // Cadastros submenu
+    var cadPages = ['clientes','estoque','servicos'];
+    if (cadPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-cad');
+      var grp = document.getElementById('nav-group-cad');
+      var arr = document.getElementById('arrow-nav-group-cad');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-cad .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+    // Funcionários submenu
+    var funcPages = ['funcionarios','folha','vale-transporte','comissionamento','ponto'];
+    if (funcPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-func');
+      var grp = document.getElementById('nav-group-func');
+      var arr = document.querySelector('#nav-group-func .nav-arrow');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-func .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+  })();
+  function toggleNavGroup(id) {
+    var sub = document.getElementById('sub-'+id);
+    var arr = document.getElementById('arrow-'+id);
+    if (!sub) return;
+    sub.classList.toggle('open');
+    if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+  }
+  </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="hd-servicos.css">
   <script src="../shared/hd-api.js"></script>
 <script src="../shared/hd-auth.js"></script>
+  <link rel="stylesheet" href="../shared/hd-nav.css">
 </head>
 <body>
 
@@ -26,26 +27,35 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Ordens de serviço
     </a>
-    <a href="../clientes/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Clientes
-    </a>
-    <a href="../estoque/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      Estoque
-    </a>
-    <a href="../servicos/" class="active">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-      Serviços
-    </a>
-    <a href="../mecanicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-      Mecânicos
-    </a>
-    <a href="../comissionamento/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Comissionamento
-    </a>
+
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros
+        <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários
+        <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
         <a href="../historico/">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       Histórico
@@ -107,10 +117,8 @@
       </div>
       <div class="filter-btns">
         <button class="filter-btn active" data-filter="todos" onclick="setFiltro(this)">Todos</button>
-        <button class="filter-btn" data-filter="mecanica" onclick="setFiltro(this)">Mecânica</button>
-        <button class="filter-btn" data-filter="eletrica" onclick="setFiltro(this)">Elétrica</button>
-        <button class="filter-btn" data-filter="funilaria" onclick="setFiltro(this)">Funilaria</button>
-        <button class="filter-btn" data-filter="revisao" onclick="setFiltro(this)">Revisão</button>
+        <button class="filter-btn" data-filter="ativo" onclick="setFiltro(this)">Ativos</button>
+        <button class="filter-btn" data-filter="inativo" onclick="setFiltro(this)">Inativos</button>
       </div>
     </div>
 
@@ -119,135 +127,14 @@
       <table id="tabelaServicos">
         <thead>
           <tr>
+            <th>Código</th>
             <th>Serviço</th>
-            <th>Categoria</th>
-            <th>Preço base</th>
-            <th>Qtd no mês</th>
-            <th>Faturado</th>
-            
+            <th>Valor Padrão</th>
+            <th>Situação</th>
           </tr>
         </thead>
         <tbody>
-          <tr data-cat="revisao">
-            <td><span class="servico-nome">Troca de óleo e filtro</span></td>
-            <td><span class="badge badge-revisao">Revisão</span></td>
-            <td class="mono">R$ 80,00</td>
-            <td>28x</td>
-            <td class="mono">R$ 2.240</td>
-            
-          </tr>
-          <tr data-cat="mecanica">
-            <td><span class="servico-nome">Alinhamento e balanceamento</span></td>
-            <td><span class="badge badge-mecanica">Mecânica</span></td>
-            <td class="mono">R$ 120,00</td>
-            <td>22x</td>
-            <td class="mono">R$ 2.640</td>
-            
-          </tr>
-          <tr data-cat="mecanica">
-            <td><span class="servico-nome">Troca de pastilha de freio</span></td>
-            <td><span class="badge badge-mecanica">Mecânica</span></td>
-            <td class="mono">R$ 180,00</td>
-            <td>18x</td>
-            <td class="mono">R$ 3.240</td>
-            
-          </tr>
-          <tr data-cat="revisao">
-            <td><span class="servico-nome">Revisão completa 50.000 km</span></td>
-            <td><span class="badge badge-revisao">Revisão</span></td>
-            <td class="mono">R$ 450,00</td>
-            <td>12x</td>
-            <td class="mono">R$ 5.400</td>
-            
-          </tr>
-          <tr data-cat="eletrica">
-            <td><span class="servico-nome">Diagnóstico elétrico</span></td>
-            <td><span class="badge badge-eletrica">Elétrica</span></td>
-            <td class="mono">R$ 150,00</td>
-            <td>10x</td>
-            <td class="mono">R$ 1.500</td>
-            
-          </tr>
-          <tr data-cat="mecanica">
-            <td><span class="servico-nome">Troca de correia dentada</span></td>
-            <td><span class="badge badge-mecanica">Mecânica</span></td>
-            <td class="mono">R$ 380,00</td>
-            <td>9x</td>
-            <td class="mono">R$ 3.420</td>
-            
-          </tr>
-          <tr data-cat="eletrica">
-            <td><span class="servico-nome">Instalação de som/multimídia</span></td>
-            <td><span class="badge badge-eletrica">Elétrica</span></td>
-            <td class="mono">R$ 250,00</td>
-            <td>7x</td>
-            <td class="mono">R$ 1.750</td>
-            
-          </tr>
-          <tr data-cat="mecanica">
-            <td><span class="servico-nome">Troca de amortecedor</span></td>
-            <td><span class="badge badge-mecanica">Mecânica</span></td>
-            <td class="mono">R$ 320,00</td>
-            <td>7x</td>
-            <td class="mono">R$ 2.240</td>
-            
-          </tr>
-          <tr data-cat="funilaria">
-            <td><span class="servico-nome">Polimento e cristalização</span></td>
-            <td><span class="badge badge-funilaria">Funilaria</span></td>
-            <td class="mono">R$ 400,00</td>
-            <td>6x</td>
-            <td class="mono">R$ 2.400</td>
-            
-          </tr>
-          <tr data-cat="mecanica">
-            <td><span class="servico-nome">Troca de embreagem</span></td>
-            <td><span class="badge badge-mecanica">Mecânica</span></td>
-            <td class="mono">R$ 550,00</td>
-            <td>5x</td>
-            <td class="mono">R$ 2.750</td>
-            
-          </tr>
-          <tr data-cat="funilaria">
-            <td><span class="servico-nome">Funilaria e pintura parcial</span></td>
-            <td><span class="badge badge-funilaria">Funilaria</span></td>
-            <td class="mono">R$ 900,00</td>
-            <td>4x</td>
-            <td class="mono">R$ 3.600</td>
-            
-          </tr>
-          <tr data-cat="mecanica">
-            <td><span class="servico-nome">Revisão de suspensão</span></td>
-            <td><span class="badge badge-mecanica">Mecânica</span></td>
-            <td class="mono">R$ 280,00</td>
-            <td>8x</td>
-            <td class="mono">R$ 2.240</td>
-            
-          </tr>
-          <tr data-cat="eletrica">
-            <td><span class="servico-nome">Troca de bateria</span></td>
-            <td><span class="badge badge-eletrica">Elétrica</span></td>
-            <td class="mono">R$ 60,00</td>
-            <td>15x</td>
-            <td class="mono">R$ 900</td>
-            
-          </tr>
-          <tr data-cat="eletrica">
-            <td><span class="servico-nome">Injeção eletrônica</span></td>
-            <td><span class="badge badge-eletrica">Elétrica</span></td>
-            <td class="mono">R$ 300,00</td>
-            <td>6x</td>
-            <td class="mono">R$ 1.800</td>
-            
-          </tr>
-          <tr data-cat="revisao">
-            <td><span class="servico-nome">Troca de fluido de freio</span></td>
-            <td><span class="badge badge-revisao">Revisão</span></td>
-            <td class="mono">R$ 70,00</td>
-            <td>20x</td>
-            <td class="mono">R$ 1.400</td>
-            
-          </tr>
+          <tr><td colspan="4" style="text-align:center;color:#888;padding:24px">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -256,5 +143,45 @@
 </main>
 
 <script src="hd-servicos.js"></script>
+  <script>
+  (function() {
+    var path = window.location.pathname;
+    // Cadastros submenu
+    var cadPages = ['clientes','estoque','servicos'];
+    if (cadPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-cad');
+      var grp = document.getElementById('nav-group-cad');
+      var arr = document.getElementById('arrow-nav-group-cad');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-cad .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+    // Funcionários submenu
+    var funcPages = ['funcionarios','folha','vale-transporte','comissionamento','ponto'];
+    if (funcPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-func');
+      var grp = document.getElementById('nav-group-func');
+      var arr = document.querySelector('#nav-group-func .nav-arrow');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-func .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+  })();
+  function toggleNavGroup(id) {
+    var sub = document.getElementById('sub-'+id);
+    var arr = document.getElementById('arrow-'+id);
+    if (!sub) return;
+    sub.classList.toggle('open');
+    if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+  }
+  </script>
 </body>
 </html>

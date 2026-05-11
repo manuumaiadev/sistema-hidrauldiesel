@@ -5,13 +5,34 @@ const listarMecanicos = async (req, res) => {
   try {
     const resultado = await pool.query(`
       SELECT
-        m.*,
-        COALESCE(SUM(c.valor_comissao), 0) AS total_comissoes
+        m.id,
+        m.nome,
+        m.telefone,
+        m.percentual_comissao,
+        m.ativo,
+        COALESCE(SUM(c.valor_comissao), 0) AS total_comissoes,
+        'mecanicos' AS origem
       FROM mecanicos m
       LEFT JOIN comissoes c ON c.mecanico_id = m.id
       WHERE m.ativo = true
       GROUP BY m.id
-      ORDER BY m.nome
+
+      UNION ALL
+
+      SELECT
+        f.id,
+        f.nome,
+        NULL AS telefone,
+        f.percentual_comissao,
+        f.ativo,
+        0 AS total_comissoes,
+        'funcionarios' AS origem
+      FROM funcionarios f
+      WHERE f.cargo_tipo = 'mecanico'
+        AND f.ativo = true
+        AND NOT EXISTS (SELECT 1 FROM mecanicos m2 WHERE m2.id = f.mecanico_id)
+
+      ORDER BY nome
     `);
 
     res.json(resultado.rows);

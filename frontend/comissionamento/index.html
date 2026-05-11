@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="hd-comissionamento.css">
 <script src="../shared/hd-api.js"></script>
 <script src="../shared/hd-auth.js"></script>
+  <link rel="stylesheet" href="../shared/hd-nav.css">
 </head>
 <body>
 
@@ -25,26 +26,35 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Ordens de serviço
     </a>
-    <a href="../clientes/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Clientes
-    </a>
-    <a href="../estoque/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      Estoque
-    </a>
-    <a href="../servicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-      Serviços
-    </a>
-    <a href="../mecanicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-      Mecânicos
-    </a>
-    <a href="../comissionamento/" class="active">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Comissionamento
-    </a>
+
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros
+        <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários
+        <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
         <a href="../historico/">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       Histórico
@@ -82,114 +92,123 @@
 
   <div class="content">
 
-    <!-- KPI Cards -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Total a pagar</div>
-        <div class="kpi-value mono">R$ 7.420</div>
-        <div class="kpi-sub">Março 2026</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Já pago no mês</div>
-        <div class="kpi-value mono" style="color: var(--concluida);">R$ 5.840</div>
-        <div class="kpi-sub">2 mecânicos pagos</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Aguardando aprovação</div>
-        <div class="kpi-value mono" style="color: var(--aberta);">R$ 1.580</div>
-        <div class="kpi-sub">2 pendentes</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Média por mecânico</div>
-        <div class="kpi-value mono">R$ 1.484</div>
-        <div class="kpi-sub">Baseado em ativos</div>
-      </div>
+    <!-- Abas -->
+    <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);padding-bottom:0;margin-bottom:0">
+      <button class="tab-btn active" data-tab="mecanicos"
+        style="font-family:var(--font);font-size:13.5px;font-weight:500;padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid var(--navy);color:var(--navy);margin-bottom:-1px">
+        Mecânicos
+      </button>
+      <button class="tab-btn" data-tab="vendedores"
+        style="font-family:var(--font);font-size:13.5px;font-weight:500;padding:8px 18px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);margin-bottom:-1px">
+        Vendedores
+      </button>
     </div>
 
-    <!-- Commission Table -->
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Comissões — Março 2026</div>
-          <div class="card-sub">5 mecânicos · 97 OS concluídas</div>
+    <!-- ─── Aba Mecânicos ─── -->
+    <div id="tab-mecanicos">
+      <div class="kpi-grid" style="margin-bottom:4px">
+        <div class="kpi-card">
+          <div class="kpi-label">Total de mecânicos</div>
+          <div class="kpi-value" id="kpi-mec-total">—</div>
+          <div class="kpi-sub" id="kpi-mec-total-sub">carregando…</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total em comissões</div>
+          <div class="kpi-value mono" id="kpi-mec-comissoes" style="color:var(--navy)">—</div>
+          <div class="kpi-sub">acumulado todos os mecânicos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Média por mecânico</div>
+          <div class="kpi-value mono" id="kpi-mec-media">—</div>
+          <div class="kpi-sub">baseado em ativos</div>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Mecânico</th>
-            <th>OS concluídas</th>
-            <th>Faturamento gerado</th>
-            <th>% Comissão</th>
-            <th>Valor comissão</th>
-            <th>Status</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="mec-name">André Lima</span></td>
-            <td><span class="mono">38 OS</span></td>
-            <td><span class="mono">R$ 29.800</span></td>
-            <td><span class="mono">10%</span></td>
-            <td><span class="mono">R$ 2.980</span></td>
-            <td><span class="badge badge-pago">Pago</span></td>
-            <td><button class="btn btn-sm">Ver detalhes</button></td>
-          </tr>
-          <tr>
-            <td><span class="mec-name">João Silva</span></td>
-            <td><span class="mono">31 OS</span></td>
-            <td><span class="mono">R$ 22.400</span></td>
-            <td><span class="mono">10%</span></td>
-            <td><span class="mono">R$ 2.240</span></td>
-            <td><span class="badge badge-pago">Pago</span></td>
-            <td><button class="btn btn-sm">Ver detalhes</button></td>
-          </tr>
-          <tr>
-            <td><span class="mec-name">Pedro Rocha</span></td>
-            <td><span class="mono">18 OS</span></td>
-            <td><span class="mono">R$ 14.300</span></td>
-            <td><span class="mono">8%</span></td>
-            <td><span class="mono">R$ 1.144</span></td>
-            <td><span class="badge badge-aguardando">Aguardando</span></td>
-            <td><button class="btn btn-sm btn-aprovar">Aprovar</button></td>
-          </tr>
-          <tr>
-            <td><span class="mec-name">Carlos Andrade</span></td>
-            <td><span class="mono">10 OS</span></td>
-            <td><span class="mono">R$ 7.700</span></td>
-            <td><span class="mono">8%</span></td>
-            <td><span class="mono">R$ 616</span></td>
-            <td><span class="badge badge-aguardando">Aguardando</span></td>
-            <td><button class="btn btn-sm btn-aprovar">Aprovar</button></td>
-          </tr>
-          <tr>
-            <td><span class="mec-name">Marcos Teles</span></td>
-            <td><span class="mono">0 OS</span></td>
-            <td><span class="mono">R$ 0</span></td>
-            <td><span class="mono">8%</span></td>
-            <td><span class="mono">R$ 0</span></td>
-            <td><span class="badge badge-sem">—</span></td>
-            <td><span class="muted-text">—</span></td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>Total</td>
-            <td class="mono">97 OS</td>
-            <td class="mono">R$ 74.200</td>
-            <td>—</td>
-            <td class="mono">R$ 6.980</td>
-            <td></td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
+      <div class="mec-grid" id="mec-grid"></div>
+    </div>
+
+    <!-- ─── Aba Vendedores ─── -->
+    <div id="tab-vendedores" style="display:none">
+      <div class="kpi-grid" style="margin-bottom:4px">
+        <div class="kpi-card">
+          <div class="kpi-label">Total de vendedores</div>
+          <div class="kpi-value" id="kpi-vend-total">—</div>
+          <div class="kpi-sub">com cargo vendedor</div>
+        </div>
+      </div>
+      <div id="vendedores-lista">
+        <div style="color:var(--muted);font-size:13px;padding:32px;text-align:center">Carregando vendedores…</div>
+      </div>
     </div>
 
   </div>
 </main>
 
+<!-- Modal vincular empresa -->
+<div id="modal-empresa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="padding:20px 24px 16px;border-bottom:1px solid #E3E1DA;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:15px;font-weight:600">Vincular Empresa ao Vendedor</span>
+      <button onclick="document.getElementById('modal-empresa').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888">×</button>
+    </div>
+    <div style="padding:20px 24px">
+      <input type="hidden" id="emp-func-id"/>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <label style="font-size:12.5px;font-weight:500;color:#888">Buscar empresa (Bling)</label>
+          <input type="text" id="emp-busca" placeholder="Digite o nome da empresa…" style="font-family:inherit;font-size:13.5px;padding:8px 11px;border:1px solid #E3E1DA;border-radius:7px;outline:none"/>
+          <div id="emp-resultados" style="background:#fff;border:1px solid #E3E1DA;border-radius:7px;max-height:180px;overflow-y:auto;display:none"></div>
+        </div>
+        <div id="emp-selecionada" style="display:none;background:#EFF6FF;border-radius:7px;padding:10px 12px;font-size:13px;color:#1B2D5B"></div>
+      </div>
+      <div id="emp-erro" style="color:#C0152A;font-size:12.5px;margin-top:8px;min-height:18px"></div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid #E3E1DA;display:flex;justify-content:flex-end;gap:10px">
+      <button onclick="document.getElementById('modal-empresa').style.display='none'" style="font-family:inherit;font-size:13.5px;font-weight:500;padding:7px 16px;border-radius:8px;border:1px solid #E3E1DA;background:transparent;cursor:pointer">Cancelar</button>
+      <button id="btn-vincular-empresa" style="font-family:inherit;font-size:13.5px;font-weight:500;padding:7px 16px;border-radius:8px;border:none;background:#1B2D5B;color:#fff;cursor:pointer">Vincular</button>
+    </div>
+  </div>
+</div>
+
 <script src="hd-comissionamento.js"></script>
+  <script>
+  (function() {
+    var path = window.location.pathname;
+    // Cadastros submenu
+    var cadPages = ['clientes','estoque','servicos'];
+    if (cadPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-cad');
+      var grp = document.getElementById('nav-group-cad');
+      var arr = document.getElementById('arrow-nav-group-cad');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-cad .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+    // Funcionários submenu
+    var funcPages = ['funcionarios','folha','vale-transporte','comissionamento','ponto'];
+    if (funcPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-func');
+      var grp = document.getElementById('nav-group-func');
+      var arr = document.querySelector('#nav-group-func .nav-arrow');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-func .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+  })();
+  function toggleNavGroup(id) {
+    var sub = document.getElementById('sub-'+id);
+    var arr = document.getElementById('arrow-'+id);
+    if (!sub) return;
+    sub.classList.toggle('open');
+    if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+  }
+  </script>
 </body>
 </html>

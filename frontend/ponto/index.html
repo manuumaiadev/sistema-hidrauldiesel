@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hidrauldiesel — Ponto</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="hd-ponto.css">
+<script src="../shared/hd-api.js"></script>
+<script src="../shared/hd-auth.js"></script>
+<link rel="stylesheet" href="../shared/hd-nav.css">
+</head>
+<body>
+<aside>
+  <div class="logo-wrap"><img src="../imagens/Design sem nome (6).png" alt="" class="logo-img"></div>
+  <div class="logo-divider"></div>
+  <nav>
+    <a href="../dashboard/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="../lista-os/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Ordens de serviço</a>
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
+    <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+  </nav>
+  <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
+</aside>
+
+<main>
+  <header>
+    <span class="page-title">Controle de Ponto</span>
+    <div class="header-actions">
+      <input type="month" id="input-mes" class="input-mes"/>
+      <button class="btn" id="btn-carregar" style="font-family:var(--font);font-size:13.5px;font-weight:500;padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--navy);color:#fff;cursor:pointer">
+        Carregar
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="legenda">
+      <span style="font-size:12.5px;font-weight:600;color:var(--muted);margin-right:4px">Legenda:</span>
+      <div class="leg-item"><div class="leg-box presente">✅</div> Presente</div>
+      <div class="leg-item"><div class="leg-box meia_falta">🟡</div> Meia falta (1 dia)</div>
+      <div class="leg-item"><div class="leg-box falta">❌</div> Falta (2 dias)</div>
+      <div class="leg-item" style="margin-left:8px;font-size:12px">Clique para alternar. Fins de semana desabilitados.</div>
+    </div>
+
+    <div class="ponto-wrap">
+      <div id="ponto-container">
+        <div style="color:var(--muted);font-size:13px;padding:32px;text-align:center">Selecione o mês e clique em Carregar</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="hd-ponto.js"></script>
+<script>
+(function() {
+  var path = window.location.pathname;
+  var funcPages = ['funcionarios','folha','vale-transporte','comissionamento','ponto'];
+  if (funcPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+    var sub = document.getElementById('sub-nav-group-func');
+    var arr = document.querySelector('#nav-group-func .nav-arrow');
+    if (sub) sub.classList.add('open');
+    if (arr) arr.innerHTML = '&#9662;';
+    document.querySelectorAll('#sub-nav-group-func .nav-submenu-item').forEach(function(a){
+      var seg = a.getAttribute('href').replace('../','').replace('/','');
+      if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+    });
+  }
+})();
+function toggleNavGroup(id) {
+  var sub = document.getElementById('sub-'+id);
+  var arr = document.getElementById('arrow-'+id);
+  if (!sub) return;
+  sub.classList.toggle('open');
+  if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+}
+</script>
+</body>
+</html>

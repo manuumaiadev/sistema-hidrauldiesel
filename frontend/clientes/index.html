@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -9,7 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="hd-clientes.css">
   <script src="../shared/hd-api.js"></script>
-<script src="../shared/hd-auth.js"></script>
+  <script src="../shared/hd-auth.js"></script>
+  <link rel="stylesheet" href="../shared/hd-nav.css">
 </head>
 <body>
 
@@ -27,27 +28,36 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Ordens de serviço
     </a>
-    <a href="../clientes/" class="active">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Clientes
-    </a>
-    <a href="../estoque/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      Estoque
-    </a>
-    <a href="../servicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-      Serviços
-    </a>
-    <a href="../mecanicos/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-      Mecânicos
-    </a>
-    <a href="../comissionamento/">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Comissionamento
-    </a>
-        <a href="../historico/">
+
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros
+        <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários
+        <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
+    <a href="../historico/">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       Histórico
     </a>
@@ -67,10 +77,14 @@
   <header>
     <div class="header-left">
       <span class="page-title">Clientes</span>
-      <span class="page-date">Quinta-feira, 12 de março de 2026</span>
+      <span class="page-date" id="page-date"></span>
     </div>
     <div class="header-right">
-      <span class="bling-info-tag">⚡ Dados sincronizados via Bling</span>
+      <span class="bling-info-tag">⚡ Dados via Bling</span>
+      <button class="btn btn-primary" id="btn-novo-cliente">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Novo cliente
+      </button>
     </div>
   </header>
 
@@ -80,23 +94,23 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Total de clientes</div>
-        <div class="kpi-value">148</div>
-        <div class="kpi-sub">cadastrados no sistema</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+        <div class="kpi-sub">carregados do Bling</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Ativos no mês</div>
-        <div class="kpi-value">32</div>
-        <div class="kpi-sub">com OS em março</div>
+        <div class="kpi-label">Ativos</div>
+        <div class="kpi-value" id="kpi-ativos">—</div>
+        <div class="kpi-sub">situação ativa no Bling</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">OS abertas</div>
-        <div class="kpi-value">8</div>
-        <div class="kpi-sub">aguardando conclusão</div>
+        <div class="kpi-label">Pessoa Física</div>
+        <div class="kpi-value" id="kpi-pf">—</div>
+        <div class="kpi-sub">CPF cadastrado</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Ticket médio</div>
-        <div class="kpi-value">R$ 767</div>
-        <div class="kpi-sub">por ordem de serviço</div>
+        <div class="kpi-label">Pessoa Jurídica</div>
+        <div class="kpi-value" id="kpi-pj">—</div>
+        <div class="kpi-sub">CNPJ cadastrado</div>
       </div>
     </div>
 
@@ -108,8 +122,8 @@
       </div>
       <div class="filter-btns">
         <button class="filter-btn active" data-filter="todos">Todos</button>
-        <button class="filter-btn" data-filter="ativo">Ativos</button>
-        <button class="filter-btn" data-filter="inativo">Inativos</button>
+        <button class="filter-btn" data-filter="A">Ativos</button>
+        <button class="filter-btn" data-filter="I">Inativos</button>
       </div>
     </div>
 
@@ -119,245 +133,16 @@
         <thead>
           <tr>
             <th>Cliente</th>
-            <th>CPF/CNPJ</th>
+            <th>CPF / CNPJ</th>
             <th>Telefone</th>
             <th>E-mail</th>
-            <th>Veículos</th>
-            <th>Última OS</th>
-            <th>Status</th>
-            
+            <th>Situação</th>
           </tr>
         </thead>
         <tbody id="clientesTableBody">
-
-          <tr data-status="ativo" data-name="Renato Alves" data-doc="048.392.710-55">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#1B5FBF;">RA</div>
-                <div>
-                  <div class="client-name">Renato Alves</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">048.392.710-55</span></td>
-            <td><span class="mono">11 98432-7601</span></td>
-            <td>renato.alves@gmail.com</td>
-            <td>2</td>
-            <td>05/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
+          <tr id="tr-loading">
+            <td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">Carregando clientes...</td>
           </tr>
-
-          <tr data-status="ativo" data-name="Patrícia Souza" data-doc="127.654.830-91">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#7C3AED;">PS</div>
-                <div>
-                  <div class="client-name">Patrícia Souza</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">127.654.830-91</span></td>
-            <td><span class="mono">11 99271-4508</span></td>
-            <td>patricia.souza@hotmail.com</td>
-            <td>1</td>
-            <td>08/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
-          <tr data-status="inativo" data-name="Carlos Mendonça" data-doc="304.812.590-73">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#D97706;">CM</div>
-                <div>
-                  <div class="client-name">Carlos Mendonça</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">304.812.590-73</span></td>
-            <td><span class="mono">11 97854-3312</span></td>
-            <td>c.mendonca@yahoo.com.br</td>
-            <td>1</td>
-            <td>14/11/2025</td>
-            <td><span class="badge-inativo">Inativo</span></td>
-            
-          </tr>
-
-          <tr data-status="ativo" data-name="Marcos Pereira" data-doc="591.047.260-38">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#16A34A;">MP</div>
-                <div>
-                  <div class="client-name">Marcos Pereira</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">591.047.260-38</span></td>
-            <td><span class="mono">11 98105-6790</span></td>
-            <td>marcos.pereira@gmail.com</td>
-            <td>3</td>
-            <td>10/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
-          <tr data-status="ativo" data-name="Fernanda Lopes" data-doc="763.290.140-62">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#C0152A;">FL</div>
-                <div>
-                  <div class="client-name">Fernanda Lopes</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">763.290.140-62</span></td>
-            <td><span class="mono">11 99634-8821</span></td>
-            <td>fernanda.lopes@outlook.com</td>
-            <td>1</td>
-            <td>11/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
-          <tr data-status="inativo" data-name="André Costa" data-doc="852.163.470-09">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#1B2D5B;">AC</div>
-                <div>
-                  <div class="client-name">André Costa</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">852.163.470-09</span></td>
-            <td><span class="mono">11 97390-5547</span></td>
-            <td>andrecosta82@gmail.com</td>
-            <td>2</td>
-            <td>03/09/2025</td>
-            <td><span class="badge-inativo">Inativo</span></td>
-            
-          </tr>
-
-          <tr data-status="ativo" data-name="Roberto Freitas" data-doc="219.408.750-84">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#1B5FBF;">RF</div>
-                <div>
-                  <div class="client-name">Roberto Freitas</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">219.408.750-84</span></td>
-            <td><span class="mono">11 98867-2230</span></td>
-            <td>roberto.freitas@gmail.com</td>
-            <td>1</td>
-            <td>07/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
-          <tr data-status="inativo" data-name="Luciana Pires" data-doc="675.031.820-17">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#7C3AED;">LP</div>
-                <div>
-                  <div class="client-name">Luciana Pires</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">675.031.820-17</span></td>
-            <td><span class="mono">11 97512-9943</span></td>
-            <td>lupires@hotmail.com</td>
-            <td>1</td>
-            <td>21/07/2025</td>
-            <td><span class="badge-inativo">Inativo</span></td>
-            
-          </tr>
-
-          <tr data-status="ativo" data-name="Auto Peças Vitória Ltda" data-doc="14.382.905/0001-67">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#16A34A;">AV</div>
-                <div>
-                  <div class="client-name">Auto Peças Vitória Ltda</div>
-                  <div class="client-type">Pessoa Jurídica</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">14.382.905/0001-67</span></td>
-            <td><span class="mono">11 93471-8800</span></td>
-            <td>contato@autopecasvitoria.com.br</td>
-            <td>3</td>
-            <td>12/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
-          <tr data-status="ativo" data-name="Transportes Boa Vista" data-doc="27.649.013/0001-44">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#D97706;">TB</div>
-                <div>
-                  <div class="client-name">Transportes Boa Vista</div>
-                  <div class="client-type">Pessoa Jurídica</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">27.649.013/0001-44</span></td>
-            <td><span class="mono">11 94382-6615</span></td>
-            <td>financeiro@boavista.com.br</td>
-            <td>3</td>
-            <td>09/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
-          <tr data-status="inativo" data-name="Maria Aparecida" data-doc="430.971.650-28">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#C0152A;">MA</div>
-                <div>
-                  <div class="client-name">Maria Aparecida</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">430.971.650-28</span></td>
-            <td><span class="mono">11 98023-7754</span></td>
-            <td>mariaaparecida@gmail.com</td>
-            <td>1</td>
-            <td>30/04/2025</td>
-            <td><span class="badge-inativo">Inativo</span></td>
-            
-          </tr>
-
-          <tr data-status="ativo" data-name="João Pedro Cunha" data-doc="586.240.390-11">
-            <td>
-              <div class="client-cell">
-                <div class="client-avatar" style="background:#1B2D5B;">JC</div>
-                <div>
-                  <div class="client-name">João Pedro Cunha</div>
-                  <div class="client-type">Pessoa Física</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="mono">586.240.390-11</span></td>
-            <td><span class="mono">11 99748-1162</span></td>
-            <td>joaopedrocunha@outlook.com</td>
-            <td>2</td>
-            <td>06/03/2026</td>
-            <td><span class="badge-ativo">Ativo</span></td>
-            
-          </tr>
-
         </tbody>
       </table>
     </div>
@@ -365,6 +150,138 @@
   </div>
 </main>
 
+<!-- ═══ MODAL: NOVO CLIENTE ═══ -->
+<div id="modal-novo-cliente" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-cliente">
+
+    <div class="modal-cliente-header">
+      <h3 class="modal-cliente-title">Novo cliente</h3>
+      <button class="modal-fechar-btn" id="modal-cliente-fechar">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Tipo toggle -->
+    <div class="tipo-toggle">
+      <button class="tipo-btn active" data-tipo="PF">Pessoa Física</button>
+      <button class="tipo-btn" data-tipo="PJ">Pessoa Jurídica</button>
+    </div>
+
+    <!-- Dados principais -->
+    <div class="modal-section-title">Dados principais</div>
+    <div class="modal-grid">
+      <div class="modal-field modal-field-full">
+        <label>Nome / Razão Social <span class="req">*</span></label>
+        <input type="text" id="cli-nome" placeholder="Nome completo ou Razão Social"/>
+      </div>
+      <div class="modal-field">
+        <label id="cli-doc-label">CPF <span class="req">*</span></label>
+        <input type="text" id="cli-doc" placeholder="000.000.000-00"/>
+      </div>
+      <div class="modal-field">
+        <label id="cli-rg-label">RG</label>
+        <input type="text" id="cli-rg" placeholder="0000000"/>
+      </div>
+      <div class="modal-field">
+        <label>E-mail</label>
+        <input type="email" id="cli-email" placeholder="email@exemplo.com"/>
+      </div>
+      <div class="modal-field">
+        <label>Telefone</label>
+        <input type="text" id="cli-telefone" placeholder="(11) 3333-4444"/>
+      </div>
+      <div class="modal-field">
+        <label>Celular</label>
+        <input type="text" id="cli-celular" placeholder="(11) 99999-9999"/>
+      </div>
+    </div>
+
+    <!-- Endereço -->
+    <div class="modal-section-title">Endereço</div>
+    <div class="modal-grid">
+      <div class="modal-field">
+        <label>CEP</label>
+        <input type="text" id="cli-cep" placeholder="00000-000" maxlength="9"/>
+      </div>
+      <div class="modal-field modal-field-2col">
+        <label>Logradouro</label>
+        <input type="text" id="cli-logradouro" placeholder="Rua, Avenida…"/>
+      </div>
+      <div class="modal-field">
+        <label>Número</label>
+        <input type="text" id="cli-numero" placeholder="123"/>
+      </div>
+      <div class="modal-field">
+        <label>Complemento</label>
+        <input type="text" id="cli-complemento" placeholder="Apto, Sala…"/>
+      </div>
+      <div class="modal-field">
+        <label>Bairro</label>
+        <input type="text" id="cli-bairro"/>
+      </div>
+      <div class="modal-field">
+        <label>Cidade</label>
+        <input type="text" id="cli-cidade"/>
+      </div>
+      <div class="modal-field modal-field-uf">
+        <label>UF</label>
+        <input type="text" id="cli-uf" maxlength="2"/>
+      </div>
+    </div>
+
+    <div id="cli-erro" class="cli-erro" style="display:none"></div>
+
+    <div class="modal-cliente-footer">
+      <button class="btn" id="btn-cancelar-cliente">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar-cliente">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Salvar cliente
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <script src="hd-clientes.js"></script>
+  <script>
+  (function() {
+    var path = window.location.pathname;
+    // Cadastros submenu
+    var cadPages = ['clientes','estoque','servicos'];
+    if (cadPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-cad');
+      var grp = document.getElementById('nav-group-cad');
+      var arr = document.getElementById('arrow-nav-group-cad');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-cad .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+    // Funcionários submenu
+    var funcPages = ['funcionarios','folha','vale-transporte','comissionamento','ponto'];
+    if (funcPages.some(function(p){ return path.indexOf('/'+p+'/') !== -1; })) {
+      var sub = document.getElementById('sub-nav-group-func');
+      var grp = document.getElementById('nav-group-func');
+      var arr = document.querySelector('#nav-group-func .nav-arrow');
+      if (sub) sub.classList.add('open');
+      if (grp) grp.classList.add('has-active');
+      if (arr) arr.innerHTML = '&#9662;';
+      document.querySelectorAll('#sub-nav-group-func .nav-submenu-item').forEach(function(a){
+        var seg = a.getAttribute('href').replace('../','').replace('/','');
+        if (path.indexOf('/'+seg+'/') !== -1) a.classList.add('active');
+      });
+    }
+  })();
+  function toggleNavGroup(id) {
+    var sub = document.getElementById('sub-'+id);
+    var arr = document.getElementById('arrow-'+id);
+    if (!sub) return;
+    sub.classList.toggle('open');
+    if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+  }
+  </script>
 </body>
 </html>
