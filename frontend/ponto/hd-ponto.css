@@ -54,7 +54,8 @@ table.ponto-table th.fim-semana { background: #F8F7F4; }
 .cel-ponto:hover { transform: scale(1.15); }
 .cel-ponto.presente  { background: #DCFCE7; border-color: #86EFAC; }
 .cel-ponto.meia_falta { background: #FEF9C3; border-color: #FCD34D; }
-.cel-ponto.falta     { background: #FEE2E2; border-color: #FCA5A5; }
+.cel-ponto.falta              { background: #FEE2E2; border-color: #FCA5A5; }
+.cel-ponto.falta_justificada { background: #DBEAFE; border-color: #93C5FD; }
 .cel-ponto.fim-semana { background: #F1F5F9; cursor: default; opacity: .6; }
 
 .cel-total { font-family: var(--mono); font-size: 12px; color: var(--muted); }

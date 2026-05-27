@@ -1,14 +1,42 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Hidrauldiesel — Vale Transporte</title>
+<title>Hidrauldiesel — Vales</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../folha/hd-folha.css">
 <script src="../shared/hd-api.js"></script>
 <script src="../shared/hd-auth.js"></script>
 <link rel="stylesheet" href="../shared/hd-nav.css">
+<style>
+.vales-tabs {
+  display: flex;
+  gap: 4px;
+  background: #F0EEE8;
+  border-radius: 10px;
+  padding: 4px;
+  width: fit-content;
+  margin: 0 0 20px;
+}
+.vales-tab-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 20px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted, #888);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.vales-tab-btn.active {
+  background: #fff;
+  color: var(--navy, #1B2D5B);
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+</style>
 </head>
 <body>
 <aside>
@@ -35,65 +63,122 @@
       </div>
       <div class="nav-submenu" id="sub-nav-group-func">
         <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
-
         <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
-        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vales</a>
         <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
         <a href="../ponto/" class="nav-submenu-item">Ponto</a>
       </div>
     </div>
     <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+    <div class="nav-group" id="nav-group-fin">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-fin')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Financeiro <span class="nav-arrow" id="arrow-nav-group-fin">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-fin">
+        <a href="../financeiro/" class="nav-submenu-item">Faturamento</a>
+      </div>
+    </div>
   </nav>
   <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
 </aside>
 
 <main>
   <header>
-    <span class="page-title">Vale Transporte</span>
-    <div class="header-actions">
+    <span class="page-title">Vales</span>
+    <div class="header-actions" id="header-actions-vt">
       <input type="date" id="input-vt-data" class="input-mes" title="Segunda-feira"/>
       <button class="btn btn-primary" id="btn-vt">Gerar Vale Transporte</button>
+    </div>
+    <div class="header-actions" id="header-actions-va" style="display:none">
+      <input type="date" id="input-va-data" class="input-mes" title="Segunda-feira"/>
+      <button class="btn btn-primary" id="btn-va">Gerar Vale Alimentação</button>
     </div>
   </header>
 
   <div class="content">
-    <!-- VT atual -->
-    <div id="vt-wrap" style="display:none;margin-bottom:24px">
-      <div class="folha-header" style="display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleVTBody()">
-          <span class="folha-titulo" id="vt-titulo">Vale Transporte — </span>
-          <span id="vt-toggle-icon" style="font-size:12px;color:var(--muted);user-select:none">▲</span>
+
+    <!-- Tabs -->
+    <div class="vales-tabs">
+      <button class="vales-tab-btn active" id="tab-btn-vt" onclick="switchTab('vt')">Vale Transporte</button>
+      <button class="vales-tab-btn" id="tab-btn-va" onclick="switchTab('va')">Vale Alimentação</button>
+    </div>
+
+    <!-- ── TAB VALE TRANSPORTE ─────────────────────────────────────────────── -->
+    <div id="tab-vt-content">
+      <div id="vt-wrap" style="display:none;margin-bottom:24px">
+        <div class="folha-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleVTBody()">
+            <span class="folha-titulo" id="vt-titulo">Vale Transporte — </span>
+            <span id="vt-toggle-icon" style="font-size:12px;color:var(--muted);user-select:none">▲</span>
+          </div>
+        </div>
+        <div id="vt-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Funcionário</th>
+                  <th style="text-align:right">VT semanal</th>
+                  <th style="text-align:right">Dias de falta</th>
+                  <th style="text-align:right">Desconto</th>
+                  <th style="text-align:right">Valor pago</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="vt-tbody"></tbody>
+            </table>
+          </div>
+          <div id="vt-total-wrap" style="display:flex;justify-content:flex-end;padding:12px 16px;font-weight:600;font-size:14px;color:var(--navy)"></div>
         </div>
       </div>
-      <div id="vt-body">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Funcionário</th>
-                <th style="text-align:right">VT semanal</th>
-                <th style="text-align:right">Dias de falta</th>
-                <th style="text-align:right">Desconto</th>
-                <th style="text-align:right">Valor pago</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="vt-tbody"></tbody>
-          </table>
+
+      <div class="historico-section">
+        <div class="section-titulo">Vales Transporte anteriores</div>
+        <div id="vt-historico-lista" class="historico-lista">
+          <div style="color:var(--muted);font-size:13px;padding:16px">Carregando…</div>
         </div>
-        <div id="vt-total-wrap" style="display:flex;justify-content:flex-end;padding:12px 16px;font-weight:600;font-size:14px;color:var(--navy)"></div>
       </div>
     </div>
 
-    <!-- Histórico VT -->
-    <div class="historico-section">
-      <div class="section-titulo">Vales anteriores</div>
-      <div id="vt-historico-lista" class="historico-lista">
-        <div style="color:var(--muted);font-size:13px;padding:16px">Carregando…</div>
+    <!-- ── TAB VALE ALIMENTAÇÃO ───────────────────────────────────────────── -->
+    <div id="tab-va-content" style="display:none">
+      <div id="va-wrap" style="display:none;margin-bottom:24px">
+        <div class="folha-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleVABody()">
+            <span class="folha-titulo" id="va-titulo">Vale Alimentação — </span>
+            <span id="va-toggle-icon" style="font-size:12px;color:var(--muted);user-select:none">▲</span>
+          </div>
+        </div>
+        <div id="va-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Funcionário</th>
+                  <th style="text-align:right">VA semanal</th>
+                  <th style="text-align:right">Dias de falta</th>
+                  <th style="text-align:right">Desconto</th>
+                  <th style="text-align:right">Valor pago</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="va-tbody"></tbody>
+            </table>
+          </div>
+          <div id="va-total-wrap" style="display:flex;justify-content:flex-end;padding:12px 16px;font-weight:600;font-size:14px;color:var(--navy)"></div>
+        </div>
+      </div>
+
+      <div class="historico-section">
+        <div class="section-titulo">Vales Alimentação anteriores</div>
+        <div id="va-historico-lista" class="historico-lista">
+          <div style="color:var(--muted);font-size:13px;padding:16px">Carregando…</div>
+        </div>
       </div>
     </div>
+
   </div>
-
 </main>
 
 <script src="hd-vale-transporte.js"></script>

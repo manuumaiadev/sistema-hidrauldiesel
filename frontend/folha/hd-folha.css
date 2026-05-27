@@ -81,3 +81,9 @@ tfoot td { padding: 11px 12px; font-size: 12px; font-weight: 600; border-top: 2p
 .historico-right { display: flex; align-items: center; gap: 20px; }
 .historico-qtd { font-size: 12.5px; color: var(--muted); }
 .historico-total { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--navy); }
+
+/* Tooltip comentário importante */
+.badge-comentario { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: #F59E0B; color: #fff; font-size: 10px; font-weight: 700; cursor: help; margin-left: 6px; vertical-align: middle; flex-shrink: 0; }
+.badge-comentario .tooltip-box { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #1B2D5B; color: #fff; font-size: 12px; font-weight: 400; padding: 8px 12px; border-radius: 8px; white-space: normal; width: max-content; max-width: 260px; z-index: 200; pointer-events: none; line-height: 1.45; box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+.badge-comentario .tooltip-box::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #1B2D5B; }
+.badge-comentario:hover .tooltip-box { display: block; }

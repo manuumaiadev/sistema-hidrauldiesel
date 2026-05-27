@@ -30,7 +30,9 @@ app.use('/api/anexos',           require('./routes/anexos'));
 app.use('/api/funcionarios',     require('./routes/funcionarios'));
 app.use('/api/folha',            require('./routes/folha'));
 app.use('/api/vale-transporte',  require('./routes/valeTransporte'));
+app.use('/api/vale-alimentacao', require('./routes/valeAlimentacao'));
 app.use('/api/ponto',            require('./routes/ponto'));
+app.use('/api/faturamento',      require('./routes/faturamento'));
 
 // Rota de teste
 app.get('/api/health', (_req, res) => {

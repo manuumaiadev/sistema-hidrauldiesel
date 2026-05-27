@@ -37,12 +37,21 @@
         <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
 
         <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
-        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vales</a>
         <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
         <a href="../ponto/" class="nav-submenu-item">Ponto</a>
       </div>
     </div>
     <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+    <div class="nav-group" id="nav-group-fin">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-fin')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Financeiro <span class="nav-arrow" id="arrow-nav-group-fin">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-fin">
+        <a href="../financeiro/" class="nav-submenu-item">Faturamento</a>
+      </div>
+    </div>
   </nav>
   <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
 </aside>
@@ -63,7 +72,8 @@
       <span style="font-size:12.5px;font-weight:600;color:var(--muted);margin-right:4px">Legenda:</span>
       <div class="leg-item"><div class="leg-box presente">✅</div> Presente</div>
       <div class="leg-item"><div class="leg-box meia_falta">🟡</div> Meia falta (1 dia)</div>
-      <div class="leg-item"><div class="leg-box falta">❌</div> Falta (2 dias)</div>
+      <div class="leg-item"><div class="leg-box falta">❌</div> Falta (isolada: 2 dias / corrida: 1 dia)</div>
+      <div class="leg-item"><div class="leg-box falta_justificada" style="background:#DBEAFE;border:1px solid #93C5FD;border-radius:4px">🔵</div> Falta justificada (sem desconto)</div>
       <div class="leg-item" style="margin-left:8px;font-size:12px">Clique para alternar. Fins de semana desabilitados.</div>
     </div>
 

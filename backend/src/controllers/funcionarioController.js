@@ -18,12 +18,12 @@ const listarFuncionarios = async (req, res) => {
 };
 
 const criarFuncionario = async (req, res) => {
-  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, percentual_inss, data_admissao, mecanico_id, comentario_importante } = req.body;
+  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, vale_alimentacao, percentual_inss, data_admissao, mecanico_id, comentario_importante } = req.body;
   try {
     const resultado = await pool.query(
-      `INSERT INTO funcionarios (nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, percentual_inss, data_admissao, mecanico_id, comentario_importante)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-      [nome, tipo, cargo, cargo_tipo || 'outro', salario_oficial || 0, salario_adicional || 0, adiantamento_fixo || 0, vale_transporte || 0, percentual_inss || 0, data_admissao || null, mecanico_id || null, comentario_importante || null]
+      `INSERT INTO funcionarios (nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, vale_alimentacao, percentual_inss, data_admissao, mecanico_id, comentario_importante)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [nome, tipo, cargo, cargo_tipo || 'outro', salario_oficial || 0, salario_adicional || 0, adiantamento_fixo || 0, vale_transporte || 0, vale_alimentacao || 0, percentual_inss || 0, data_admissao || null, mecanico_id || null, comentario_importante || null]
     );
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
@@ -34,8 +34,15 @@ const criarFuncionario = async (req, res) => {
 
 const atualizarFuncionario = async (req, res) => {
   const { id } = req.params;
-  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, percentual_inss, percentual_comissao, data_admissao, ativo, status, mecanico_id, comentario_importante } = req.body;
+  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, vale_alimentacao, percentual_inss, percentual_comissao, data_admissao, ativo, status, mecanico_id, comentario_importante } = req.body;
   try {
+    // Mantém ativo e status sempre em sincronia:
+    // se ativo foi explicitamente enviado, status acompanha (a menos que status também seja enviado explicitamente)
+    let statusFinal = status;
+    if (statusFinal === undefined && ativo !== undefined) {
+      statusFinal = ativo ? 'ativo' : 'inativo';
+    }
+
     const resultado = await pool.query(
       `UPDATE funcionarios SET
         nome = COALESCE($1, nome),
@@ -52,9 +59,10 @@ const atualizarFuncionario = async (req, res) => {
         ativo = COALESCE($12, ativo),
         status = COALESCE($13, status),
         mecanico_id = $14,
-        comentario_importante = COALESCE($15, comentario_importante)
-       WHERE id = $16 RETURNING *`,
-      [nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, percentual_inss, percentual_comissao, data_admissao, ativo, status, mecanico_id || null, comentario_importante !== undefined ? (comentario_importante || null) : undefined, id]
+        comentario_importante = COALESCE($15, comentario_importante),
+        vale_alimentacao = COALESCE($16, vale_alimentacao)
+       WHERE id = $17 RETURNING *`,
+      [nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, percentual_inss, percentual_comissao, data_admissao, ativo, statusFinal, mecanico_id || null, comentario_importante !== undefined ? (comentario_importante || null) : undefined, vale_alimentacao, id]
     );
     res.json(resultado.rows[0]);
   } catch (err) {
@@ -111,6 +119,38 @@ const listarAdiantamentos = async (req, res) => {
   }
 };
 
+const editarAdiantamento = async (req, res) => {
+  const { id } = req.params;
+  const { valor, data, desconto_em, observacoes } = req.body;
+  try {
+    // Só permite editar se ainda não foi descontado
+    const check = await pool.query(`SELECT descontado FROM adiantamentos WHERE id = $1`, [id]);
+    if (!check.rows.length) return res.status(404).json({ erro: 'Adiantamento não encontrado' });
+    if (check.rows[0].descontado) return res.status(403).json({ erro: 'Adiantamento já descontado não pode ser editado' });
+
+    const resultado = await pool.query(
+      `UPDATE adiantamentos SET valor = $1, data = $2, desconto_em = $3, observacoes = $4 WHERE id = $5 RETURNING *`,
+      [valor, data, desconto_em, observacoes, id]
+    );
+    res.json(resultado.rows[0]);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao editar adiantamento' });
+  }
+};
+
+const deletarAdiantamento = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const check = await pool.query(`SELECT descontado FROM adiantamentos WHERE id = $1`, [id]);
+    if (!check.rows.length) return res.status(404).json({ erro: 'Adiantamento não encontrado' });
+    if (check.rows[0].descontado) return res.status(403).json({ erro: 'Adiantamento já descontado não pode ser excluído' });
+    await pool.query(`DELETE FROM adiantamentos WHERE id = $1`, [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao excluir adiantamento' });
+  }
+};
+
 // ── Férias ─────────────────────────────────────────────────────────────────────
 
 const registrarFerias = async (req, res) => {
@@ -138,7 +178,8 @@ const registrarFerias = async (req, res) => {
 
 const registrarRescisao = async (req, res) => {
   const { funcionario_id, data_rescisao, valor_saldo, valor_ferias_prop,
-          valor_decimo_terceiro, valor_fgts, outros_valores, observacoes } = req.body;
+          valor_decimo_terceiro, valor_fgts, outros_valores, observacoes,
+          pagamento_parcial, valor_pago_agora, data_pagamento_parcial, marcar_inativo } = req.body;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -147,14 +188,21 @@ const registrarRescisao = async (req, res) => {
                         (parseFloat(valor_decimo_terceiro) || 0) +
                         (parseFloat(valor_fgts) || 0) +
                         (parseFloat(outros_valores) || 0);
+    // valor efetivamente pago neste momento (pode ser parcial)
+    const valor_pago = pagamento_parcial ? (parseFloat(valor_pago_agora) || 0) : valor_total;
+    const saldo_restante = Math.max(0, valor_total - valor_pago);
+    const data_pgto = pagamento_parcial ? (data_pagamento_parcial || data_rescisao) : data_rescisao;
     const resultado = await client.query(
-      `INSERT INTO rescisao (funcionario_id, data_rescisao, valor_saldo, valor_ferias_prop,
-       valor_decimo_terceiro, valor_fgts, outros_valores, valor_total, observacoes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [funcionario_id, data_rescisao, valor_saldo, valor_ferias_prop,
-       valor_decimo_terceiro, valor_fgts, outros_valores, valor_total, observacoes]
+      `INSERT INTO rescisao (funcionario_id, data_rescisao, data_pagamento, valor_saldo, valor_ferias_prop,
+       valor_decimo_terceiro, valor_fgts, outros_valores, valor_total, valor_pago, saldo_restante, observacoes, num_parcelas)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [funcionario_id, data_rescisao, data_pgto, valor_saldo, valor_ferias_prop,
+       valor_decimo_terceiro, valor_fgts, outros_valores, valor_total,
+       valor_pago, saldo_restante, observacoes, pagamento_parcial ? 2 : 1]
     );
-    await client.query(`UPDATE funcionarios SET status = 'inativo' WHERE id = $1`, [funcionario_id]);
+    if (marcar_inativo) {
+      await client.query(`UPDATE funcionarios SET status = 'inativo' WHERE id = $1`, [funcionario_id]);
+    }
     await client.query('COMMIT');
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
@@ -245,10 +293,152 @@ const deletarFuncionario = async (req, res) => {
   }
 };
 
+// ── Décimo Terceiro ────────────────────────────────────────────────────────────
+
+const registrarDecimo = async (req, res) => {
+  const { funcionario_id, ano, data_pagamento, valor, observacoes } = req.body;
+  if (!funcionario_id || !valor || !data_pagamento) {
+    return res.status(400).json({ erro: 'Campos obrigatórios: funcionario_id, data_pagamento, valor' });
+  }
+  try {
+    const anoRef = ano || new Date().getFullYear();
+    const resultado = await pool.query(
+      `INSERT INTO decimo_terceiro (funcionario_id, ano, data_pagamento, valor, observacoes)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [funcionario_id, anoRef, data_pagamento, valor, observacoes || null]
+    );
+    res.status(201).json(resultado.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: 'Erro ao registrar décimo terceiro' });
+  }
+};
+
+const listarDecimos = async (req, res) => {
+  const { id } = req.params;
+  const { ano } = req.query;
+  try {
+    const params = [id];
+    let where = 'WHERE funcionario_id = $1';
+    if (ano) { params.push(ano); where += ` AND ano = $${params.length}`; }
+    const resultado = await pool.query(
+      `SELECT * FROM decimo_terceiro ${where} ORDER BY data_pagamento DESC`,
+      params
+    );
+    res.json(resultado.rows);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao listar décimos' });
+  }
+};
+
+// ── Resumo de pagamentos ───────────────────────────────────────────────────────
+
+const resumoPagamentos = async (req, res) => {
+  const { id } = req.params;
+  const { de, ate } = req.query; // YYYY-MM-DD
+
+  const filtroFolha = de && ate
+    ? `AND data_pagamento BETWEEN '${de}' AND '${ate}'` : '';
+  const filtroVT = de && ate
+    ? `AND data_pagamento BETWEEN '${de}' AND '${ate}'` : '';
+  const filtroAdiant = de && ate
+    ? `AND data BETWEEN '${de}' AND '${ate}'` : '';
+  const filtroFerias = de && ate
+    ? `AND data_inicio BETWEEN '${de}' AND '${ate}'` : '';
+  const filtroDecimo = de && ate
+    ? `AND data_pagamento BETWEEN '${de}' AND '${ate}'` : '';
+  const filtroRescisao = de && ate
+    ? `AND data_rescisao BETWEEN '${de}' AND '${ate}'` : '';
+
+  try {
+    const resultado = await pool.query(`
+      SELECT
+        'Folha de Pagamento'            AS categoria,
+        tipo                            AS subtipo,
+        data_pagamento                  AS data,
+        valor_pago                      AS valor,
+        observacoes
+      FROM folha_pagamento
+      WHERE funcionario_id = $1 ${filtroFolha}
+
+      UNION ALL
+
+      SELECT
+        'Vale Transporte'               AS categoria,
+        NULL                            AS subtipo,
+        data_pagamento                  AS data,
+        valor                           AS valor,
+        observacoes
+      FROM vale_transporte
+      WHERE funcionario_id = $1 ${filtroVT}
+
+      UNION ALL
+
+      SELECT
+        'Adiantamento'                  AS categoria,
+        CASE WHEN descontado THEN 'descontado' ELSE 'pendente' END AS subtipo,
+        data                            AS data,
+        valor                           AS valor,
+        observacoes
+      FROM adiantamentos
+      WHERE funcionario_id = $1 ${filtroAdiant}
+
+      UNION ALL
+
+      SELECT
+        'Férias'                        AS categoria,
+        NULL                            AS subtipo,
+        data_inicio                     AS data,
+        valor                           AS valor,
+        observacoes
+      FROM ferias
+      WHERE funcionario_id = $1 ${filtroFerias}
+
+      UNION ALL
+
+      SELECT
+        '13º Salário'                   AS categoria,
+        NULL                            AS subtipo,
+        data_pagamento                  AS data,
+        valor                           AS valor,
+        observacoes
+      FROM decimo_terceiro
+      WHERE funcionario_id = $1 ${filtroDecimo}
+
+      UNION ALL
+
+      SELECT
+        'Rescisão'                      AS categoria,
+        CASE WHEN saldo_restante > 0 THEN 'parcial' ELSE 'completa' END AS subtipo,
+        data_rescisao                   AS data,
+        COALESCE(valor_pago, valor_total) AS valor,
+        observacoes
+      FROM rescisao
+      WHERE funcionario_id = $1 ${filtroRescisao}
+
+      ORDER BY data DESC
+    `, [id]);
+
+    // Totais por categoria
+    const totais = {};
+    for (const r of resultado.rows) {
+      totais[r.categoria] = (totais[r.categoria] || 0) + parseFloat(r.valor || 0);
+    }
+    const total_geral = Object.values(totais).reduce((a, v) => a + v, 0);
+
+    res.json({ lancamentos: resultado.rows, totais, total_geral });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: 'Erro ao gerar resumo de pagamentos' });
+  }
+};
+
 module.exports = {
   listarFuncionarios, criarFuncionario, atualizarFuncionario, deletarFuncionario,
-  registrarAdiantamento, listarAdiantamentos,
+  registrarAdiantamento, listarAdiantamentos, editarAdiantamento, deletarAdiantamento,
   registrarFerias,
   registrarRescisao,
+  registrarDecimo, listarDecimos,
+  resumoPagamentos,
   vincularEmpresa, listarEmpresasVendedor, calcularComissaoVendedor,
 };

@@ -89,10 +89,15 @@ const api = {
   atualizarFuncionario: (id, dados)=> request('PATCH', `/funcionarios/${id}`, dados),
   excluirFuncionario:   (id)       => request('DELETE', `/funcionarios/${id}`),
 
-  registrarAdiantamento:   (dados) => request('POST', '/funcionarios/adiantamento', dados),
-  listarAdiantamentos:     (id)    => request('GET',  `/funcionarios/${id}/adiantamentos`),
+  registrarAdiantamento:   (dados) => request('POST',   '/funcionarios/adiantamento', dados),
+  editarAdiantamento:      (id, dados) => request('PATCH',  `/funcionarios/adiantamento/${id}`, dados),
+  excluirAdiantamento:     (id)    => request('DELETE', `/funcionarios/adiantamento/${id}`),
+  listarAdiantamentos:     (id)    => request('GET',   `/funcionarios/${id}/adiantamentos`),
   registrarFerias:         (dados) => request('POST', '/funcionarios/ferias', dados),
   registrarRescisao:       (dados) => request('POST', '/funcionarios/rescisao', dados),
+  registrarDecimo:         (dados) => request('POST', '/funcionarios/decimo', dados),
+  listarDecimos:           (id, ano) => request('GET', `/funcionarios/${id}/decimos${ano ? `?ano=${ano}` : ''}`),
+  resumoPagamentos:        (id, de, ate) => request('GET', `/funcionarios/${id}/resumo${de && ate ? `?de=${de}&ate=${ate}` : ''}`),
   vincularEmpresa:         (dados) => request('POST', '/funcionarios/vendedor/empresa', dados),
   listarEmpresasVendedor:  (id)    => request('GET',  `/funcionarios/${id}/empresas`),
   calcularComissaoVendedor:(id)    => request('GET',  `/funcionarios/${id}/comissao-vendedor`),
@@ -102,6 +107,12 @@ const api = {
   listarVales:         ()         => request('GET',    '/vale-transporte'),
   buscarVale:          (data)     => request('GET',    `/vale-transporte/${data}`),
   excluirVale:         (data)     => request('DELETE', `/vale-transporte/${data}`),
+
+  // Vale alimentação
+  gerarValeAlimentacao:   (dados) => request('POST',   '/vale-alimentacao/gerar', dados),
+  listarValesAlimentacao: ()      => request('GET',    '/vale-alimentacao'),
+  buscarValeAlimentacao:  (data)  => request('GET',    `/vale-alimentacao/${data}`),
+  excluirValeAlimentacao: (data)  => request('DELETE', `/vale-alimentacao/${data}`),
 
   // Ponto
   buscarPontoMes:  (mes, ano)       => request('GET',  `/ponto/${mes}/${ano}`),
@@ -116,6 +127,18 @@ const api = {
   removerLancamento:         (id)              => request('DELETE', `/folha/lancamento/${id}`),
   adicionarFuncionarioFolha: (data, dados)     => request('POST',   `/folha/${data}/funcionario`, dados),
   excluirFolha:              (data)            => request('DELETE', `/folha/${data}`),
+
+  // Faturamento
+  listarFaturamentos: (filtros) => {
+    const params = new URLSearchParams(filtros || {}).toString();
+    return request('GET', `/faturamento${params ? '?' + params : ''}`);
+  },
+  criarFaturamento:          (dados)        => request('POST',   '/faturamento', dados),
+  atualizarFaturamento:      (id, dados)    => request('PATCH',  `/faturamento/${id}`, dados),
+  atualizarStatusFaturamento:     (id, status)    => request('PATCH', `/faturamento/${id}/status`, { status }),
+  atualizarStatusFaturamentoLote: (ids, status)   => request('PATCH', '/faturamento/lote/status', { ids, status }),
+  deletarFaturamento:        (id)           => request('DELETE', `/faturamento/${id}`),
+  marcarVencimentoPago:      (id)           => request('PATCH',  `/faturamento/vencimento/${id}/pagar`),
 
   // Mecânicos
   listarMecanicos: () => request('GET', '/mecanicos'),

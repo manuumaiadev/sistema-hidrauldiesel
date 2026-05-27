@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hidrauldiesel — Faturamento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="../shared/hd-api.js"></script>
+<script src="../shared/hd-auth.js"></script>
+<link rel="stylesheet" href="../shared/hd-nav.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F3F0; --surface: #FFFFFF; --border: #E3E1DA;
+  --text: #12151F; --muted: #888680;
+  --navy: #1B2D5B; --red: #C0152A; --red2: #E01830;
+  --radius: 10px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+}
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+aside { width: 228px; min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; padding: 24px 18px; flex-shrink: 0; }
+.logo-wrap { display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.logo-img { width: 180px; height: 180px; object-fit: contain; flex-shrink: 0; }
+.logo-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0; }
+nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+nav a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; text-decoration: none; font-size: 13.5px; color: rgba(255,255,255,0.5); transition: background .15s, color .15s; }
+nav a:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+nav a.active { background: var(--red); color: #fff; font-weight: 500; }
+nav a svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+nav a.active svg { opacity: 1; }
+.sidebar-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; font-size: 12px; color: rgba(255,255,255,0.35); }
+.sidebar-bottom strong { display: block; color: rgba(255,255,255,0.72); font-weight: 500; margin-bottom: 2px; }
+
+main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 15px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.page-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.btn { font-family: var(--font); font-size: 13.5px; font-weight: 500; padding: 7px 16px; border-radius: 8px; border: none; cursor: pointer; transition: opacity .15s, transform .1s; display: flex; align-items: center; gap: 7px; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { background: var(--red2); }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--bg); }
+.btn-danger { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
+.btn-danger:hover { background: #FECACA; }
+
+.content { flex: 1; padding: 26px 32px; overflow-y: auto; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.stat-value { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; font-family: var(--mono); }
+.stat-sub { font-size: 12px; color: var(--muted); }
+
+.filter-bar-v2 { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+.filter-date-row { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.filter-date-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-date-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.filter-date-group input { font-family: var(--font); font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text); outline: none; }
+.filter-date-group input:focus { border-color: var(--navy); }
+.filter-tags-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search-wrap { display: flex; align-items: center; flex: 1; min-width: 220px; max-width: 420px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; gap: 8px; height: 34px; transition: border-color .15s; }
+.search-wrap:focus-within { border-color: var(--navy); }
+.search-icon { color: var(--muted); flex-shrink: 0; }
+.search-input { flex: 1; border: none; outline: none; font-family: var(--font); font-size: 13px; color: var(--text); background: transparent; }
+.search-input::placeholder { color: #AEACA6; }
+.search-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 17px; line-height: 1; padding: 0; flex-shrink: 0; }
+.search-clear:hover { color: var(--text); }
+.filter-tag { display: inline-flex; align-items: center; gap: 0; background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; height: 34px; }
+.ftag-campo { font-family: var(--font); font-size: 12.5px; border: none; border-right: 1px solid var(--border); outline: none; color: var(--navy); font-weight: 600; background: #F8F7F4; cursor: pointer; padding: 0 10px; height: 100%; }
+.ftag-valor { font-family: var(--font); font-size: 12.5px; border: none; outline: none; padding: 0 10px; background: transparent; color: var(--text); min-width: 110px; height: 100%; }
+.ftag-valor:focus { background: #FAFAF9; }
+.ftag-remove { background: none; border: none; border-left: 1px solid var(--border); color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 10px; height: 100%; line-height: 1; }
+.ftag-remove:hover { color: var(--red); background: #FEF2F2; }
+.btn-sm { padding: 5px 12px; font-size: 12.5px; }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { border-bottom: 2px solid var(--border); background: #FAFAF9; }
+th { text-align: left; padding: 10px 18px; font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #AEACA6; white-space: nowrap; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--text); }
+.sort-arrow { margin-left: 3px; opacity: .45; }
+td { padding: 13px 18px; border-bottom: 1px solid #F0EFEA; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background .1s; }
+tbody tr:hover { background: #FAFAF9; }
+.mono { font-family: var(--mono); font-size: 12px; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+
+/* Células Serviço / Peça */
+.cell-nf-wrap { display: flex; gap: 9px; align-items: flex-start; }
+.cell-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cell-stack { display: flex; flex-direction: column; gap: 2px; }
+.cs-val { font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
+.cs-val-serv { color: #2563EB; }
+.cs-val-peca { color: #EA580C; }
+.cs-ped { font-size: 12.5px; color: var(--muted); }
+.cs-nf  { font-family: var(--mono); font-size: 12px; color: #AEACA6; }
+
+/* Total destacado */
+.total-val { font-family: var(--mono); font-size: 15px; font-weight: 800; color: var(--navy); white-space: nowrap; letter-spacing: -.4px; }
+
+/* Menu ⋮ */
+.menu-btn { background: none; border: none; font-size: 18px; font-weight: 700; color: var(--muted); cursor: pointer; padding: 2px 8px; border-radius: 6px; line-height: 1; letter-spacing: .05em; }
+.menu-btn:hover { background: var(--bg); color: var(--text); }
+.dropdown-wrap { position: relative; display: inline-block; }
+.dropdown-menu { position: absolute; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid var(--border); border-radius: 9px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); min-width: 175px; z-index: 200; padding: 5px; display: none; }
+.dropdown-menu.open { display: block; }
+.dropdown-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 12px; background: none; border: none; cursor: pointer; font-family: var(--font); font-size: 13px; color: var(--text); text-align: left; border-radius: 6px; white-space: nowrap; }
+.dropdown-item:hover { background: var(--bg); }
+.dropdown-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* Paginação */
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 11px 18px; border-top: 1px solid #F0EFEA; }
+.pag-info { font-size: 12px; color: var(--muted); }
+.pag-controls { display: flex; align-items: center; gap: 3px; }
+.pag-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; color: var(--text); font-family: var(--font); min-width: 32px; text-align: center; transition: background .1s; }
+.pag-btn:hover:not(:disabled) { background: var(--bg); }
+.pag-btn:disabled { opacity: .3; cursor: default; }
+.pag-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 600; }
+.pag-size { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+.pag-size select { font-family: var(--font); font-size: 12.5px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: var(--text); outline: none; cursor: pointer; }
+
+/* Status badges */
+.status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.status-autorizado      { background: #FEF9C3; color: #92400E; }
+.status-nf_emitida      { background: #DBEAFE; color: #1D4ED8; }
+.status-cobranca_emitida{ background: #FED7AA; color: #C2410C; }
+.status-enviado         { background: #DCFCE7; color: #15803D; }
+.status-cancelado       { background: #FEE2E2; color: #991B1B; }
+.status-rejeitado       { background: #F3F4F6; color: #374151; }
+
+/* Seleção em lote */
+.checkbox-col { width: 44px; padding-right: 6px !important; }
+.row-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); display: block; }
+.bulk-bar { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; border-radius: 14px; padding: 11px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.28); z-index: 500; white-space: nowrap; }
+.bulk-count { font-size: 13px; font-weight: 600; }
+.bulk-vsep { width: 1px; height: 20px; background: rgba(255,255,255,.2); }
+.bulk-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.bulk-btn { font-family: var(--font); font-size: 12.5px; font-weight: 500; padding: 5px 13px; border-radius: 7px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1); color: #fff; cursor: pointer; transition: background .12s; }
+.bulk-btn:hover { background: rgba(255,255,255,.22); }
+.bulk-btn.danger { border-color: rgba(239,68,68,.45); background: rgba(239,68,68,.18); }
+.bulk-btn.danger:hover { background: rgba(239,68,68,.32); }
+.bulk-close { background: none; border: none; color: rgba(255,255,255,.45); font-size: 20px; cursor: pointer; line-height: 1; padding: 0 2px; margin-left: 4px; }
+.bulk-close:hover { color: #fff; }
+
+.btn-avancar { background: none; border: 1px solid currentColor; border-radius: 20px; padding: 1px 7px; font-size: 10px; font-weight: 700; cursor: pointer; opacity: 0.65; margin-left: 3px; line-height: 1.4; white-space: nowrap; }
+.btn-avancar:hover { opacity: 1; }
+.status-actions { display: flex; align-items: center; gap: 2px; flex-wrap: nowrap; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-box { background: var(--surface); border-radius: 12px; width: 780px; max-width: 96vw; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; line-height: 1; padding: 0 4px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px; }
+.modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.modal-footer-right { display: flex; gap: 10px; }
+
+.sec-title { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.sec-title-row { display: flex; justify-content: space-between; align-items: center; }
+.field-grid { display: grid; gap: 12px; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.field input, .field select, .field textarea { font-family: var(--font); font-size: 13px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; color: var(--text); background: var(--bg); outline: none; transition: border-color .15s; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--navy); background: #fff; }
+.field textarea { resize: vertical; min-height: 60px; }
+.field input[readonly] { background: #F4F3F0; color: var(--muted); cursor: default; }
+
+.venc-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 20px; margin: 1px; white-space: nowrap; }
+.badge-pago     { background: #DCFCE7; color: #15803D; }
+.badge-pendente { background: #FEF9C3; color: #92400E; }
+
+.btn-icon { background: none; border: none; padding: 3px; cursor: pointer; color: #9CA3AF; line-height: 1; border-radius: 4px; }
+.btn-icon:hover { color: #DC2626; }
+.btn-add-venc { font-family: var(--font); font-size: 12px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; color: var(--navy); }
+.btn-add-venc:hover { background: var(--bg); }
+
+.action-btn { background: none; border: none; padding: 4px 6px; cursor: pointer; color: #6B7280; border-radius: 6px; line-height: 1; }
+.action-btn:hover { color: #2563EB; }
+.form-erro { color: var(--red); font-size: 12.5px; min-height: 18px; }
+
+.cobranca-resumo { border-radius: 8px; padding: 10px 14px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.cobranca-resumo.pendente { background: #FEF9C3; border: 1px solid #FDE68A; color: #92400E; }
+.cobranca-resumo.quitado  { background: #DCFCE7; border: 1px solid #BBF7D0; color: #15803D; }
+.cobranca-resumo .cr-icon { font-size: 16px; flex-shrink: 0; }
+.cobranca-resumo .cr-valor { font-family: var(--mono); font-weight: 700; font-size: 14px; }
+.cobranca-resumo .cr-detalhe { font-size: 11.5px; opacity: 0.8; }
+</style>
+</head>
+<body>
+<aside>
+  <div class="logo-wrap"><img src="../imagens/Design sem nome (6).png" alt="" class="logo-img"></div>
+  <div class="logo-divider"></div>
+  <nav>
+    <a href="../dashboard/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="../lista-os/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Ordens de serviço</a>
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vales</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
+    <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+    <div class="nav-group" id="nav-group-fin">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-fin')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Financeiro <span class="nav-arrow" id="arrow-nav-group-fin">&#9662;</span>
+      </div>
+      <div class="nav-submenu open" id="sub-nav-group-fin">
+        <a href="../financeiro/" class="nav-submenu-item active">Faturamento</a>
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
+</aside>
+
+<main>
+  <header>
+    <span class="page-title">Faturamento</span>
+    <button class="btn btn-primary" onclick="abrirModalNovo()">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Novo Faturamento
+    </button>
+  </header>
+
+  <div class="content">
+    <!-- KPIs -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Ordens de Serviço</div>
+        <div class="stat-value" id="kpi-os-count" style="color:#1B2D5B">—</div>
+        <div class="stat-sub" id="kpi-sub-0">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">NF Serviço</div>
+        <div class="stat-value" id="kpi-servico-mes" style="color:#2563EB">—</div>
+        <div class="stat-sub" id="kpi-sub-1">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">NF Peça</div>
+        <div class="stat-value" id="kpi-peca-mes" style="color:#D97706">—</div>
+        <div class="stat-sub" id="kpi-sub-2">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Faturado</div>
+        <div class="stat-value" id="kpi-total-geral" style="color:#1B2D5B">—</div>
+        <div class="stat-sub" id="kpi-sub-3">—</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-bar-v2">
+      <div class="filter-date-row">
+        <div class="filter-date-group">
+          <label>De</label>
+          <input type="date" id="filtro-inicio" onchange="carregar()"/>
+        </div>
+        <div class="filter-date-group">
+          <label>Até</label>
+          <input type="date" id="filtro-fim" onchange="carregar()"/>
+        </div>
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="busca-geral" class="search-input" placeholder="Buscar OS, cliente, NF, pedido…" oninput="debuscaGeral()"/>
+          <button class="search-clear" id="busca-clear" onclick="limparBusca()" style="display:none">×</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="adicionarFiltro()">+ Filtro</button>
+          <button class="btn btn-ghost btn-sm" onclick="limparFiltros()">Limpar</button>
+        </div>
+      </div>
+      <div class="filter-tags-row" id="filtro-tags-wrap"></div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-wrap" style="overflow-x:auto">
+      <table style="min-width:780px">
+        <thead>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" class="row-checkbox" id="chk-all" onclick="toggleTodos()"/></th>
+            <th class="sortable" onclick="sortBy('data_faturamento')">Data <span class="sort-arrow">↕</span></th>
+            <th class="sortable" onclick="sortBy('os_numero')">OS <span class="sort-arrow">↕</span></th>
+            <th class="sortable" onclick="sortBy('cliente_nome')">Cliente <span class="sort-arrow">↕</span></th>
+            <th>Serviço</th>
+            <th>Peça</th>
+            <th class="sortable" onclick="sortBy('valor_total')">Total <span class="sort-arrow">↕</span></th>
+            <th class="sortable" onclick="sortBy('status')">Status <span class="sort-arrow">↕</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="fat-tbody">
+          <tr><td colspan="9" class="empty-state">Carregando…</td></tr>
+        </tbody>
+      </table>
+      <div id="paginacao" class="pagination-bar"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ Modal Faturamento ═══ -->
+<div id="modal-fat" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-fat-title">Novo Faturamento</span>
+      <button class="modal-close" onclick="fecharModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="fat-id"/>
+
+      <!-- Identificação -->
+      <div>
+        <div class="sec-title">Identificação</div>
+        <div class="field-grid g4">
+          <div class="field">
+            <label>Data faturamento <span style="color:var(--red)">*</span></label>
+            <input type="date" id="fat-data"/>
+          </div>
+          <div class="field">
+            <label>Cliente</label>
+            <input type="text" id="fat-cliente" placeholder="Nome do cliente"/>
+          </div>
+          <div class="field">
+            <label>Nº OS</label>
+            <input type="text" id="fat-os" placeholder="Ex: 00123"/>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="fat-status">
+              <option value="autorizado">Autorizado para Faturamento</option>
+              <option value="nf_emitida">NF Emitida</option>
+              <option value="cobranca_emitida">Cobrança Emitida</option>
+              <option value="enviado">Enviado ao Cliente</option>
+              <option value="cancelado">Cancelado</option>
+              <option value="rejeitado">Rejeitado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- NF Serviço -->
+      <div>
+        <div class="sec-title">Nota Fiscal de Serviço</div>
+        <div class="field-grid g3">
+          <div class="field">
+            <label>Nº NF Serviço</label>
+            <input type="text" id="fat-nf-servico" placeholder="Ex: 000456"/>
+          </div>
+          <div class="field">
+            <label>Nº Pedido Serviço</label>
+            <input type="text" id="fat-pedido-servico" placeholder="Ex: PED-001"/>
+          </div>
+          <div class="field">
+            <label>Valor Serviço (R$)</label>
+            <input type="number" id="fat-valor-servico" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- NF Peça -->
+      <div>
+        <div class="sec-title">Nota Fiscal de Peça</div>
+        <div class="field-grid g3">
+          <div class="field">
+            <label>Nº NF Peça</label>
+            <input type="text" id="fat-nf-peca" placeholder="Ex: 000789"/>
+          </div>
+          <div class="field">
+            <label>Nº Pedido Peça</label>
+            <input type="text" id="fat-pedido-peca" placeholder="Ex: PED-002"/>
+          </div>
+          <div class="field">
+            <label>Valor Peça (R$)</label>
+            <input type="number" id="fat-valor-peca" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagamentos -->
+      <div>
+        <div class="sec-title">Pagamentos</div>
+
+        <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="field">
+            <label>Valor Total (R$)</label>
+            <input type="number" id="fat-valor-total" placeholder="0,00" step="0.01" min="0" readonly/>
+          </div>
+          <div class="field">
+            <label>Qtd Parcelas</label>
+            <input type="number" id="fat-parcelas" value="1" min="1" max="60" oninput="recalcularParcela();gerarVencimentos()"/>
+          </div>
+          <div class="field">
+            <label>Valor Parcela (R$)</label>
+            <input type="number" id="fat-valor-parcela" placeholder="0,00" step="0.01" min="0" readonly/>
+          </div>
+          <div class="field">
+            <label>Banco</label>
+            <input type="text" id="fat-banco" placeholder="Ex: Bradesco"/>
+          </div>
+          <div class="field">
+            <label>Forma de Pagamento</label>
+            <select id="fat-forma-pagamento">
+              <option value="">Selecionar…</option>
+              <option value="PIX">PIX</option>
+              <option value="Boleto">Boleto</option>
+              <option value="Transferência">Transferência</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Cartão de Débito">Cartão de Débito</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Vencimentos + situação da cobrança (card único) -->
+        <div id="venc-section" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div>
+      </div>
+
+      <!-- Observações -->
+      <div>
+        <div class="sec-title">Observações</div>
+        <div class="field">
+          <textarea id="fat-obs" placeholder="Observações gerais…"></textarea>
+        </div>
+      </div>
+
+      <div id="fat-erro" class="form-erro"></div>
+    </div>
+    <div class="modal-footer">
+      <div>
+        <button class="btn btn-danger" id="btn-excluir-fat" style="display:none" onclick="excluirFaturamento()">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Excluir
+        </button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarFaturamento()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Barra de ação em lote -->
+<div id="bulk-bar" class="bulk-bar" style="display:none">
+  <span class="bulk-count" id="bulk-count-label"></span>
+  <div class="bulk-vsep"></div>
+  <div class="bulk-actions">
+    <button class="bulk-btn" onclick="aplicarStatusLote('autorizado')">Autorizado</button>
+    <button class="bulk-btn" onclick="aplicarStatusLote('nf_emitida')">NF Emitida</button>
+    <button class="bulk-btn" onclick="aplicarStatusLote('cobranca_emitida')">Cobrança Emitida</button>
+    <button class="bulk-btn" onclick="aplicarStatusLote('enviado')">Enviado</button>
+    <button class="bulk-btn danger" onclick="aplicarStatusLote('cancelado')">Cancelar</button>
+    <button class="bulk-btn danger" onclick="aplicarStatusLote('rejeitado')">Rejeitar</button>
+  </div>
+  <div class="bulk-vsep"></div>
+  <button class="bulk-close" onclick="limparSelecao()" title="Limpar seleção">×</button>
+</div>
+
+<script>
+const fmtValor = v => parseFloat(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fmtData  = d => d ? new Date(d.slice(0,10) + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+const STATUS_INFO = {
+  autorizado:       { label: 'Autorizado para Faturamento', cls: 'status-autorizado',       split: false, proximo: 'nf_emitida', proximoLabel: 'Emitir NF' },
+  nf_emitida:       { label: 'NF Emitida',                  cls: 'status-nf_emitida',       split: true,  proximo: null,        proximoLabel: null },
+  cobranca_emitida: { label: 'Cobrança Emitida',            cls: 'status-cobranca_emitida', split: false, proximo: 'enviado',   proximoLabel: 'Marcar Enviado' },
+  enviado:          { label: 'Enviado ao Cliente',           cls: 'status-enviado',          split: false, proximo: null,        proximoLabel: null },
+  cancelado:        { label: 'Cancelado',                   cls: 'status-cancelado',        split: false, proximo: null,        proximoLabel: null },
+  rejeitado:        { label: 'Rejeitado',                   cls: 'status-rejeitado',        split: false, proximo: null,        proximoLabel: null },
+};
+
+let _faturamentos = [];
+let _vencimentos  = [];
+let _filtros      = [];
+let _debounce;
+let _pagina     = 1;
+let _porPagina  = 10;
+let _sortCol    = 'data_faturamento';
+let _sortDir    = 'desc';
+let _openMenuId   = null;
+let _selecionados = new Set();
+let _busca        = '';
+let _debuscaTimer;
+
+function debounceCarregar() {
+  clearTimeout(_debounce);
+  _debounce = setTimeout(carregar, 400);
+}
+
+function debuscaGeral() {
+  clearTimeout(_debuscaTimer);
+  _debuscaTimer = setTimeout(() => {
+    _busca = document.getElementById('busca-geral').value.trim().toLowerCase();
+    document.getElementById('busca-clear').style.display = _busca ? 'block' : 'none';
+    _pagina = 1;
+    renderTabela(_faturamentos);
+    renderKpis(listaFiltradaPorBusca());
+  }, 200);
+}
+
+function limparBusca() {
+  _busca = '';
+  document.getElementById('busca-geral').value = '';
+  document.getElementById('busca-clear').style.display = 'none';
+  _pagina = 1;
+  renderTabela(_faturamentos);
+  renderKpis(listaFiltradaPorBusca());
+}
+
+function listaFiltradaPorBusca() {
+  if (!_busca) return _faturamentos;
+  return _faturamentos.filter(f => {
+    const campos = [f.os_numero, f.cliente_nome, f.nf_servico, f.pedido_servico, f.nf_peca, f.pedido_peca];
+    return campos.some(c => c && c.toString().toLowerCase().includes(_busca));
+  });
+}
+
+// ── Filtros dinâmicos ─────────────────────────────────────────────────────────
+const CAMPOS_FILTRO = [
+  { value: 'status',         label: 'Status' },
+  { value: 'cliente',        label: 'Cliente' },
+  { value: 'os_numero',      label: 'Nº OS' },
+  { value: 'nf_servico',     label: 'NF Serviço' },
+  { value: 'pedido_servico', label: 'Ped. Serviço' },
+  { value: 'nf_peca',        label: 'NF Peça' },
+  { value: 'pedido_peca',    label: 'Ped. Peça' },
+];
+const STATUS_OPTS = [
+  { value: 'autorizado',       label: 'Autorizado' },
+  { value: 'nf_emitida',       label: 'NF Emitida' },
+  { value: 'cobranca_emitida', label: 'Cobrança Emitida' },
+  { value: 'enviado',          label: 'Enviado' },
+  { value: 'cancelado',        label: 'Cancelado' },
+  { value: 'rejeitado',        label: 'Rejeitado' },
+];
+
+function adicionarFiltro() {
+  _filtros.push({ id: Date.now(), campo: '', valor: '' });
+  renderFiltros();
+}
+
+function removerFiltro(id) {
+  _filtros = _filtros.filter(f => f.id !== id);
+  renderFiltros();
+  carregar();
+}
+
+function atualizarFiltroCampo(id, campo) {
+  const f = _filtros.find(x => x.id === id);
+  if (f) { f.campo = campo; f.valor = ''; }
+  renderFiltros();
+  carregar();
+}
+
+function atualizarFiltroValor(id, valor) {
+  const f = _filtros.find(x => x.id === id);
+  if (f) f.valor = valor;
+}
+
+function renderFiltros() {
+  const wrap = document.getElementById('filtro-tags-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = _filtros.map(f => {
+    const campoOpts = CAMPOS_FILTRO.map(c =>
+      `<option value="${c.value}"${f.campo === c.value ? ' selected' : ''}>${c.label}</option>`
+    ).join('');
+
+    const valorEl = f.campo === 'status'
+      ? `<select class="ftag-valor" onchange="atualizarFiltroValor(${f.id},this.value);carregar()">
+           <option value="">Todos</option>
+           ${STATUS_OPTS.map(o => `<option value="${o.value}"${f.valor===o.value?' selected':''}>${o.label}</option>`).join('')}
+         </select>`
+      : `<input class="ftag-valor" type="text" placeholder="Valor…" value="${f.valor||''}"
+           oninput="atualizarFiltroValor(${f.id},this.value);debounceCarregar()"/>`;
+
+    return `<div class="filter-tag">
+      <select class="ftag-campo" onchange="atualizarFiltroCampo(${f.id},this.value)">
+        <option value="">Campo…</option>${campoOpts}
+      </select>
+      ${valorEl}
+      <button class="ftag-remove" onclick="removerFiltro(${f.id})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function limparFiltros() {
+  document.getElementById('filtro-inicio').value = '';
+  document.getElementById('filtro-fim').value    = '';
+  document.getElementById('busca-geral').value   = '';
+  document.getElementById('busca-clear').style.display = 'none';
+  _busca   = '';
+  _filtros = [];
+  renderFiltros();
+  carregar();
+}
+
+async function carregar() {
+  const v = id => document.getElementById(id).value;
+  const filtros = {};
+  if (v('filtro-inicio')) filtros.data_inicio = v('filtro-inicio');
+  if (v('filtro-fim'))    filtros.data_fim    = v('filtro-fim');
+  _filtros.forEach(f => { if (f.campo && f.valor) filtros[f.campo] = f.valor; });
+
+  try {
+    const data = await api.listarFaturamentos(filtros);
+    _faturamentos = data.faturamentos;
+    _pagina = 1;
+    _selecionados.clear();
+    atualizarBulkBar();
+    renderTabela(_faturamentos);
+    renderKpis(listaFiltradaPorBusca());
+  } catch {
+    document.getElementById('fat-tbody').innerHTML =
+      '<tr><td colspan="8" class="empty-state" style="color:#DC2626">Erro ao carregar dados.</td></tr>';
+  }
+}
+
+function getKpiPeriodoLabel() {
+  const ini = document.getElementById('filtro-inicio').value;
+  const fim = document.getElementById('filtro-fim').value;
+  const fmtDia = s => new Date(s + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const fmtMes = s => new Date(s + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  if (!ini && !fim) return 'todos os registros';
+  if (ini && fim) {
+    if (ini === fim) return fmtDia(ini);
+    const dI = new Date(ini + 'T12:00:00'), dF = new Date(fim + 'T12:00:00');
+    if (dI.getMonth() === dF.getMonth() && dI.getFullYear() === dF.getFullYear()) return fmtMes(ini);
+    return `${fmtDia(ini)} → ${fmtDia(fim)}`;
+  }
+  if (ini) return `a partir de ${fmtDia(ini)}`;
+  return `até ${fmtDia(fim)}`;
+}
+
+function renderKpis(lista) {
+  const totalOS   = lista.length;
+  const totalServ = lista.reduce((a, f) => a + parseFloat(f.valor_servico || 0), 0);
+  const totalPeca = lista.reduce((a, f) => a + parseFloat(f.valor_peca    || 0), 0);
+  const totalGer  = lista.reduce((a, f) => a + parseFloat(f.valor_total   || 0), 0);
+  const periodo   = getKpiPeriodoLabel();
+
+  document.getElementById('kpi-os-count').textContent    = totalOS;
+  document.getElementById('kpi-servico-mes').textContent = fmtValor(totalServ);
+  document.getElementById('kpi-peca-mes').textContent    = fmtValor(totalPeca);
+  document.getElementById('kpi-total-geral').textContent = fmtValor(totalGer);
+  [0,1,2,3].forEach(i => {
+    const el = document.getElementById(`kpi-sub-${i}`);
+    if (el) el.textContent = periodo;
+  });
+}
+
+function cellNF(nf, pedido, valor, valClass, nfLabel = 'NF') {
+  const hasNf  = !!nf;
+  const hasVal = parseFloat(valor || 0) > 0;
+  if (!hasNf && !pedido && !hasVal) return `<span style="color:#D4D2CC;font-size:13px">—</span>`;
+  return `<div class="cell-stack">
+    ${hasVal ? `<span class="cs-val ${valClass}">${fmtValor(valor)}</span>` : ''}
+    <span class="cs-ped">Ped. ${pedido || '—'}</span>
+    ${hasNf  ? `<span class="cs-nf">${nfLabel} ${nf}</span>` : ''}
+  </div>`;
+}
+
+function renderTabela(lista) {
+  const tbody = document.getElementById('fat-tbody');
+
+  // aplica busca geral client-side
+  if (_busca) {
+    lista = lista.filter(f => {
+      const campos = [f.os_numero, f.cliente_nome, f.nf_servico, f.pedido_servico, f.nf_peca, f.pedido_peca];
+      return campos.some(c => c && c.toString().toLowerCase().includes(_busca));
+    });
+  }
+
+  const sorted = [...lista].sort((a, b) => {
+    let va = a[_sortCol] ?? '';
+    let vb = b[_sortCol] ?? '';
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return _sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return _sortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+
+  const total  = sorted.length;
+  const inicio = (_pagina - 1) * _porPagina;
+  const fim    = Math.min(inicio + _porPagina, total);
+  const pagina = sorted.slice(inicio, fim);
+
+  if (!pagina.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Nenhum faturamento encontrado.</td></tr>';
+    renderPaginacao(0);
+    return;
+  }
+
+  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+
+  const iconServ = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+  const iconPeca = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+  const wrapCell = (nf, ped, val, cls, lbl, icon, bg) => {
+    const hasContent = !!nf || !!ped || parseFloat(val || 0) > 0;
+    const inner = cellNF(nf, ped, val, cls, lbl);
+    return hasContent
+      ? `<div class="cell-nf-wrap"><div class="cell-icon" style="background:${bg}">${icon}</div>${inner}</div>`
+      : inner;
+  };
+
+  tbody.innerHTML = pagina.map(f => {
+    const si = STATUS_INFO[f.status] || STATUS_INFO.autorizado;
+    const d  = new Date((f.data_faturamento || '').slice(0, 10) + 'T12:00:00');
+
+    let menuStatus = '';
+    if (si.split) {
+      menuStatus = `
+        <div class="dropdown-sep"></div>
+        <button class="dropdown-item" onclick="avancarStatus(${f.id},'cobranca_emitida','Cobrança Emitida');fecharMenus()">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Cobrança Emitida
+        </button>
+        <button class="dropdown-item" onclick="avancarStatus(${f.id},'enviado','Enviado ao Cliente');fecharMenus()">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Finalizar (Enviado)
+        </button>`;
+    } else if (si.proximo) {
+      menuStatus = `
+        <div class="dropdown-sep"></div>
+        <button class="dropdown-item" onclick="avancarStatus(${f.id},'${si.proximo}','${si.proximoLabel}');fecharMenus()">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          ${si.proximoLabel}
+        </button>`;
+    }
+
+    return `<tr>
+      <td class="checkbox-col"><input type="checkbox" class="row-checkbox" id="chk-${f.id}" ${_selecionados.has(f.id) ? 'checked' : ''} onclick="toggleSelecionado(${f.id})"/></td>
+      <td>
+        <div style="font-size:13px;white-space:nowrap">${d.toLocaleDateString('pt-BR')}</div>
+        <div style="font-size:12px;color:var(--muted)">${dias[d.getDay()]}</div>
+      </td>
+      <td><span class="mono" style="font-weight:600;font-size:13px">${f.os_numero || '<span style="color:#D4D2CC">—</span>'}</span></td>
+      <td><span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '<span style="color:#D4D2CC">—</span>'}</span></td>
+      <td>${wrapCell(f.nf_servico, f.pedido_servico, f.valor_servico, 'cs-val-serv', 'NFS', iconServ, '#EFF6FF')}</td>
+      <td>${wrapCell(f.nf_peca,    f.pedido_peca,    f.valor_peca,    'cs-val-peca', 'NF',  iconPeca, '#FFF7ED')}</td>
+      <td><span class="total-val">${fmtValor(f.valor_total)}</span></td>
+      <td><span class="status-badge ${si.cls}">${si.label}</span></td>
+      <td>
+        <div class="dropdown-wrap">
+          <button class="menu-btn" onclick="toggleMenu(${f.id},event)">⋮</button>
+          <div class="dropdown-menu" id="menu-${f.id}">
+            <button class="dropdown-item" onclick="abrirModalEditar(${f.id});fecharMenus()">
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar registro
+            </button>
+            ${menuStatus}
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPaginacao(total);
+  atualizarChkAll(pagina.map(f => f.id));
+}
+
+// ── Menu ⋮ ───────────────────────────────────────────────────────────────────
+function toggleMenu(id, e) {
+  e.stopPropagation();
+  const wasOpen = _openMenuId === id;
+  fecharMenus();
+  if (!wasOpen) {
+    const m = document.getElementById(`menu-${id}`);
+    if (m) m.classList.add('open');
+    _openMenuId = id;
+  }
+}
+
+function fecharMenus() {
+  if (_openMenuId) {
+    const m = document.getElementById(`menu-${_openMenuId}`);
+    if (m) m.classList.remove('open');
+    _openMenuId = null;
+  }
+}
+
+// ── Paginação ─────────────────────────────────────────────────────────────────
+function renderPaginacao(total) {
+  const el = document.getElementById('paginacao');
+  if (!el) return;
+  if (total === 0) { el.innerHTML = ''; return; }
+
+  const totalPags = Math.max(1, Math.ceil(total / _porPagina));
+  const de  = (_pagina - 1) * _porPagina + 1;
+  const ate = Math.min(_pagina * _porPagina, total);
+
+  let pagBtns = `<button class="pag-btn" onclick="irParaPagina(${_pagina - 1})" ${_pagina === 1 ? 'disabled' : ''}>‹</button>`;
+  for (let p = 1; p <= totalPags; p++) {
+    if (totalPags <= 7 || p === 1 || p === totalPags || Math.abs(p - _pagina) <= 1) {
+      pagBtns += `<button class="pag-btn${p === _pagina ? ' active' : ''}" onclick="irParaPagina(${p})">${p}</button>`;
+    } else if (Math.abs(p - _pagina) === 2) {
+      pagBtns += `<span style="padding:0 4px;color:var(--muted)">…</span>`;
+    }
+  }
+  pagBtns += `<button class="pag-btn" onclick="irParaPagina(${_pagina + 1})" ${_pagina === totalPags ? 'disabled' : ''}>›</button>`;
+
+  el.innerHTML = `
+    <div class="pag-info">Exibindo ${de} a ${ate} de ${total} registros</div>
+    <div class="pag-controls">${pagBtns}</div>
+    <div class="pag-size">Linhas:
+      <select onchange="_porPagina=parseInt(this.value);_pagina=1;renderTabela(_faturamentos)">
+        ${[10,25,50].map(n => `<option value="${n}"${_porPagina===n?' selected':''}>${n}</option>`).join('')}
+      </select>
+    </div>`;
+}
+
+function irParaPagina(p) {
+  const totalPags = Math.ceil(_faturamentos.length / _porPagina);
+  if (p < 1 || p > totalPags) return;
+  _pagina = p;
+  renderTabela(_faturamentos);
+}
+
+function sortBy(col) {
+  if (_sortCol === col) {
+    _sortDir = _sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _sortCol = col;
+    _sortDir = 'asc';
+  }
+  _pagina = 1;
+  renderTabela(_faturamentos);
+}
+
+// ── Status ────────────────────────────────────────────────────────────────────
+async function avancarStatus(id, novoStatus, label) {
+  if (!confirm(`Avançar para "${label}"?`)) return;
+  try {
+    await api.atualizarStatusFaturamento(id, novoStatus);
+    carregar();
+  } catch (err) {
+    alert(err.message || 'Erro ao atualizar status.');
+  }
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────────
+function _limparModal() {
+  ['fat-id','fat-cliente','fat-os','fat-nf-servico','fat-pedido-servico',
+   'fat-nf-peca','fat-pedido-peca','fat-banco','fat-obs',
+   'fat-valor-servico','fat-valor-peca','fat-valor-total','fat-valor-parcela'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('fat-forma-pagamento').value = '';
+  document.getElementById('fat-status').value          = 'autorizado';
+  document.getElementById('fat-parcelas').value        = '1';
+  document.getElementById('fat-erro').textContent      = '';
+  document.getElementById('btn-excluir-fat').style.display = 'none';
+  _vencimentos = [];
+  renderVencSection();
+}
+
+function abrirModalNovo() {
+  _limparModal();
+  document.getElementById('fat-data').value              = new Date().toISOString().slice(0,10);
+  document.getElementById('modal-fat-title').textContent = 'Novo Faturamento';
+  document.getElementById('modal-fat').style.display     = 'flex';
+}
+
+function abrirModalEditar(id) {
+  const f = _faturamentos.find(x => x.id === id);
+  if (!f) return;
+  _limparModal();
+  document.getElementById('fat-id').value               = f.id;
+  document.getElementById('modal-fat-title').textContent = 'Editar Faturamento';
+  document.getElementById('fat-data').value             = f.data_faturamento.slice(0,10);
+  document.getElementById('fat-cliente').value          = f.cliente_nome || '';
+  document.getElementById('fat-os').value               = f.os_numero || '';
+  document.getElementById('fat-status').value           = f.status || 'autorizado';
+  document.getElementById('fat-nf-servico').value       = f.nf_servico || '';
+  document.getElementById('fat-pedido-servico').value   = f.pedido_servico || '';
+  document.getElementById('fat-valor-servico').value    = f.valor_servico || '';
+  document.getElementById('fat-nf-peca').value          = f.nf_peca || '';
+  document.getElementById('fat-pedido-peca').value      = f.pedido_peca || '';
+  document.getElementById('fat-valor-peca').value       = f.valor_peca || '';
+  document.getElementById('fat-valor-total').value      = f.valor_total || '';
+  document.getElementById('fat-parcelas').value         = f.qtd_parcelas || 1;
+  document.getElementById('fat-valor-parcela').value    = f.valor_parcela || '';
+  document.getElementById('fat-banco').value            = f.banco || '';
+  document.getElementById('fat-forma-pagamento').value  = f.forma_pagamento || '';
+  document.getElementById('fat-obs').value              = f.observacoes || '';
+  document.getElementById('btn-excluir-fat').style.display = 'inline-flex';
+  _vencimentos = JSON.parse(JSON.stringify(f.vencimentos || []));
+  renderVencSection();
+  document.getElementById('modal-fat').style.display = 'flex';
+}
+
+function fecharModal() {
+  document.getElementById('modal-fat').style.display = 'none';
+}
+
+document.getElementById('modal-fat').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModal();
+});
+
+// ── Excluir ───────────────────────────────────────────────────────────────────
+async function excluirFaturamento() {
+  const id = document.getElementById('fat-id').value;
+  if (!id) return;
+  if (!confirm('Excluir este faturamento permanentemente? Esta ação não pode ser desfeita.')) return;
+  try {
+    await api.deletarFaturamento(id);
+    fecharModal();
+    carregar();
+  } catch (err) {
+    document.getElementById('fat-erro').textContent = err.message || 'Erro ao excluir.';
+  }
+}
+
+// ── Vencimentos ───────────────────────────────────────────────────────────────
+function renderVencSection() {
+  const el = document.getElementById('venc-section');
+  if (!el) return;
+
+  const lista     = _vencimentos;
+  const total     = lista.length;
+  const pendentes = lista.filter(v => !v.pago);
+  const valorPend = pendentes.reduce((a, v) => a + (parseFloat(v.valor) || 0), 0);
+  const valorPago = lista.filter(v => v.pago).reduce((a, v) => a + (parseFloat(v.valor) || 0), 0);
+
+  // cabeçalho — resumo de situação
+  let headerHtml;
+  if (total === 0) {
+    headerHtml = `<span style="font-size:12px;color:var(--muted)">Nenhum vencimento definido</span>`;
+  } else if (pendentes.length === 0) {
+    headerHtml = `
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px">✅</span>
+        <div>
+          <div style="font-weight:700;font-size:13px;color:#15803D">Cobrança quitada</div>
+          <div style="font-size:11.5px;color:#15803D;opacity:.8">${total} parcela${total>1?'s':''} · ${fmtValor(valorPago)} recebido</div>
+        </div>
+      </div>`;
+  } else {
+    headerHtml = `
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px">⏳</span>
+        <div>
+          <div style="font-weight:700;font-size:13px;color:#92400E">${fmtValor(valorPend)} pendente${pendentes.length>1?'s':''}</div>
+          <div style="font-size:11.5px;color:#92400E;opacity:.8">${pendentes.length} de ${total} parcela${total>1?'s':''} em aberto${valorPago>0?` · ${fmtValor(valorPago)} recebido`:''}</div>
+        </div>
+      </div>`;
+  }
+
+  // linhas de parcelas
+  const linhas = lista.map((v, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 14px;border-top:1px solid #F0EFEA">
+      <span style="font-size:12px;color:var(--muted);min-width:68px;flex-shrink:0">${total===1?'Vencimento':`Parcela ${i+1}`}</span>
+      <input type="date" id="venc-data-${i}" value="${v.data_vencimento?v.data_vencimento.slice(0,10):''}"
+        style="font-family:var(--font);font-size:12.5px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:145px"/>
+      <span class="venc-badge ${v.pago?'badge-pago':'badge-pendente'}" style="flex-shrink:0">${v.pago?'✓ Pago':'Pendente'}</span>
+      <input type="hidden" id="venc-id-${i}"    value="${v.id||''}"/>
+      <input type="hidden" id="venc-valor-${i}"  value="${v.valor||''}"/>
+      <input type="hidden" id="venc-pago-${i}"   value="${v.pago?'true':'false'}"/>
+      <button type="button" class="btn-icon" onclick="removerVencimento(${i})" title="Remover" style="margin-left:auto">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+
+  const bgHeader = total === 0 ? '#F8F7F4' : pendentes.length === 0 ? '#F0FDF4' : '#FFFBEB';
+  const borderColor = total === 0 ? 'var(--border)' : pendentes.length === 0 ? '#BBF7D0' : '#FDE68A';
+
+  el.innerHTML = `
+    <div style="border:1px solid ${borderColor};border-radius:8px;overflow:hidden">
+      <div style="background:${bgHeader};padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        ${headerHtml}
+        <button type="button" class="btn-add-venc" onclick="adicionarVencimento()">+ Adicionar</button>
+      </div>
+      ${linhas}
+    </div>`;
+}
+
+// aliases para compatibilidade com chamadas existentes
+const renderVencimentos = () => renderVencSection();
+const renderResumoPendente = () => renderVencSection();
+
+function coletarVencimentos() {
+  _vencimentos = _vencimentos.map((v, i) => ({
+    ...v,
+    data_vencimento: document.getElementById(`venc-data-${i}`)?.value || v.data_vencimento || null,
+    valor: parseFloat(document.getElementById(`venc-valor-${i}`)?.value) || v.valor || 0,
+    pago:  document.getElementById(`venc-pago-${i}`)?.value === 'true',
+    id:    document.getElementById(`venc-id-${i}`)?.value   || v.id || undefined,
+  }));
+}
+
+function adicionarVencimento() {
+  coletarVencimentos();
+  const valor = parseFloat(document.getElementById('fat-valor-parcela').value) || 0;
+  _vencimentos.push({ data_vencimento: '', valor, pago: false });
+  renderVencSection();
+}
+
+function removerVencimento(i) {
+  coletarVencimentos();
+  _vencimentos.splice(i, 1);
+  renderVencSection();
+}
+
+function gerarVencimentos() {
+  coletarVencimentos();
+  const qtd   = parseInt(document.getElementById('fat-parcelas').value) || 1;
+  const valor = parseFloat(document.getElementById('fat-valor-parcela').value) || 0;
+  const base  = new Date();
+  const existentes = _vencimentos.slice(0, qtd);
+  _vencimentos = Array.from({ length: qtd }, (_, i) => {
+    if (existentes[i]?.data_vencimento) return { ...existentes[i], valor };
+    const d = new Date(base);
+    d.setMonth(d.getMonth() + i + 1);
+    return { data_vencimento: d.toISOString().slice(0,10), valor, pago: false };
+  });
+  renderVencSection();
+}
+
+// ── Cálculos ──────────────────────────────────────────────────────────────────
+function recalcularTotal() {
+  const serv = parseFloat(document.getElementById('fat-valor-servico').value) || 0;
+  const peca = parseFloat(document.getElementById('fat-valor-peca').value)    || 0;
+  document.getElementById('fat-valor-total').value = (serv + peca).toFixed(2);
+  recalcularParcela();
+}
+
+function recalcularParcela() {
+  const total = parseFloat(document.getElementById('fat-valor-total').value) || 0;
+  const qtd   = parseInt(document.getElementById('fat-parcelas').value) || 1;
+  document.getElementById('fat-valor-parcela').value = (total / qtd).toFixed(2);
+}
+
+// ── Salvar ────────────────────────────────────────────────────────────────────
+async function salvarFaturamento() {
+  const id               = document.getElementById('fat-id').value;
+  const data_faturamento = document.getElementById('fat-data').value;
+  if (!data_faturamento) {
+    document.getElementById('fat-erro').textContent = 'Data de faturamento é obrigatória.';
+    return;
+  }
+  document.getElementById('fat-erro').textContent = '';
+  coletarVencimentos();
+
+  const dados = {
+    os_numero:       document.getElementById('fat-os').value.trim()              || null,
+    cliente_nome:    document.getElementById('fat-cliente').value.trim()         || null,
+    data_faturamento,
+    status:          document.getElementById('fat-status').value,
+    nf_servico:      document.getElementById('fat-nf-servico').value.trim()      || null,
+    pedido_servico:  document.getElementById('fat-pedido-servico').value.trim()  || null,
+    valor_servico:   parseFloat(document.getElementById('fat-valor-servico').value) || 0,
+    nf_peca:         document.getElementById('fat-nf-peca').value.trim()         || null,
+    pedido_peca:     document.getElementById('fat-pedido-peca').value.trim()     || null,
+    valor_peca:      parseFloat(document.getElementById('fat-valor-peca').value) || 0,
+    valor_total:     parseFloat(document.getElementById('fat-valor-total').value) || 0,
+    qtd_parcelas:    parseInt(document.getElementById('fat-parcelas').value) || 1,
+    valor_parcela:   parseFloat(document.getElementById('fat-valor-parcela').value) || 0,
+    banco:           document.getElementById('fat-banco').value.trim()            || null,
+    forma_pagamento: document.getElementById('fat-forma-pagamento').value         || null,
+    observacoes:     document.getElementById('fat-obs').value.trim()              || null,
+    vencimentos:     _vencimentos.filter(v => v.data_vencimento),
+  };
+
+  try {
+    if (id) {
+      await api.atualizarFaturamento(id, dados);
+    } else {
+      await api.criarFaturamento(dados);
+    }
+    fecharModal();
+    carregar();
+  } catch (err) {
+    document.getElementById('fat-erro').textContent = err.message || 'Erro ao salvar.';
+  }
+}
+
+// ── Seleção em lote ───────────────────────────────────────────────────────────
+function toggleSelecionado(id) {
+  if (_selecionados.has(id)) { _selecionados.delete(id); } else { _selecionados.add(id); }
+  atualizarBulkBar();
+  const pagIds = _faturamentos.slice((_pagina-1)*_porPagina, _pagina*_porPagina).map(f => f.id);
+  atualizarChkAll(pagIds);
+}
+
+function toggleTodos() {
+  const chkAll = document.getElementById('chk-all');
+  const pagIds = _faturamentos.slice((_pagina-1)*_porPagina, _pagina*_porPagina).map(f => f.id);
+  if (chkAll.checked) {
+    pagIds.forEach(id => _selecionados.add(id));
+  } else {
+    pagIds.forEach(id => _selecionados.delete(id));
+  }
+  pagIds.forEach(id => { const c = document.getElementById(`chk-${id}`); if (c) c.checked = chkAll.checked; });
+  atualizarBulkBar();
+}
+
+function atualizarChkAll(pagIds) {
+  const chkAll = document.getElementById('chk-all');
+  if (!chkAll || !pagIds.length) return;
+  const allChk  = pagIds.every(id => _selecionados.has(id));
+  const someChk = pagIds.some(id  => _selecionados.has(id));
+  chkAll.checked       = allChk;
+  chkAll.indeterminate = !allChk && someChk;
+}
+
+function atualizarBulkBar() {
+  const bar   = document.getElementById('bulk-bar');
+  const label = document.getElementById('bulk-count-label');
+  if (!bar) return;
+  const n = _selecionados.size;
+  if (n > 0) {
+    bar.style.display = 'flex';
+    if (label) label.textContent = `${n} registro${n > 1 ? 's' : ''} selecionado${n > 1 ? 's' : ''}`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+async function aplicarStatusLote(novoStatus) {
+  const si = STATUS_INFO[novoStatus];
+  const label = si ? si.label : novoStatus;
+  const n = _selecionados.size;
+  if (!confirm(`Alterar ${n} registro${n>1?'s':''} para "${label}"?`)) return;
+  try {
+    await api.atualizarStatusFaturamentoLote([..._selecionados], novoStatus);
+    _selecionados.clear();
+    atualizarBulkBar();
+    carregar();
+  } catch (err) {
+    alert(err.message || 'Erro ao atualizar status.');
+  }
+}
+
+function limparSelecao() {
+  _selecionados.clear();
+  atualizarBulkBar();
+  document.querySelectorAll('.row-checkbox:not(#chk-all)').forEach(c => { c.checked = false; });
+  const chkAll = document.getElementById('chk-all');
+  if (chkAll) { chkAll.checked = false; chkAll.indeterminate = false; }
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────────
+function toggleNavGroup(id) {
+  const sub = document.getElementById('sub-' + id);
+  const arr = document.getElementById('arrow-' + id);
+  if (!sub) return;
+  sub.classList.toggle('open');
+  if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+}
+
+document.addEventListener('click', fecharMenus);
+
+// padrão: dia atual
+const _hoje = new Date().toISOString().slice(0, 10);
+document.getElementById('filtro-inicio').value = _hoje;
+document.getElementById('filtro-fim').value    = _hoje;
+
+carregar();
+</script>
+</body>
+</html>

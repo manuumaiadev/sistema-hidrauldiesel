@@ -5,9 +5,41 @@ let _funcionarios = [];
 let _pontoMap = {};
 let _mes, _ano;
 
-const CICLO    = ['presente', 'meia_falta', 'falta'];
-const EMOJI    = { presente: '✅', meia_falta: '🟡', falta: '❌' };
-const DIAS_DESC = { presente: 0, meia_falta: 1, falta: 2 };
+const CICLO = ['presente', 'meia_falta', 'falta', 'falta_justificada'];
+const EMOJI = { presente: '✅', meia_falta: '🟡', falta: '❌', falta_justificada: '🔵' };
+
+// Retorna true se d2 é o próximo dia útil imediato de d1 (considera sexta→segunda)
+function adjacentWorkingDay(d1Str, d2Str) {
+  const d1 = new Date(d1Str + 'T12:00:00'), d2 = new Date(d2Str + 'T12:00:00');
+  const diff = Math.round((d2 - d1) / 86400000);
+  return diff === 1 || (diff === 3 && d1.getDay() === 5);
+}
+
+// Calcula dias de desconto aplicando regra DSR:
+// falta isolada (sem falta adjacente) = 2 dias; falta corrida = 1 dia; meia falta = 1; justificada = 0
+function calcDiasDesconto(funcId, diasNoMes, ano, mes) {
+  const pad = n => String(n).padStart(2, '0');
+  const faltaDates = [];
+  for (let d = 1; d <= diasNoMes; d++) {
+    const ds = `${ano}-${pad(mes)}-${pad(d)}`;
+    if ((_pontoMap[`${funcId}_${ds}`] || 'presente') === 'falta') faltaDates.push(ds);
+  }
+  let total = 0;
+  for (let d = 1; d <= diasNoMes; d++) {
+    const ds = `${ano}-${pad(mes)}-${pad(d)}`;
+    const s = _pontoMap[`${funcId}_${ds}`] || 'presente';
+    if (s === 'meia_falta') {
+      total += 1;
+    } else if (s === 'falta') {
+      const i = faltaDates.indexOf(ds);
+      const temAnterior = i > 0 && adjacentWorkingDay(faltaDates[i - 1], ds);
+      const temProxima  = i < faltaDates.length - 1 && adjacentWorkingDay(ds, faltaDates[i + 1]);
+      total += (temAnterior || temProxima) ? 1 : 2;
+    }
+    // falta_justificada: 0
+  }
+  return total;
+}
 
 // Mês atual
 const inputMes = document.getElementById('input-mes');
@@ -62,7 +94,6 @@ function renderizarGrade(mes, ano) {
   // Linhas por funcionário
   let tbody = '<tbody>';
   for (const f of _funcionarios) {
-    let diasDesconto = 0;
     let row = `<tr><td>${f.nome}</td>`;
 
     for (let d = 1; d <= diasNoMes; d++) {
@@ -70,7 +101,6 @@ function renderizarGrade(mes, ano) {
       const fds = dow === 0 || dow === 6;
       const dataStr = `${ano}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const status = _pontoMap[`${f.id}_${dataStr}`] || 'presente';
-      diasDesconto += DIAS_DESC[status] || 0;
 
       if (fds) {
         row += `<td class="fim-semana"><div class="cel-ponto fim-semana">—</div></td>`;
@@ -79,6 +109,7 @@ function renderizarGrade(mes, ano) {
       }
     }
 
+    const diasDesconto = calcDiasDesconto(f.id, diasNoMes, ano, mes);
     const valorDesconto = calcularValorDesconto(f, diasDesconto);
     row += `<td class="cel-total ${diasDesconto > 0 ? 'tem-desconto' : ''}">${diasDesconto > 0 ? fmtValor(valorDesconto) : '—'}</td>`;
     row += '</tr>';
@@ -111,13 +142,8 @@ async function alternarPonto(cel) {
   const tr = cel.closest('tr');
   const func = _funcionarios.find(f => String(f.id) === String(func_id));
   if (func) {
-    let diasDesconto = 0;
     const diasNoMes = new Date(_ano, _mes, 0).getDate();
-    for (let d = 1; d <= diasNoMes; d++) {
-      const dataStr = `${_ano}-${String(_mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const s = _pontoMap[`${func_id}_${dataStr}`] || 'presente';
-      diasDesconto += DIAS_DESC[s] || 0;
-    }
+    const diasDesconto = calcDiasDesconto(func_id, diasNoMes, _ano, _mes);
     const valorDesconto = calcularValorDesconto(func, diasDesconto);
     const celTotal = tr.querySelector('.cel-total');
     if (celTotal) {

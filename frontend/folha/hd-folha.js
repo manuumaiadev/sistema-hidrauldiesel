@@ -59,7 +59,7 @@ document.getElementById('btn-dia05').addEventListener('click', async () => {
     await api.gerarFolhaDia05({ mes, ano });
     await carregarHistorico();
   } catch (err) {
-    mostrarErro('Erro ao gerar folha: ' + err.message);
+    mostrarErro(err.message);
   } finally {
     btn.disabled = false; btn.textContent = 'Gerar Folha Dia 05';
   }
@@ -74,7 +74,7 @@ document.getElementById('btn-dia20').addEventListener('click', async () => {
     await api.gerarFolhaDia20({ mes, ano });
     await carregarHistorico();
   } catch (err) {
-    mostrarErro('Erro ao gerar folha: ' + err.message);
+    mostrarErro(err.message);
   } finally {
     btn.disabled = false; btn.textContent = 'Gerar Folha Dia 20';
   }
@@ -114,7 +114,7 @@ function buildFolhaHTML({ data_pagamento, funcionarios, totais }) {
       style="font-family:inherit;font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid #FCA5A5;background:#FEE2E2;color:#B91C1C;cursor:pointer">✕</button></td>`;
     if (isQuinzena) {
       return `<tr data-id="${id}">
-        <td class="cel-nome">${f.funcionario_nome}${f.comentario_importante ? `<span title="${(f.comentario_importante||'').replace(/"/g,'&quot;')}" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#F59E0B;color:#fff;font-size:10px;font-weight:700;cursor:help;margin-left:6px;vertical-align:middle;flex-shrink:0">!</span>` : ''}</td>
+        <td class="cel-nome">${f.funcionario_nome}${f.comentario_importante ? `<span class="badge-comentario">!<span class="tooltip-box">${(f.comentario_importante||'').replace(/</g,'&lt;')}</span></span>` : ''}</td>
         <td class="cel-edit"><input type="text" data-campo="salario_oficial"       value="${fmtNum(f.salario_oficial)}"/></td>
         <td class="cel-edit"><input type="text" data-campo="salario_adicional"     value="${fmtNum(f.salario_adicional)}"/></td>
         <td class="cel-edit"><input type="text" data-campo="desconto_adiantamento" value="${fmtNum(f.desconto_adiantamento)}"/></td>
@@ -125,7 +125,7 @@ function buildFolhaHTML({ data_pagamento, funcionarios, totais }) {
       </tr>`;
     } else {
       return `<tr data-id="${id}">
-        <td class="cel-nome">${f.funcionario_nome}${f.comentario_importante ? `<span title="${(f.comentario_importante||'').replace(/"/g,'&quot;')}" style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#F59E0B;color:#fff;font-size:10px;font-weight:700;cursor:help;margin-left:6px;vertical-align:middle;flex-shrink:0">!</span>` : ''}</td>
+        <td class="cel-nome">${f.funcionario_nome}${f.comentario_importante ? `<span class="badge-comentario">!<span class="tooltip-box">${(f.comentario_importante||'').replace(/</g,'&lt;')}</span></span>` : ''}</td>
         <td class="cel-edit"><input type="text" data-campo="salario_oficial"       value="${fmtNum(f.salario_oficial)}"/></td>
         <td class="cel-edit"><input type="text" data-campo="salario_adicional"     value="${fmtNum(f.salario_adicional)}"/></td>
         <td class="cel-edit"><input type="text" data-campo="desconto_inss"         value="${fmtNum(f.desconto_inss)}"/></td>
@@ -287,6 +287,10 @@ async function carregarHistorico() {
             <div style="display:flex;align-items:center;gap:14px">
               <span class="historico-qtd">${f.qtd_funcionarios} funcionários</span>
               <span class="historico-total">${fmtValor(f.total_pago)}</span>
+              <button onclick="event.stopPropagation();imprimirFolha('${dp}')"
+                      style="font-family:inherit;font-size:11.5px;padding:4px 10px;border-radius:6px;border:1px solid #93C5FD;background:#EFF6FF;color:#1D4ED8;cursor:pointer">
+                Imprimir
+              </button>
               <button onclick="excluirFolhaItem('${dp}', '${titulo.replace(/'/g,"\\'")}', event)"
                       style="font-family:inherit;font-size:11.5px;padding:4px 10px;border-radius:6px;border:1px solid #FCA5A5;background:#FEE2E2;color:#B91C1C;cursor:pointer">
                 Excluir
@@ -354,6 +358,87 @@ window.confirmarAddFuncFolha = async function(dp) {
   } catch (err) {
     mostrarErro('Erro ao adicionar: ' + err.message);
   }
+};
+
+// ── Impressão da Folha ────────────────────────────────────────────────────────
+window.imprimirFolha = async function(dp) {
+  let dados;
+  try { dados = await api.buscarFolha(dp); }
+  catch (err) { mostrarErro('Erro ao carregar folha: ' + err.message); return; }
+
+  const { funcionarios, totais, data_pagamento } = dados;
+  const titulo = tituloFolha(sliceDate(data_pagamento));
+  const isQuinzena = funcionarios[0]?.tipo === 'quinzena';
+  const dataImpressao = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const thCols = isQuinzena
+    ? ['Funcionário','Prop. Oficial','Prop. Adicional','Adiantamentos','Outros desc.','Outros acrés.','Valor pago']
+    : ['Funcionário','Prop. Oficial','Prop. Adicional','INSS','Faltas','Adiantamentos','Outros desc.','Outros acrés.','Valor pago'];
+  const thead = thCols.map(c => `<th>${c}</th>`).join('');
+
+  const tbody = funcionarios.map(f => {
+    const cols = isQuinzena
+      ? [f.funcionario_nome, fmtValor(f.salario_oficial), fmtValor(f.salario_adicional),
+         fmtValor(f.desconto_adiantamento), fmtValor(f.outros_descontos), fmtValor(f.outros_acrescimos), fmtValor(f.valor_pago)]
+      : [f.funcionario_nome, fmtValor(f.salario_oficial), fmtValor(f.salario_adicional),
+         fmtValor(f.desconto_inss), fmtValor(f.desconto_faltas), fmtValor(f.desconto_adiantamento),
+         fmtValor(f.outros_descontos), fmtValor(f.outros_acrescimos), fmtValor(f.valor_pago)];
+    return '<tr>' + cols.map((v, i) =>
+      `<td${i === cols.length - 1 ? ' class="destaque"' : ''}>${v}</td>`
+    ).join('') + '</tr>';
+  }).join('');
+
+  const assinaturas = funcionarios.map(f => `
+    <div class="assinatura-box">
+      <div class="assinatura-linha"></div>
+      <div class="assinatura-nome">${f.funcionario_nome}</div>
+    </div>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+  <meta charset="UTF-8"/><title>${titulo}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:18mm 14mm}
+    .cab{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;border-bottom:2px solid #1B2D5B;padding-bottom:10px}
+    .empresa{font-size:17px;font-weight:700;color:#1B2D5B}
+    .empresa small{display:block;font-size:10px;font-weight:400;color:#555;margin-top:2px}
+    .doc-info{text-align:right}
+    .doc-titulo{font-size:13px;font-weight:700;color:#1B2D5B}
+    .doc-data{font-size:10px;color:#777;margin-top:3px}
+    table{width:100%;border-collapse:collapse;margin-bottom:14px}
+    th{background:#1B2D5B;color:#fff;padding:6px 8px;text-align:right;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em}
+    th:first-child{text-align:left}
+    td{padding:5px 8px;text-align:right;border-bottom:1px solid #E3E1DA;font-size:10.5px}
+    td:first-child{text-align:left;font-weight:500}
+    tr:nth-child(even) td{background:#F8F7F4}
+    td.destaque{font-weight:700;color:#1B2D5B}
+    .totais{display:flex;justify-content:flex-end;gap:20px;background:#EFF6FF;border-radius:6px;padding:9px 14px;font-size:12px;margin-bottom:26px}
+    .totais strong{color:#1B2D5B}
+    .assinaturas h4{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:18px}
+    .assinaturas-grid{display:flex;flex-wrap:wrap;gap:18px 36px}
+    .assinatura-box{width:190px}
+    .assinatura-linha{border-top:1px solid #333;margin-bottom:4px}
+    .assinatura-nome{font-size:9.5px;color:#555;text-align:center}
+    .rodape{margin-top:24px;border-top:1px solid #E3E1DA;padding-top:6px;font-size:9px;color:#aaa;display:flex;justify-content:space-between}
+    @media print{@page{margin:14mm}body{padding:0}}
+  </style></head><body>
+  <div class="cab">
+    <div class="empresa">Hidrauldiesel<small>Sistema de Gestão</small></div>
+    <div class="doc-info"><div class="doc-titulo">${titulo}</div><div class="doc-data">Impresso em ${dataImpressao}</div></div>
+  </div>
+  <table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table>
+  <div class="totais"><div>Total a pagar: <strong>${fmtValor(totais.total_pago)}</strong></div></div>
+  <div class="assinaturas">
+    <h4>Assinaturas de recebimento</h4>
+    <div class="assinaturas-grid">${assinaturas}</div>
+  </div>
+  <div class="rodape"><span>Hidrauldiesel — documento gerado pelo sistema</span><span>${titulo}</span></div>
+  <script>window.onload=()=>window.print()<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
 };
 
 carregarHistorico();

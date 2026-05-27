@@ -12,25 +12,59 @@ const gerarFolhaDia05 = async (req, res) => {
     const anoAnterior = mes === 1 ? ano - 1 : ano;
     const dataPagamento = `${ano}-${String(mes).padStart(2,'0')}-05`;
 
-    const funcionarios = await client.query(
-      `SELECT * FROM funcionarios WHERE ativo = true AND status = 'ativo' ORDER BY nome`
+    const jaExiste = await client.query(
+      `SELECT 1 FROM folha_pagamento WHERE data_pagamento = $1 LIMIT 1`,
+      [dataPagamento]
     );
+    if (jaExiste.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ erro: `Já existe uma folha gerada para ${String('05').padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano}. Exclua-a antes de gerar novamente.` });
+    }
+
+    const funcionarios = await client.query(
+      `SELECT * FROM funcionarios WHERE ativo = true AND COALESCE(status,'ativo') != 'inativo' ORDER BY nome`
+    );
+
+    // Próximo/anterior dia útil para detectar faltas consecutivas
+    function nextWD(s) {
+      const d = new Date(s + 'T12:00:00');
+      d.setDate(d.getDate() + (d.getDay() === 5 ? 3 : 1));
+      return d.toISOString().slice(0, 10);
+    }
+    function prevWD(s) {
+      const d = new Date(s + 'T12:00:00');
+      d.setDate(d.getDate() - (d.getDay() === 1 ? 3 : 1));
+      return d.toISOString().slice(0, 10);
+    }
 
     const folha = [];
 
     for (const f of funcionarios.rows) {
-      const faltas = await client.query(`
-        SELECT
-          SUM(CASE WHEN status = 'falta' THEN 2
-                   WHEN status = 'meia_falta' THEN 1
-                   ELSE 0 END) as dias_desconto
+      const pontoDados = await client.query(`
+        SELECT TO_CHAR(data, 'YYYY-MM-DD') as data, status
         FROM ponto
         WHERE funcionario_id = $1
         AND EXTRACT(MONTH FROM data) = $2
         AND EXTRACT(YEAR FROM data) = $3
+        AND EXTRACT(DOW FROM data) BETWEEN 1 AND 5
+        ORDER BY data
       `, [f.id, mesAnterior, anoAnterior]);
 
-      const diasDesconto = parseFloat(faltas.rows[0].dias_desconto) || 0;
+      const faltaSet = new Set(
+        pontoDados.rows.filter(r => r.status === 'falta').map(r => r.data)
+      );
+
+      let diasDesconto = 0;
+      for (const row of pontoDados.rows) {
+        if (row.status === 'meia_falta') {
+          diasDesconto += 1;
+        } else if (row.status === 'falta') {
+          // falta isolada (sem falta no dia útil anterior nem posterior) perde também o DSR (domingo)
+          const isolated = !faltaSet.has(prevWD(row.data)) && !faltaSet.has(nextWD(row.data));
+          diasDesconto += isolated ? 2 : 1;
+        }
+        // falta_justificada: sem desconto
+      }
       const valorDia = (parseFloat(f.salario_oficial) + parseFloat(f.salario_adicional)) / 30;
       const descontoFaltas = valorDia * diasDesconto;
 
@@ -55,11 +89,6 @@ const gerarFolhaDia05 = async (req, res) => {
          (funcionario_id, tipo, data_pagamento, salario_oficial, salario_adicional,
           desconto_inss, desconto_adiantamento, desconto_faltas, valor_pago)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-         ON CONFLICT (funcionario_id, data_pagamento)
-         DO UPDATE SET
-           salario_oficial = $4, salario_adicional = $5,
-           desconto_inss = $6, desconto_adiantamento = $7,
-           desconto_faltas = $8, valor_pago = $9
          RETURNING *`,
         [f.id, 'mensal', dataPagamento, propOficial, propAdicional,
          descontoInss, totalAdiantamentos, descontoFaltas, valorPago]
@@ -109,8 +138,17 @@ const gerarFolhaDia20 = async (req, res) => {
 
     const dataPagamento = `${ano}-${String(mes).padStart(2,'0')}-20`;
 
+    const jaExiste = await client.query(
+      `SELECT 1 FROM folha_pagamento WHERE data_pagamento = $1 LIMIT 1`,
+      [dataPagamento]
+    );
+    if (jaExiste.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ erro: `Já existe uma folha gerada para ${String('20').padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano}. Exclua-a antes de gerar novamente.` });
+    }
+
     const funcionarios = await client.query(
-      `SELECT * FROM funcionarios WHERE ativo = true AND status = 'ativo' ORDER BY nome`
+      `SELECT * FROM funcionarios WHERE ativo = true AND COALESCE(status,'ativo') != 'inativo' ORDER BY nome`
     );
 
     const folha = [];
@@ -134,9 +172,6 @@ const gerarFolhaDia20 = async (req, res) => {
          (funcionario_id, tipo, data_pagamento, salario_oficial, salario_adicional,
           desconto_adiantamento, valor_pago)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (funcionario_id, data_pagamento)
-         DO UPDATE SET
-           salario_oficial = $4, salario_adicional = $5, desconto_adiantamento = $6, valor_pago = $7
          RETURNING *`,
         [f.id, 'quinzena', dataPagamento, propOficial, propAdicional,
          totalAdiantamentos, valorPago]
@@ -303,11 +338,30 @@ const removerLancamento = async (req, res) => {
 // Excluir folha por data
 const excluirFolha = async (req, res) => {
   const { data_pagamento } = req.params;
+  const client = await pool.connect();
   try {
-    await pool.query(`DELETE FROM folha_pagamento WHERE data_pagamento = $1`, [data_pagamento]);
+    await client.query('BEGIN');
+
+    // Converte 'YYYY-MM-DD' → 'DD/MM/YYYY' para bater com desconto_em dos adiantamentos
+    const [ano, mes, dia] = data_pagamento.split('-');
+    const descontoEmFmt = `${dia}/${mes}/${ano}`;
+
+    // Reverte adiantamentos que foram marcados como descontados nesta folha
+    await client.query(
+      `UPDATE adiantamentos SET descontado = false WHERE desconto_em = $1`,
+      [descontoEmFmt]
+    );
+
+    await client.query(`DELETE FROM folha_pagamento WHERE data_pagamento = $1`, [data_pagamento]);
+
+    await client.query('COMMIT');
     res.json({ ok: true });
   } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
     res.status(500).json({ erro: 'Erro ao excluir folha' });
+  } finally {
+    client.release();
   }
 };
 

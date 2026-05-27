@@ -37,7 +37,7 @@ const gerarValeTransporte = async (req, res) => {
     const funcionarios = await client.query(`
       SELECT * FROM funcionarios
       WHERE ativo = true
-      AND status = 'ativo'
+      AND COALESCE(status,'ativo') != 'inativo'
       AND vale_transporte > 0
       ORDER BY nome
     `);
@@ -48,7 +48,6 @@ const gerarValeTransporte = async (req, res) => {
       const faltas = await client.query(`
         SELECT
           SUM(CASE WHEN status = 'falta' THEN 1
-                   WHEN status = 'meia_falta' THEN 1
                    ELSE 0 END) as dias_desconto
         FROM ponto
         WHERE funcionario_id = $1
@@ -166,4 +165,146 @@ const excluirVale = async (req, res) => {
   }
 };
 
-module.exports = { gerarValeTransporte, listarVales, buscarVale, excluirVale };
+// ── Vale Alimentação ──────────────────────────────────────────────────────────
+
+const gerarValeAlimentacao = async (req, res) => {
+  const { data_pagamento } = req.body;
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const [anoStr, mesStr, diaStr] = (data_pagamento || '').split('T')[0].split('-');
+    const dataRef = new Date(parseInt(anoStr), parseInt(mesStr) - 1, parseInt(diaStr));
+
+    if (dataRef.getDay() !== 1) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ erro: 'Vale alimentação deve ser pago às segundas-feiras' });
+    }
+
+    const existente = await client.query(
+      'SELECT COUNT(*) FROM vale_alimentacao WHERE data_pagamento = $1', [data_pagamento]
+    );
+    if (parseInt(existente.rows[0].count) > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ erro: 'Já existe um Vale Alimentação gerado para esta data. Exclua o existente antes de gerar um novo.' });
+    }
+
+    const semanaAnteriorFim = new Date(dataRef);
+    semanaAnteriorFim.setDate(dataRef.getDate() - 1);
+    const semanaAnteriorInicio = new Date(semanaAnteriorFim);
+    semanaAnteriorInicio.setDate(semanaAnteriorFim.getDate() - 6);
+
+    const funcionarios = await client.query(`
+      SELECT * FROM funcionarios
+      WHERE ativo = true
+      AND COALESCE(status,'ativo') != 'inativo'
+      AND vale_alimentacao > 0
+      ORDER BY nome
+    `);
+
+    const lista = [];
+
+    for (const f of funcionarios.rows) {
+      const faltas = await client.query(`
+        SELECT SUM(CASE WHEN status = 'falta' THEN 1 ELSE 0 END) as dias_desconto
+        FROM ponto
+        WHERE funcionario_id = $1
+        AND data BETWEEN $2 AND $3
+        AND EXTRACT(DOW FROM data) BETWEEN 1 AND 5
+      `, [f.id, semanaAnteriorInicio, semanaAnteriorFim]);
+
+      const diasDesconto = parseFloat(faltas.rows[0].dias_desconto) || 0;
+      const valorDia = parseFloat(f.vale_alimentacao) / 5;
+      const desconto = valorDia * diasDesconto;
+      const valorPago = parseFloat(f.vale_alimentacao) - desconto;
+
+      const registro = await client.query(
+        `INSERT INTO vale_alimentacao (funcionario_id, data_pagamento, valor, observacoes)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [f.id, data_pagamento, valorPago,
+         diasDesconto > 0 ? `Desconto de ${diasDesconto} dia(s) por falta na semana anterior` : '']
+      );
+
+      lista.push({
+        funcionario_nome: f.nome,
+        vale_original: parseFloat(f.vale_alimentacao),
+        dias_desconto: diasDesconto,
+        desconto,
+        valor_pago: valorPago,
+        ...registro.rows[0]
+      });
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json({
+      data_pagamento,
+      semana_referencia: { inicio: semanaAnteriorInicio, fim: semanaAnteriorFim },
+      funcionarios: lista,
+      total_pago: lista.reduce((a, f) => a + f.valor_pago, 0)
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ erro: 'Erro ao gerar vale alimentação' });
+  } finally {
+    client.release();
+  }
+};
+
+const listarValesAlimentacao = async (req, res) => {
+  try {
+    const resultado = await pool.query(`
+      SELECT data_pagamento, COUNT(*) as qtd_funcionarios, SUM(valor) as total_pago
+      FROM vale_alimentacao
+      GROUP BY data_pagamento
+      ORDER BY data_pagamento DESC
+      LIMIT 52
+    `);
+    res.json(resultado.rows);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao listar vales alimentação' });
+  }
+};
+
+const buscarValeAlimentacao = async (req, res) => {
+  const { data_pagamento } = req.params;
+  try {
+    const resultado = await pool.query(`
+      SELECT va.valor, va.observacoes,
+             f.id AS funcionario_id,
+             f.nome AS funcionario_nome,
+             f.vale_alimentacao AS vale_original
+      FROM vale_alimentacao va
+      JOIN funcionarios f ON f.id = va.funcionario_id
+      WHERE va.data_pagamento = $1
+      ORDER BY f.nome
+    `, [data_pagamento]);
+
+    const funcionarios = resultado.rows.map(r => {
+      const vale_original = parseFloat(r.vale_original);
+      const valor_pago    = parseFloat(r.valor);
+      const desconto      = vale_original - valor_pago;
+      const match         = (r.observacoes || '').match(/Desconto de (\d+(?:\.\d+)?)/);
+      const dias_desconto = match ? parseFloat(match[1]) : 0;
+      return { funcionario_id: r.funcionario_id, funcionario_nome: r.funcionario_nome, vale_original, dias_desconto, desconto, valor_pago };
+    });
+
+    res.json({ data_pagamento, funcionarios, total_pago: funcionarios.reduce((a, f) => a + f.valor_pago, 0) });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar vale alimentação' });
+  }
+};
+
+const excluirValeAlimentacao = async (req, res) => {
+  const { data_pagamento } = req.params;
+  try {
+    await pool.query('DELETE FROM vale_alimentacao WHERE data_pagamento = $1', [data_pagamento]);
+    res.json({ mensagem: 'Vale alimentação excluído' });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao excluir vale alimentação' });
+  }
+};
+
+module.exports = { gerarValeTransporte, listarVales, buscarVale, excluirVale, gerarValeAlimentacao, listarValesAlimentacao, buscarValeAlimentacao, excluirValeAlimentacao };

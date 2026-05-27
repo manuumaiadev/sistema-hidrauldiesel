@@ -344,6 +344,32 @@ const createTables = async () => {
       );
     `);
 
+    await pool.query(`
+      ALTER TABLE rescisao ADD COLUMN IF NOT EXISTS num_parcelas INTEGER DEFAULT 1;
+    `);
+    await pool.query(`
+      ALTER TABLE rescisao ADD COLUMN IF NOT EXISTS valor_pago DECIMAL(10,2) DEFAULT 0;
+    `);
+    await pool.query(`
+      ALTER TABLE rescisao ADD COLUMN IF NOT EXISTS saldo_restante DECIMAL(10,2) DEFAULT 0;
+    `);
+    await pool.query(`
+      ALTER TABLE rescisao ADD COLUMN IF NOT EXISTS data_pagamento DATE;
+    `);
+
+    // Décimo terceiro — parcelas antecipadas
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS decimo_terceiro (
+        id SERIAL PRIMARY KEY,
+        funcionario_id INTEGER REFERENCES funcionarios(id),
+        ano INTEGER NOT NULL,
+        data_pagamento DATE NOT NULL,
+        valor DECIMAL(10,2) NOT NULL,
+        observacoes TEXT,
+        criado_em TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
     // Empresas vinculadas ao vendedor
     await pool.query(`
       CREATE TABLE IF NOT EXISTS vendedor_empresas (
@@ -409,6 +435,83 @@ const createTables = async () => {
       EXCEPTION WHEN duplicate_column THEN NULL;
       END $$;
     `);
+
+    // Reseta adiantamentos marcados como descontados cuja folha correspondente não existe mais
+    await pool.query(`
+      UPDATE adiantamentos a
+      SET descontado = false
+      WHERE a.descontado = true
+      AND NOT EXISTS (
+        SELECT 1 FROM folha_pagamento fp
+        WHERE fp.funcionario_id = a.funcionario_id
+        AND TO_CHAR(fp.data_pagamento, 'DD/MM/YYYY') = a.desconto_em
+      )
+    `);
+
+    // Vale Alimentação
+    await pool.query(`
+      ALTER TABLE funcionarios ADD COLUMN IF NOT EXISTS vale_alimentacao DECIMAL(10,2) DEFAULT 0;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS vale_alimentacao (
+        id SERIAL PRIMARY KEY,
+        funcionario_id INTEGER REFERENCES funcionarios(id),
+        data_pagamento DATE NOT NULL,
+        valor DECIMAL(10,2) NOT NULL,
+        observacoes TEXT,
+        criado_em TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE vale_alimentacao ADD CONSTRAINT va_funcionario_data_unique UNIQUE (funcionario_id, data_pagamento);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+                WHEN duplicate_table  THEN NULL;
+      END $$;
+    `);
+
+    // Faturamento
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS forma_pagamento VARCHAR(50)`).catch(() => {});
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS faturamentos (
+        id SERIAL PRIMARY KEY,
+        os_id INTEGER REFERENCES ordens_servico(id),
+        os_numero VARCHAR(20),
+        cliente_nome VARCHAR(200),
+        data_faturamento DATE NOT NULL,
+        nf_servico VARCHAR(50),
+        pedido_servico VARCHAR(50),
+        valor_servico DECIMAL(10,2) DEFAULT 0,
+        nf_peca VARCHAR(50),
+        pedido_peca VARCHAR(50),
+        valor_peca DECIMAL(10,2) DEFAULT 0,
+        valor_total DECIMAL(10,2) DEFAULT 0,
+        qtd_parcelas INTEGER DEFAULT 1,
+        valor_parcela DECIMAL(10,2) DEFAULT 0,
+        banco VARCHAR(100),
+        observacoes TEXT,
+        criado_em TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS faturamento_vencimentos (
+        id SERIAL PRIMARY KEY,
+        faturamento_id INTEGER REFERENCES faturamentos(id) ON DELETE CASCADE,
+        data_vencimento DATE,
+        valor DECIMAL(10,2) DEFAULT 0,
+        pago BOOLEAN DEFAULT false,
+        criado_em TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'autorizado'`).catch(() => {});
+
+    // Renomeia status legado caso exista
+    await pool.query(`UPDATE faturamentos SET status = 'cobranca_emitida' WHERE status = 'boleto_emitido'`).catch(() => {});
 
     console.log('✅ Tabelas criadas com sucesso!');
   } catch (err) {

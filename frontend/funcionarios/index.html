@@ -37,12 +37,21 @@
         <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
 
         <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
-        <a href="../vale-transporte/" class="nav-submenu-item">Vale Transporte</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vales</a>
         <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
         <a href="../ponto/" class="nav-submenu-item">Ponto</a>
       </div>
     </div>
     <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+    <div class="nav-group" id="nav-group-fin">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-fin')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Financeiro <span class="nav-arrow" id="arrow-nav-group-fin">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-fin">
+        <a href="../financeiro/" class="nav-submenu-item">Faturamento</a>
+      </div>
+    </div>
   </nav>
   <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
 </aside>
@@ -132,7 +141,7 @@
 
 <!-- ═══ Modal Funcionário ═══ -->
 <div id="modal-func" class="modal-overlay" style="display:none">
-  <div class="modal-box" style="max-width:600px">
+  <div class="modal-box">
     <div class="modal-header">
       <span class="modal-title" id="modal-func-title">Novo Funcionário</span>
       <button class="modal-close" id="modal-func-close">×</button>
@@ -142,7 +151,9 @@
       <button class="modal-tab-btn" data-tab="dados"         onclick="trocarAbaModal('dados')"         style="font-family:inherit;font-size:13px;font-weight:500;padding:10px 16px;border:none;border-bottom:2px solid var(--navy);background:transparent;cursor:pointer;color:var(--navy)">Dados</button>
       <button class="modal-tab-btn" data-tab="adiantamentos" onclick="trocarAbaModal('adiantamentos')" style="font-family:inherit;font-size:13px;font-weight:500;padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;color:var(--muted)">Adiantamentos</button>
       <button class="modal-tab-btn" data-tab="ferias"        onclick="trocarAbaModal('ferias')"        style="font-family:inherit;font-size:13px;font-weight:500;padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;color:var(--muted)">Férias</button>
+      <button class="modal-tab-btn" data-tab="decimo"        onclick="trocarAbaModal('decimo')"        style="font-family:inherit;font-size:13px;font-weight:500;padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;color:var(--muted)">13º Salário</button>
       <button class="modal-tab-btn" data-tab="rescisao"      onclick="trocarAbaModal('rescisao')"      style="font-family:inherit;font-size:13px;font-weight:500;padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;color:var(--muted)">Rescisão</button>
+      <button class="modal-tab-btn" data-tab="resumo"        onclick="trocarAbaModal('resumo')"        style="font-family:inherit;font-size:13px;font-weight:500;padding:10px 16px;border:none;border-bottom:2px solid transparent;background:transparent;cursor:pointer;color:var(--muted)">Histórico</button>
     </div>
     <input type="hidden" id="modal-active-tab" value="dados"/>
     <div class="modal-body">
@@ -210,6 +221,10 @@
             <label>Vale Transporte semanal (R$)</label>
             <input type="text" id="func-vt" class="valor-input" placeholder="0,00"/>
           </div>
+          <div class="field">
+            <label>Vale Alimentação semanal (R$)</label>
+            <input type="text" id="func-va" class="valor-input" placeholder="0,00"/>
+          </div>
           <div class="field clt-only" id="field-inss">
             <label>INSS fixo (R$)</label>
             <input type="text" id="func-inss" class="valor-input" placeholder="0,00"/>
@@ -238,21 +253,32 @@
               <input type="date" id="adiant-data"/>
             </div>
             <div class="field">
-              <label>Valor (R$) <span class="req">*</span></label>
+              <label>Valor total (R$) <span class="req">*</span></label>
               <input type="text" id="adiant-valor" class="valor-input" placeholder="0,00"/>
+            </div>
+            <div class="field">
+              <label>Parcelas</label>
+              <div style="display:flex;gap:6px">
+                <button type="button" class="adiant-num-btn active" data-n="1" onclick="selecionarNParcelas(1)"
+                  style="font-family:inherit;font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;border:1px solid #1B2D5B;background:#1B2D5B;color:#fff;cursor:pointer">1x</button>
+                <button type="button" class="adiant-num-btn" data-n="2" onclick="selecionarNParcelas(2)"
+                  style="font-family:inherit;font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;border:1px solid #E3E1DA;background:#fff;color:var(--muted);cursor:pointer">2x</button>
+                <button type="button" class="adiant-num-btn" data-n="3" onclick="selecionarNParcelas(3)"
+                  style="font-family:inherit;font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;border:1px solid #E3E1DA;background:#fff;color:var(--muted);cursor:pointer">3x</button>
+                <button type="button" class="adiant-num-btn" data-n="4" onclick="selecionarNParcelas(4)"
+                  style="font-family:inherit;font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;border:1px solid #E3E1DA;background:#fff;color:var(--muted);cursor:pointer">4x</button>
+              </div>
             </div>
             <div class="field full">
               <label>Observação</label>
               <input type="text" id="adiant-obs" placeholder="Opcional"/>
             </div>
           </div>
-          <div id="adiant-info" style="display:none;margin-top:8px">
-            <div class="field">
-              <label style="font-size:12px">Descontar na folha</label>
-              <select id="adiant-desconto-em" style="font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;width:100%"></select>
-            </div>
+          <div id="adiant-parcelas-wrap" style="display:none;margin-top:10px;border-top:1px solid #E3E1DA;padding-top:10px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Descontar em</div>
+            <div id="adiant-parcelas-lista"></div>
           </div>
-          <div id="adiant-erro" class="form-erro"></div>
+          <div id="adiant-erro" class="form-erro" style="margin-top:8px"></div>
         </div>
         <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Histórico</div>
         <div id="adiant-historico-lista">
@@ -281,6 +307,62 @@
           </div>
         </div>
         <div id="ferias-erro" class="form-erro"></div>
+      </div>
+
+      <!-- Aba: 13º Salário -->
+      <div id="modal-tab-decimo" style="display:none">
+        <!-- Resumo do ano -->
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 16px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#1D4ED8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">13º Salário</div>
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <span style="font-size:12px;color:#1D4ED8">Ano</span>
+                <select id="decimo-ano-filtro" style="font-family:inherit;font-size:13px;padding:2px 8px;border:1px solid #BFDBFE;border-radius:6px;background:#fff;color:#1B2D5B"></select>
+              </div>
+            </div>
+            <div style="display:flex;gap:20px;flex-wrap:wrap">
+              <div style="text-align:right">
+                <div style="font-size:11px;color:#64748B;margin-bottom:2px">Total calculado</div>
+                <div style="font-size:15px;font-weight:600;font-family:var(--mono);color:#1B2D5B" id="decimo-total-calc">—</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:11px;color:#64748B;margin-bottom:2px">Já pago</div>
+                <div style="font-size:15px;font-weight:600;font-family:var(--mono);color:#15803D" id="decimo-total-pago">R$ 0,00</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:11px;color:#64748B;margin-bottom:2px">Saldo a pagar</div>
+                <div style="font-size:15px;font-weight:600;font-family:var(--mono);color:#DC2626" id="decimo-saldo">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Novo lançamento -->
+        <div style="border:1px solid #E3E1DA;border-radius:8px;padding:14px 16px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Registrar pagamento</div>
+          <div class="field-grid">
+            <div class="field">
+              <label>Data do pagamento <span class="req">*</span></label>
+              <input type="date" id="decimo-data"/>
+            </div>
+            <div class="field">
+              <label>Valor pago (R$) <span class="req">*</span></label>
+              <input type="text" id="decimo-valor" class="valor-input" placeholder="0,00"/>
+            </div>
+            <div class="field full">
+              <label>Observação</label>
+              <input type="text" id="decimo-obs" placeholder="Opcional"/>
+            </div>
+          </div>
+          <div id="decimo-erro" class="form-erro"></div>
+        </div>
+
+        <!-- Histórico -->
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Histórico</div>
+        <div id="decimo-historico-lista">
+          <div style="color:var(--muted);font-size:13px;padding:8px 0">Carregando…</div>
+        </div>
       </div>
 
       <!-- Aba: Rescisão -->
@@ -319,8 +401,78 @@
           <span style="font-size:13px;font-weight:600;color:#15803D">Total calculado</span>
           <span style="font-size:18px;font-weight:600;color:#15803D;font-family:var(--mono)" id="rescisao-total">R$ 0,00</span>
         </div>
+        <div style="margin-top:10px;padding:14px 16px;background:#F8F7F4;border-radius:8px;border:1px solid #E3E1DA">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+            <label style="font-size:13px;font-weight:500;color:var(--text)">Tipo de pagamento:</label>
+            <div style="display:flex;gap:8px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="radio" name="rescisao-tipo-pgto" id="rescisao-baixa-completa" value="completa" checked style="cursor:pointer;accent-color:#1B2D5B"/>
+                Baixa completa
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="radio" name="rescisao-tipo-pgto" id="rescisao-parcial" value="parcial" style="cursor:pointer;accent-color:#1B2D5B"/>
+                Pagamento parcial
+              </label>
+            </div>
+          </div>
+          <div id="rescisao-parcial-wrap" style="display:none;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px">Data do pagamento</label>
+              <input type="date" id="rescisao-data-pagamento"
+                style="font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid #C8C5BE;border-radius:6px"/>
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px">Valor pago agora (R$)</label>
+              <input type="text" id="rescisao-valor-pago" class="valor-input" placeholder="0,00"
+                style="font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid #C8C5BE;border-radius:6px;width:160px"/>
+            </div>
+            <div style="padding-bottom:8px">
+              <span style="font-size:13px;color:var(--muted)">Saldo restante: </span>
+              <span id="rescisao-saldo-restante" style="font-size:14px;font-weight:600;font-family:var(--mono);color:#DC2626">—</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="rescisao-inativo" checked style="width:15px;height:15px;cursor:pointer;accent-color:#DC2626"/>
+            <label for="rescisao-inativo" style="font-size:13px;cursor:pointer;color:var(--text)">Marcar funcionário como inativo</label>
+          </div>
+        </div>
         <div id="rescisao-erro" class="form-erro"></div>
       </div>
+
+      <!-- Aba: Histórico de pagamentos -->
+      <div id="modal-tab-resumo" style="display:none">
+
+        <!-- Filtros de período -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Período:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap" id="resumo-filtros-periodo">
+            <button class="resumo-periodo-btn resumo-periodo-ativo" data-p="semana"        onclick="selecionarPeriodoResumo(this)" style="font-family:inherit;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid #C8C5BE;background:#1B2D5B;color:#fff;cursor:pointer">Semana</button>
+            <button class="resumo-periodo-btn" data-p="mes"           onclick="selecionarPeriodoResumo(this)" style="font-family:inherit;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid #C8C5BE;background:#fff;color:var(--muted);cursor:pointer">Mês atual</button>
+            <button class="resumo-periodo-btn" data-p="mes_anterior"  onclick="selecionarPeriodoResumo(this)" style="font-family:inherit;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid #C8C5BE;background:#fff;color:var(--muted);cursor:pointer">Mês anterior</button>
+            <button class="resumo-periodo-btn" data-p="ano"           onclick="selecionarPeriodoResumo(this)" style="font-family:inherit;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid #C8C5BE;background:#fff;color:var(--muted);cursor:pointer">Este ano</button>
+            <button class="resumo-periodo-btn" data-p="tudo"          onclick="selecionarPeriodoResumo(this)" style="font-family:inherit;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid #C8C5BE;background:#fff;color:var(--muted);cursor:pointer">Tudo</button>
+            <button class="resumo-periodo-btn" data-p="custom"        onclick="selecionarPeriodoResumo(this)" style="font-family:inherit;font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid #C8C5BE;background:#fff;color:var(--muted);cursor:pointer">Personalizado</button>
+          </div>
+          <div id="resumo-custom-wrap" style="display:none;align-items:center;gap:6px;margin-top:4px">
+            <input type="date" id="resumo-de"  style="font-family:inherit;font-size:12px;padding:4px 8px;border:1px solid #C8C5BE;border-radius:6px"/>
+            <span style="font-size:12px;color:var(--muted)">até</span>
+            <input type="date" id="resumo-ate" style="font-family:inherit;font-size:12px;padding:4px 8px;border:1px solid #C8C5BE;border-radius:6px"/>
+            <button onclick="carregarResumo()" style="font-family:inherit;font-size:12px;padding:4px 12px;border-radius:6px;border:none;background:var(--navy);color:#fff;cursor:pointer">Filtrar</button>
+          </div>
+        </div>
+
+        <!-- Total geral -->
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <span style="font-size:13px;font-weight:600;color:#15803D">Total no período</span>
+          <span style="font-size:17px;font-weight:700;font-family:var(--mono);color:#15803D" id="resumo-total-geral">—</span>
+        </div>
+
+        <!-- Lista de lançamentos -->
+        <div id="resumo-lista">
+          <div style="color:var(--muted);font-size:13px;padding:8px 0">Carregando…</div>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn" id="btn-excluir-func" style="display:none;margin-right:auto;background:#FEE2E2;color:#B91C1C;border:1px solid #FCA5A5">Excluir</button>
