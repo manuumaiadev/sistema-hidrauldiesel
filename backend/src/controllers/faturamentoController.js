@@ -150,7 +150,7 @@ const criarFaturamento = async (req, res) => {
       nf_servico, pedido_servico, valor_servico,
       nf_peca, pedido_peca, valor_peca,
       valor_total, qtd_parcelas, valor_parcela,
-      banco, forma_pagamento, observacoes, vencimentos, status
+      banco, forma_pagamento, categoria, observacoes, vencimentos, status
     } = req.body;
 
     const statusFinal = status || 'autorizado';
@@ -168,14 +168,14 @@ const criarFaturamento = async (req, res) => {
         nf_servico, pedido_servico, valor_servico,
         nf_peca, pedido_peca, valor_peca,
         valor_total, qtd_parcelas, valor_parcela,
-        banco, forma_pagamento, observacoes, status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+        banco, forma_pagamento, categoria, observacoes, status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
       RETURNING *`,
       [osIdVinculado, os_numero, cliente_nome, data_faturamento,
        nf_servico, pedido_servico, valor_servico || 0,
        nf_peca, pedido_peca, valor_peca || 0,
        valor_total || 0, qtd_parcelas || 1, valor_parcela || 0,
-       banco, forma_pagamento, observacoes, statusFinal]
+       banco, forma_pagamento, categoria || 'Venda de Serviços', observacoes, statusFinal]
     );
 
     const faturamentoId = resultado.rows[0].id;
@@ -211,7 +211,7 @@ const atualizarFaturamento = async (req, res) => {
       nf_servico, pedido_servico, valor_servico,
       nf_peca, pedido_peca, valor_peca,
       valor_total, qtd_parcelas, valor_parcela,
-      banco, forma_pagamento, observacoes, vencimentos,
+      banco, forma_pagamento, categoria, observacoes, vencimentos,
       os_numero, cliente_nome, data_faturamento, status
     } = req.body;
 
@@ -231,9 +231,10 @@ const atualizarFaturamento = async (req, res) => {
         valor_parcela    = $12,
         banco            = $13,
         forma_pagamento  = $14,
-        observacoes      = $15,
-        status           = $16
-       WHERE id = $17 RETURNING *`,
+        categoria        = $15,
+        observacoes      = $16,
+        status           = $17
+       WHERE id = $18 RETURNING *`,
       [os_numero    || null,
        cliente_nome || null,
        data_faturamento,
@@ -248,6 +249,7 @@ const atualizarFaturamento = async (req, res) => {
        valor_parcela   ?? 0,
        banco           || null,
        forma_pagamento || null,
+       categoria       || 'Venda de Serviços',
        observacoes     || null,
        status          || 'autorizado',
        id]

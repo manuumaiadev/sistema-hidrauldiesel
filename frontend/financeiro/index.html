@@ -438,6 +438,15 @@ tbody tr:hover { background: #FAFAF9; }
               <option value="Dinheiro">Dinheiro</option>
             </select>
           </div>
+          <div class="field">
+            <label>Categoria</label>
+            <select id="fat-categoria">
+              <option value="Venda de Serviços" selected>Venda de Serviços</option>
+              <option value="Venda de Peças">Venda de Peças</option>
+              <option value="Misto">Misto</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
         </div>
 
         <!-- Vencimentos + situação da cobrança (card único) -->
@@ -877,6 +886,7 @@ function _limparModal() {
     if (el) el.value = '';
   });
   document.getElementById('fat-forma-pagamento').value = '';
+  document.getElementById('fat-categoria').value       = 'Venda de Serviços';
   document.getElementById('fat-status').value          = 'autorizado';
   document.getElementById('fat-parcelas').value        = '1';
   document.getElementById('fat-erro').textContent      = '';
@@ -913,6 +923,7 @@ function abrirModalEditar(id) {
   document.getElementById('fat-valor-parcela').value    = f.valor_parcela || '';
   document.getElementById('fat-banco').value            = f.banco || '';
   document.getElementById('fat-forma-pagamento').value  = f.forma_pagamento || '';
+  document.getElementById('fat-categoria').value        = f.categoria || 'Venda de Serviços';
   document.getElementById('fat-obs').value              = f.observacoes || '';
   document.getElementById('btn-excluir-fat').style.display = 'inline-flex';
   _vencimentos = JSON.parse(JSON.stringify(f.vencimentos || []));
@@ -1088,6 +1099,7 @@ async function salvarFaturamento() {
     valor_parcela:   parseFloat(document.getElementById('fat-valor-parcela').value) || 0,
     banco:           document.getElementById('fat-banco').value.trim()            || null,
     forma_pagamento: document.getElementById('fat-forma-pagamento').value         || null,
+    categoria:       document.getElementById('fat-categoria').value               || 'Venda de Serviços',
     observacoes:     document.getElementById('fat-obs').value.trim()              || null,
     vencimentos:     _vencimentos.filter(v => v.data_vencimento),
   };

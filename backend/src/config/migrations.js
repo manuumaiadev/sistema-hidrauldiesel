@@ -509,6 +509,7 @@ const createTables = async () => {
     `);
 
     await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'autorizado'`).catch(() => {});
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS categoria VARCHAR(100) DEFAULT 'Venda de Serviços'`).catch(() => {});
 
     // Renomeia status legado caso exista
     await pool.query(`UPDATE faturamentos SET status = 'cobranca_emitida' WHERE status = 'boleto_emitido'`).catch(() => {});
