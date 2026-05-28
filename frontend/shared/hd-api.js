@@ -50,6 +50,10 @@ const api = {
   // Comissões
   listarComissoes: () => request('GET', '/comissoes'),
 
+  // Parcelas de pagamento da OS
+  listarParcelas: (osId) => request('GET', `/os/${osId}/parcelas`),
+  salvarParcelas: (osId, dados) => request('POST', `/os/${osId}/parcelas`, dados),
+
   // Bling
   blingAutorizar: () => request('GET', '/bling/autorizar'),
   blingListarClientes: (q) => request('GET', `/bling/clientes?q=${encodeURIComponent(q || '')}`),
@@ -61,7 +65,8 @@ const api = {
   blingBuscarPecas:    (q) => request('GET', `/bling/pecas?q=${encodeURIComponent(q)}`),
   blingCriarPeca:      (dados) => request('POST', '/bling/pecas', dados),
   blingConsultarEstoque:  (id) => request('GET',  `/bling/estoque/${id}`),
-  blingImportarPedidos:  ()   => request('POST', '/bling/importar-pedidos'),
+  blingImportarPedidos:         ()  => request('POST', '/bling/importar-pedidos'),
+  blingSincronizarFaturamento:  ()  => request('POST', '/bling/sincronizar-faturamento'),
 
   // Detran
   consultarPlaca: (placa) => request('GET', `/detran/${placa}`),
@@ -139,6 +144,7 @@ const api = {
   atualizarStatusFaturamentoLote: (ids, status)   => request('PATCH', '/faturamento/lote/status', { ids, status }),
   deletarFaturamento:        (id)           => request('DELETE', `/faturamento/${id}`),
   marcarVencimentoPago:      (id)           => request('PATCH',  `/faturamento/vencimento/${id}/pagar`),
+  gerarOSRetroativo:         ()             => request('POST',   '/faturamento/gerar-os-retroativo'),
 
   // Mecânicos
   listarMecanicos: () => request('GET', '/mecanicos'),

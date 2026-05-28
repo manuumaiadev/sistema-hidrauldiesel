@@ -503,4 +503,52 @@ const faturarOS = async (req, res) => {
   }
 };
 
-module.exports = { listarOS, buscarOS, criarOS, atualizarOS, atualizarStatus, faturarOS, excluirOS };
+const listarParcelas = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const os = await pool.query(
+      'SELECT condicao_pagamento, categoria_pagamento FROM ordens_servico WHERE id = $1', [id]
+    );
+    const parcelas = await pool.query(
+      'SELECT * FROM os_parcelas WHERE os_id = $1 ORDER BY dias NULLS LAST, data_vencimento', [id]
+    );
+    res.json({
+      condicao_pagamento: os.rows[0]?.condicao_pagamento || '',
+      categoria_pagamento: os.rows[0]?.categoria_pagamento || '',
+      parcelas: parcelas.rows
+    });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao listar parcelas' });
+  }
+};
+
+const salvarParcelas = async (req, res) => {
+  const { id } = req.params;
+  const { parcelas, condicao_pagamento, categoria_pagamento } = req.body;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      'UPDATE ordens_servico SET condicao_pagamento=$1, categoria_pagamento=$2 WHERE id=$3',
+      [condicao_pagamento || null, categoria_pagamento || null, id]
+    );
+    await client.query('DELETE FROM os_parcelas WHERE os_id = $1', [id]);
+    for (const p of parcelas || []) {
+      await client.query(
+        `INSERT INTO os_parcelas (os_id, dias, data_vencimento, valor, forma, observacao)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, p.dias || null, p.data_vencimento || null, p.valor || 0, p.forma || null, p.observacao || null]
+      );
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ erro: 'Erro ao salvar parcelas' });
+  } finally {
+    client.release();
+  }
+};
+
+module.exports = { listarOS, buscarOS, criarOS, atualizarOS, atualizarStatus, faturarOS, excluirOS, listarParcelas, salvarParcelas };

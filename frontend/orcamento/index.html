@@ -155,6 +155,10 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
       Serviços e peças
     </button>
+    <button class="section-tab" data-tab="pagamento" id="tab-pagamento-btn">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      Pagamento
+    </button>
   </div>
 
   <!-- CONTEÚDO -->
@@ -233,7 +237,7 @@
               <div class="veiculo-grid" style="grid-template-columns:1fr 1fr">
                 <div class="veiculo-dado" style="grid-column:1/-1">
                   <label>Descrição</label>
-                  <input type="text" placeholder="Ex: Compressor de ar, Motor hidráulico…" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"/>
+                  <input type="text" placeholder="Ex: Compressor de ar, Motor hidráulico…" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font)"/>
                 </div>
                 <div class="veiculo-dado">
                   <label>Código do fabricante</label>
@@ -241,7 +245,7 @@
                 </div>
                 <div class="veiculo-dado">
                   <label>Frota</label>
-                  <input type="text" placeholder="Nº interno do cliente" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--sans)"/>
+                  <input type="text" placeholder="Nº interno do cliente" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font)"/>
                 </div>
               </div>
             </div>
@@ -378,6 +382,81 @@
                 <div style="flex:1;border-top:1px solid #999;padding-top:6pt;text-align:center">Responsável técnico</div>
               </div>
             </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 3: Pagamento -->
+      <div class="tab-panel" id="tab-pagamento">
+
+        <div class="card" id="card-pagamento">
+          <div class="card-header">
+            <span class="card-title">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+              Condição de pagamento
+            </span>
+          </div>
+          <div class="card-body">
+
+            <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap">
+              <div style="flex:1;min-width:180px">
+                <label style="font-size:11.5px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Condição</label>
+                <input type="text" id="pag-condicao" placeholder="Ex: 30/60/90 ou À vista" style="width:100%;font-family:var(--font);font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;outline:none"/>
+              </div>
+              <div style="min-width:160px">
+                <label style="font-size:11.5px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Categoria</label>
+                <select id="pag-categoria" style="width:100%;font-family:var(--font);font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;outline:none;color:#12151F">
+                  <option value="">Selecionar…</option>
+                  <option value="Serviços">Serviços</option>
+                  <option value="Peças e insumos">Peças e insumos</option>
+                  <option value="Misto">Misto (serviços + peças)</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <button onclick="gerarParcelasPagamento()" style="font-family:var(--font);font-size:13px;font-weight:500;padding:8px 18px;border-radius:7px;border:none;background:var(--navy);color:#fff;cursor:pointer;white-space:nowrap;height:37px">
+                Gerar parcelas
+              </button>
+            </div>
+
+            <!-- Tabela de parcelas -->
+            <div id="pag-tabela-wrap" style="border:1px solid var(--border);border-radius:9px;overflow:hidden">
+              <table id="pag-tabela" style="width:100%;border-collapse:collapse;font-size:13px">
+                <thead>
+                  <tr style="background:#FAFAF9;border-bottom:2px solid var(--border)">
+                    <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#AEACA6;width:56px">Nº</th>
+                    <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#AEACA6;width:70px">Dias</th>
+                    <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#AEACA6;width:140px">Data</th>
+                    <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#AEACA6;width:130px">Valor (R$)</th>
+                    <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#AEACA6;width:160px">Forma</th>
+                    <th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#AEACA6">Observação</th>
+                    <th style="width:70px"></th>
+                  </tr>
+                </thead>
+                <tbody id="pag-tbody">
+                  <tr id="pag-empty-row">
+                    <td colspan="7" style="padding:32px 14px;text-align:center;color:#AEACA6;font-size:13px">
+                      Nenhuma parcela. Informe a condição e clique em "Gerar parcelas" ou adicione manualmente.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+              <div id="pag-total-resumo" style="font-size:13px;color:var(--muted)"></div>
+              <button onclick="adicionarParcela()" style="font-family:var(--font);font-size:12.5px;color:var(--navy);background:none;border:none;cursor:pointer;font-weight:500;padding:4px 0">
+                + Adicionar outra parcela
+              </button>
+            </div>
+
+            <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+              <button id="btn-salvar-pagamento" onclick="salvarPagamento()" style="font-family:var(--font);font-size:13.5px;font-weight:500;padding:8px 22px;border-radius:8px;border:none;background:var(--navy);color:#fff;cursor:pointer;display:flex;align-items:center;gap:7px">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Salvar pagamento
+              </button>
+            </div>
+
           </div>
         </div>
 

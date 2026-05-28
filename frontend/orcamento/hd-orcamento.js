@@ -1731,10 +1731,220 @@ async function carregarOS() {
   try {
     const os = await api.buscarOS(osId);
     popularPagina(os);
+    carregarParcelas();
   } catch (err) {
     console.error('Erro ao carregar OS:', err.message);
     alert('Erro ao carregar OS: ' + err.message);
   }
 }
 
-;
+// ── ABA DE PAGAMENTO ──────────────────────────────────────
+let _parcelas = [];
+
+const _FORMAS = ['PIX','Boleto','Transferência','Cheque','Cartão de Crédito','Cartão de Débito','Dinheiro'];
+
+function _fmtDataParcela(d) {
+  if (!d) return '';
+  return new Date(d.slice(0,10) + 'T12:00:00').toLocaleDateString('pt-BR');
+}
+
+function _parseBRLParcela(s) {
+  return Number((s || '0').replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+}
+
+function _fmtBRLParcela(v) {
+  return Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderParcelas() {
+  const tbody = document.getElementById('pag-tbody');
+  if (!tbody) return;
+
+  if (!_parcelas.length) {
+    tbody.innerHTML = `<tr id="pag-empty-row">
+      <td colspan="7" style="padding:32px 14px;text-align:center;color:#AEACA6;font-size:13px">
+        Nenhuma parcela. Informe a condição e clique em "Gerar parcelas" ou adicione manualmente.
+      </td></tr>`;
+    document.getElementById('pag-total-resumo').textContent = '';
+    return;
+  }
+
+  const formaOpts = _FORMAS.map(f => `<option value="${f}">${f}</option>`).join('');
+
+  tbody.innerHTML = _parcelas.map((p, i) => `
+    <tr style="border-bottom:1px solid #F0EFEA">
+      <td style="padding:8px 14px;font-size:12px;color:#AEACA6;font-family:var(--mono)">${i + 1}</td>
+      <td style="padding:8px 14px">
+        <input type="number" min="0" value="${p.dias ?? ''}" placeholder="0"
+          style="width:56px;font-family:var(--sans);font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;background:#fff"
+          oninput="_parcelaEditarDias(${i}, this.value)"/>
+      </td>
+      <td style="padding:8px 14px">
+        <input type="date" value="${p.data_vencimento ? p.data_vencimento.slice(0,10) : ''}"
+          style="font-family:var(--sans);font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;background:#fff;width:140px"
+          oninput="_parcelaEditarData(${i}, this.value)"/>
+      </td>
+      <td style="padding:8px 14px">
+        <input type="text" value="${_fmtBRLParcela(p.valor)}" inputmode="numeric"
+          style="width:116px;font-family:var(--mono);font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;background:#fff;text-align:right"
+          oninput="_parcelaEditarValor(${i}, this)"/>
+      </td>
+      <td style="padding:8px 14px">
+        <select style="font-family:var(--sans);font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:150px"
+          onchange="_parcelas[${i}].forma = this.value">
+          <option value="">Selecionar…</option>
+          ${_FORMAS.map(f => `<option value="${f}"${p.forma === f ? ' selected' : ''}>${f}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:8px 14px">
+        <input type="text" value="${p.observacao || ''}" placeholder="Observação…"
+          style="font-family:var(--sans);font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;background:#fff;width:100%;min-width:120px"
+          oninput="_parcelas[${i}].observacao = this.value"/>
+      </td>
+      <td style="padding:8px 14px;text-align:right;white-space:nowrap">
+        <button title="Remover" onclick="removerParcela(${i})"
+          style="background:none;border:none;cursor:pointer;color:#D1D5DB;line-height:1;padding:3px 5px;border-radius:4px"
+          onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='#D1D5DB'">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+        </button>
+      </td>
+    </tr>`).join('');
+
+  const totalParcelas = _parcelas.reduce((a, p) => a + parseFloat(p.valor || 0), 0);
+  document.getElementById('pag-total-resumo').innerHTML =
+    `<span style="font-weight:600">${_parcelas.length} parcela${_parcelas.length > 1 ? 's' : ''}</span> · Total: <span style="font-weight:700;font-family:var(--mono)">${fmtValor(totalParcelas)}</span>`;
+}
+
+function _parcelaEditarDias(i, dias) {
+  _parcelas[i].dias = dias !== '' ? parseInt(dias) : null;
+  if (_parcelas[i].dias !== null) {
+    const d = new Date();
+    d.setDate(d.getDate() + _parcelas[i].dias);
+    _parcelas[i].data_vencimento = d.toISOString().slice(0, 10);
+    const row = document.getElementById('pag-tbody').rows[i];
+    if (row) {
+      const dateInput = row.querySelectorAll('input')[1];
+      if (dateInput) dateInput.value = _parcelas[i].data_vencimento;
+    }
+  }
+}
+
+function _parcelaEditarData(i, val) {
+  _parcelas[i].data_vencimento = val || null;
+  if (val) {
+    const d = new Date(val + 'T12:00:00');
+    const hoje = new Date();
+    hoje.setHours(12, 0, 0, 0);
+    const diff = Math.round((d - hoje) / 86400000);
+    _parcelas[i].dias = diff >= 0 ? diff : null;
+    const row = document.getElementById('pag-tbody').rows[i];
+    if (row) {
+      const diasInput = row.querySelectorAll('input')[0];
+      if (diasInput) diasInput.value = _parcelas[i].dias ?? '';
+    }
+  }
+}
+
+function _parcelaEditarValor(i, input) {
+  const digits = input.value.replace(/\D/g, '');
+  if (!digits) { input.value = ''; _parcelas[i].valor = 0; return; }
+  const num = parseInt(digits, 10) / 100;
+  input.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  _parcelas[i].valor = num;
+}
+
+function adicionarParcela() {
+  _parcelas.push({ dias: null, data_vencimento: null, valor: 0, forma: '', observacao: '' });
+  renderParcelas();
+}
+
+function removerParcela(i) {
+  _parcelas.splice(i, 1);
+  renderParcelas();
+}
+
+function gerarParcelasPagamento() {
+  const condicao = (document.getElementById('pag-condicao')?.value || '').trim();
+  // Total do OS
+  const totalServ = [...document.querySelectorAll('#servicos-list .servico-card')]
+    .reduce((a, c) => {
+      const qty = Number(c.querySelector('.servico-quantidade-input')?.value || 1);
+      const val = _parseBRLParcela(c.querySelector('.servico-valor-input')?.value);
+      return a + qty * val;
+    }, 0);
+  const totalPeca = [...document.querySelectorAll('#pecas-body tr')]
+    .reduce((a, tr) => {
+      const qty = Number(tr.querySelector('.td-qty input')?.value || 1);
+      const val = _parseBRLParcela(tr.querySelector('.peca-valor-input')?.value);
+      return a + qty * val;
+    }, 0);
+  const totalOS = totalServ + totalPeca;
+
+  // Extrai números da condição (ex: "30/60/90" → [30,60,90], "À vista" → [0])
+  const numeros = (condicao.match(/\d+/g) || []).map(Number);
+  const dias = numeros.length > 0 ? numeros : [0];
+
+  const valorParcela = dias.length > 0 ? totalOS / dias.length : totalOS;
+
+  _parcelas = dias.map(d => {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + d);
+    return {
+      dias: d,
+      data_vencimento: dt.toISOString().slice(0, 10),
+      valor: parseFloat(valorParcela.toFixed(2)),
+      forma: '',
+      observacao: ''
+    };
+  });
+
+  renderParcelas();
+}
+
+async function carregarParcelas() {
+  if (!osId) return;
+  try {
+    const dados = await api.listarParcelas(osId);
+    const condicaoEl = document.getElementById('pag-condicao');
+    const categoriaEl = document.getElementById('pag-categoria');
+    if (condicaoEl) condicaoEl.value = dados.condicao_pagamento || '';
+    if (categoriaEl) categoriaEl.value = dados.categoria_pagamento || '';
+    _parcelas = dados.parcelas || [];
+    renderParcelas();
+  } catch (err) {
+    console.warn('Erro ao carregar parcelas:', err.message);
+  }
+}
+
+async function salvarPagamento() {
+  if (!osId) {
+    alert('Salve a OS primeiro antes de registrar o pagamento.');
+    return;
+  }
+  const btn = document.getElementById('btn-salvar-pagamento');
+  const textoOrig = btn.innerHTML;
+  btn.innerHTML = '…';
+  btn.disabled = true;
+
+  try {
+    await api.salvarParcelas(osId, {
+      condicao_pagamento: document.getElementById('pag-condicao')?.value?.trim() || null,
+      categoria_pagamento: document.getElementById('pag-categoria')?.value || null,
+      parcelas: _parcelas.filter(p => p.data_vencimento || p.valor),
+    });
+    mostrarToastSucesso('Pagamento salvo!');
+  } catch (err) {
+    alert('Erro ao salvar pagamento: ' + err.message);
+  } finally {
+    btn.innerHTML = textoOrig;
+    btn.disabled = false;
+  }
+}
+
+// Ativa tab pagamento ao clicar (carrega parcelas se OS já existe)
+document.getElementById('tab-pagamento-btn')?.addEventListener('click', () => {
+  if (osId && !_parcelas.length) carregarParcelas();
+});

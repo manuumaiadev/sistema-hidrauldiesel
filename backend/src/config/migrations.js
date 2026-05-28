@@ -513,6 +513,45 @@ const createTables = async () => {
     // Renomeia status legado caso exista
     await pool.query(`UPDATE faturamentos SET status = 'cobranca_emitida' WHERE status = 'boleto_emitido'`).catch(() => {});
 
+    // Pagamento por OS — condição e categoria
+    await pool.query(`ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS condicao_pagamento VARCHAR(200)`).catch(() => {});
+    await pool.query(`ALTER TABLE ordens_servico ADD COLUMN IF NOT EXISTS categoria_pagamento VARCHAR(100)`).catch(() => {});
+
+    // Parcelas de pagamento da OS
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS os_parcelas (
+        id SERIAL PRIMARY KEY,
+        os_id INTEGER REFERENCES ordens_servico(id) ON DELETE CASCADE,
+        dias INTEGER,
+        data_vencimento DATE,
+        valor DECIMAL(10,2) DEFAULT 0,
+        forma VARCHAR(50),
+        observacao TEXT,
+        criado_em TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Copia vencimentos de faturamentos para os_parcelas das OS já vinculadas (idempotente)
+    await pool.query(`
+      INSERT INTO os_parcelas (os_id, dias, data_vencimento, valor, forma, observacao)
+      SELECT
+        f.os_id,
+        NULL AS dias,
+        fv.data_vencimento,
+        fv.valor,
+        f.forma_pagamento AS forma,
+        NULL AS observacao
+      FROM faturamento_vencimentos fv
+      JOIN faturamentos f ON f.id = fv.faturamento_id
+      WHERE f.os_id IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM os_parcelas op
+          WHERE op.os_id = f.os_id
+            AND op.data_vencimento = fv.data_vencimento
+            AND op.valor = fv.valor
+        )
+    `).catch(() => {});
+
     console.log('✅ Tabelas criadas com sucesso!');
   } catch (err) {
     console.error('❌ Erro ao criar tabelas:', err.message);
