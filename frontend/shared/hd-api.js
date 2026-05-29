@@ -145,6 +145,19 @@ const api = {
   deletarFaturamento:        (id)           => request('DELETE', `/faturamento/${id}`),
   marcarVencimentoPago:      (id)           => request('PATCH',  `/faturamento/vencimento/${id}/pagar`),
   gerarOSRetroativo:         ()             => request('POST',   '/faturamento/gerar-os-retroativo'),
+  importarPdfBling: (file) => {
+    const formData = new FormData();
+    formData.append('pdf', file);
+    return fetch(`${API_URL}/faturamento/importar-pdf`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getToken()}` },
+      body: formData
+    }).then(async r => {
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.erro || 'Erro na importação');
+      return data;
+    });
+  },
 
   // Mecânicos
   listarMecanicos: () => request('GET', '/mecanicos'),
