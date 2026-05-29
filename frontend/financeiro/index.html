@@ -358,7 +358,7 @@ tbody tr:hover { background: #FAFAF9; }
         <div class="sec-title">Identificação</div>
         <div class="field-grid g4">
           <div class="field">
-            <label>Data faturamento <span style="color:var(--red)">*</span></label>
+            <label>Data de emissão da NF</label>
             <input type="date" id="fat-data"/>
           </div>
           <div class="field">
@@ -800,8 +800,9 @@ function renderTabela(lista) {
   };
 
   tbody.innerHTML = pagina.map(f => {
-    const si = STATUS_INFO[f.status] || STATUS_INFO.autorizado;
-    const d  = new Date((f.data_faturamento || '').slice(0, 10) + 'T12:00:00');
+    const si      = STATUS_INFO[f.status] || STATUS_INFO.autorizado;
+    const temData = !!f.data_faturamento;
+    const d       = temData ? new Date(f.data_faturamento.slice(0, 10) + 'T12:00:00') : null;
 
     let menuStatus = '';
     if (si.split) {
@@ -827,8 +828,11 @@ function renderTabela(lista) {
     return `<tr>
       <td class="checkbox-col"><input type="checkbox" class="row-checkbox" id="chk-${f.id}" ${_selecionados.has(f.id) ? 'checked' : ''} onclick="toggleSelecionado(${f.id})"/></td>
       <td>
-        <div style="font-size:13px;white-space:nowrap">${d.toLocaleDateString('pt-BR')}</div>
-        <div style="font-size:12px;color:var(--muted)">${dias[d.getDay()]}</div>
+        ${temData
+          ? `<div style="font-size:13px;white-space:nowrap">${d.toLocaleDateString('pt-BR')}</div>
+             <div style="font-size:12px;color:var(--muted)">${dias[d.getDay()]}</div>`
+          : `<span style="font-size:12px;font-weight:600;color:#F59E0B;background:#FEF3C7;padding:3px 8px;border-radius:5px;white-space:nowrap">NF pendente</span>`
+        }
       </td>
       <td><span class="mono" style="font-weight:600;font-size:13px">${f.os_numero || '<span style="color:#D4D2CC">—</span>'}</span></td>
       <td><span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '<span style="color:#D4D2CC">—</span>'}</span></td>
@@ -972,7 +976,7 @@ function abrirModalEditar(id) {
 
   document.getElementById('fat-id').value               = f.id;
   document.getElementById('modal-fat-title').textContent = 'Editar Faturamento';
-  document.getElementById('fat-data').value             = f.data_faturamento.slice(0,10);
+  document.getElementById('fat-data').value             = f.data_faturamento ? f.data_faturamento.slice(0,10) : '';
   document.getElementById('fat-cliente').value          = f.cliente_nome || '';
   document.getElementById('fat-os').value               = f.os_numero || '';
   document.getElementById('fat-status').value           = f.status || 'autorizado';
@@ -1196,11 +1200,7 @@ function copiarObs(el, e) {
 // ── Salvar ────────────────────────────────────────────────────────────────────
 async function salvarFaturamento() {
   const id               = document.getElementById('fat-id').value;
-  const data_faturamento = document.getElementById('fat-data').value;
-  if (!data_faturamento) {
-    document.getElementById('fat-erro').textContent = 'Data de faturamento é obrigatória.';
-    return;
-  }
+  const data_faturamento = document.getElementById('fat-data').value || null;
   document.getElementById('fat-erro').textContent = '';
 
   const vencimentos = _parcelasFat

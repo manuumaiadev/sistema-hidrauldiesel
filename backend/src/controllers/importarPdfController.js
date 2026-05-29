@@ -287,7 +287,7 @@ async function criarFaturamentoVinculado(client, osId, dados) {
       osId,
       trunc(os_numero, 50),
       trunc(cliente_nome, 200),
-      data_entrada,
+      null, // data_faturamento = data de emissão da NF, preenchida pelo usuário ao emitir
       valor_servico || 0,
       valor_peca    || 0,
       valor_total   || 0,

@@ -559,6 +559,9 @@ const createTables = async () => {
         )
     `).catch(() => {});
 
+    // data_faturamento = data de emissão da NF, pode ser nula em registros importados
+    await pool.query(`ALTER TABLE faturamentos ALTER COLUMN data_faturamento DROP NOT NULL`).catch(() => {});
+
     console.log('✅ Tabelas criadas com sucesso!');
   } catch (err) {
     console.error('❌ Erro ao criar tabelas:', err.message);
