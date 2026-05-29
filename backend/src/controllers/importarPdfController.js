@@ -1,11 +1,12 @@
 const pool = require('../config/database');
 
-// pdf-parse tem bug no require padrão (tenta ler arquivo de teste); usa lib diretamente
-let pdfParse;
-try {
-  pdfParse = require('pdf-parse/lib/pdf-parse.js');
-} catch {
-  pdfParse = require('pdf-parse');
+// pdf-parse v2 usa classe; v1 usa função — suportamos ambos
+const { PDFParse } = require('pdf-parse');
+
+async function extrairTextoPdf(buffer) {
+  const parser = new PDFParse();
+  const resultado = await parser.parse(buffer);
+  return resultado.text;
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -316,8 +317,7 @@ const importarPdfBling = async (req, res) => {
 
   let text;
   try {
-    const parsed = await pdfParse(req.file.buffer, { version: 'v2.0.550' });
-    text = parsed.text;
+    text = await extrairTextoPdf(req.file.buffer);
   } catch (err) {
     return res.status(422).json({ erro: 'Não foi possível ler o PDF: ' + err.message });
   }
