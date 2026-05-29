@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth');
-const { listarOS, buscarOS, criarOS, atualizarOS, atualizarStatus, faturarOS, excluirOS, listarParcelas, salvarParcelas } = require('../controllers/osController');
+const { listarOS, buscarOS, buscarOSByNumero, criarOS, atualizarOS, atualizarStatus, faturarOS, excluirOS, listarParcelas, salvarParcelas } = require('../controllers/osController');
 
 router.get('/', auth, listarOS);
+router.get('/numero/:numero', auth, buscarOSByNumero);
 router.get('/:id/parcelas', auth, listarParcelas);
 router.post('/:id/parcelas', auth, salvarParcelas);
 router.get('/:id', auth, buscarOS);

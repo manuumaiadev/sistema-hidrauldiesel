@@ -373,7 +373,7 @@ tbody tr:hover { background: #FAFAF9; }
 
       <!-- NF Serviço -->
       <div>
-        <div class="sec-title">Nota Fiscal de Serviço</div>
+        <div class="sec-title">Nota Fiscal de Serviço (NFS-e)</div>
         <div class="field-grid g3">
           <div class="field">
             <label>Nº NF Serviço</label>
@@ -388,11 +388,21 @@ tbody tr:hover { background: #FAFAF9; }
             <input type="number" id="fat-valor-servico" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
           </div>
         </div>
+        <div class="field" style="margin-top:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <label style="margin:0">Informações Complementares (NFS-e)</label>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="gerarObsNFS()" title="Gerar texto automático">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Gerar texto
+            </button>
+          </div>
+          <textarea id="fat-obs-nfs" rows="4" placeholder="Informações complementares para a NFS-e…" style="font-family:var(--mono);font-size:12px;resize:vertical"></textarea>
+        </div>
       </div>
 
       <!-- NF Peça -->
       <div>
-        <div class="sec-title">Nota Fiscal de Peça</div>
+        <div class="sec-title">Nota Fiscal de Peça (NF-e)</div>
         <div class="field-grid g3">
           <div class="field">
             <label>Nº NF Peça</label>
@@ -406,6 +416,16 @@ tbody tr:hover { background: #FAFAF9; }
             <label>Valor Peça (R$)</label>
             <input type="number" id="fat-valor-peca" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
           </div>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <label style="margin:0">Informações Complementares (NF-e)</label>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="gerarObsNF()" title="Gerar texto automático">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Gerar texto
+            </button>
+          </div>
+          <textarea id="fat-obs-nf" rows="2" placeholder="Informações complementares para a NF-e…" style="font-family:var(--mono);font-size:12px;resize:vertical"></textarea>
         </div>
       </div>
 
@@ -452,6 +472,11 @@ tbody tr:hover { background: #FAFAF9; }
               <option value="Outros">Outros</option>
             </select>
           </div>
+        </div>
+
+        <div class="field" style="grid-column:1/-1;margin-top:4px">
+          <label>Observações do Pagamento</label>
+          <textarea id="fat-obs-pagamento" rows="2" placeholder="Ex: Boleto enviado por e-mail, aguardando confirmação…" style="resize:vertical"></textarea>
         </div>
 
         <!-- Vencimentos + situação da cobrança (card único) -->
@@ -886,6 +911,7 @@ function _limparModal() {
   _fecharClienteDropdown();
   ['fat-id','fat-cliente','fat-os','fat-nf-servico','fat-pedido-servico',
    'fat-nf-peca','fat-pedido-peca','fat-banco','fat-obs',
+   'fat-obs-nfs','fat-obs-nf','fat-obs-pagamento',
    'fat-valor-servico','fat-valor-peca','fat-valor-total','fat-valor-parcela'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -929,6 +955,9 @@ function abrirModalEditar(id) {
   document.getElementById('fat-banco').value            = f.banco || '';
   document.getElementById('fat-forma-pagamento').value  = f.forma_pagamento || '';
   document.getElementById('fat-categoria').value        = f.categoria || 'Venda de Serviços';
+  document.getElementById('fat-obs-nfs').value          = f.obs_nfs || '';
+  document.getElementById('fat-obs-nf').value           = f.obs_nf  || '';
+  document.getElementById('fat-obs-pagamento').value    = f.obs_pagamento || '';
   document.getElementById('fat-obs').value              = f.observacoes || '';
   document.getElementById('btn-excluir-fat').style.display = 'inline-flex';
   _vencimentos = JSON.parse(JSON.stringify(f.vencimentos || []));
@@ -1105,6 +1134,9 @@ async function salvarFaturamento() {
     banco:           document.getElementById('fat-banco').value.trim()            || null,
     forma_pagamento: document.getElementById('fat-forma-pagamento').value         || null,
     categoria:       document.getElementById('fat-categoria').value               || 'Venda de Serviços',
+    obs_nfs:         document.getElementById('fat-obs-nfs').value.trim()          || null,
+    obs_nf:          document.getElementById('fat-obs-nf').value.trim()           || null,
+    obs_pagamento:   document.getElementById('fat-obs-pagamento').value.trim()    || null,
     observacoes:     document.getElementById('fat-obs').value.trim()              || null,
     vencimentos:     _vencimentos.filter(v => v.data_vencimento),
   };
@@ -1264,6 +1296,60 @@ async function _blingClienteBuscar(texto) {
   } catch {
     dd.innerHTML = '<div style="padding:10px 14px;font-size:12.5px;color:var(--muted)">Erro ao buscar clientes</div>';
   }
+}
+
+// ── Geração automática de textos de obs ───────────────────────────────────────
+async function _fetchOSDoForm() {
+  const numero = document.getElementById('fat-os').value.trim();
+  if (!numero) { alert('Informe o Nº da OS primeiro.'); return null; }
+  try {
+    return await api.buscarOSByNumero(numero);
+  } catch {
+    alert('OS não encontrada. Preencha os campos manualmente.');
+    return null;
+  }
+}
+
+async function gerarObsNFS() {
+  const os = await _fetchOSDoForm();
+  if (!os) return;
+
+  const partes = [];
+  partes.push(`OS: ${os.numero_os || os.numero}`);
+  const placa = os.placa || os.obs_tecnica?.match(/Placa:\s*([^\s|]+)/i)?.[1];
+  if (placa) partes.push(`PLACA: ${placa}`);
+  const frota = os.frota || os.obs_tecnica?.match(/Frota:\s*([^\s|]+)/i)?.[1];
+  if (frota) partes.push(`FROTA: ${frota}`);
+  const pedServ = document.getElementById('fat-pedido-servico').value.trim() || os.num_pedido_servico;
+  if (pedServ) partes.push(`PEDIDO DE SERVIÇO: ${pedServ}`);
+
+  let texto = partes.join(' | ');
+
+  if (os.servicos && os.servicos.length > 0) {
+    texto += '\nSERVIÇOS REALIZADOS:';
+    os.servicos.forEach((s, i) => {
+      const val = parseFloat(s.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      texto += `\n${i + 1}. ${s.descricao} - ${val}`;
+    });
+  }
+
+  document.getElementById('fat-obs-nfs').value = texto;
+}
+
+async function gerarObsNF() {
+  const os = await _fetchOSDoForm();
+  if (!os) return;
+
+  const partes = [];
+  partes.push(`OS: ${os.numero_os || os.numero}`);
+  const placa = os.placa || os.obs_tecnica?.match(/Placa:\s*([^\s|]+)/i)?.[1];
+  if (placa) partes.push(`PLACA: ${placa}`);
+  const frota = os.frota || os.obs_tecnica?.match(/Frota:\s*([^\s|]+)/i)?.[1];
+  if (frota) partes.push(`FROTA: ${frota}`);
+  const pedCompra = document.getElementById('fat-pedido-peca').value.trim() || os.num_pedido_compra;
+  if (pedCompra) partes.push(`PEDIDO DE COMPRA: ${pedCompra}`);
+
+  document.getElementById('fat-obs-nf').value = partes.join(' | ');
 }
 
 carregar();

@@ -38,6 +38,7 @@ const api = {
   // OS
   listarOS: () => request('GET', '/os'),
   buscarOS: (id) => request('GET', `/os/${id}`),
+  buscarOSByNumero: (numero) => request('GET', `/os/numero/${encodeURIComponent(numero)}`),
   criarOS: (dados) => request('POST', '/os', dados),
   atualizarOS: (id, dados) => request('PUT', `/os/${id}`, dados),
   atualizarStatusOS: (id, status) => request('PATCH', `/os/${id}/status`, { status }),

@@ -551,4 +551,26 @@ const salvarParcelas = async (req, res) => {
   }
 };
 
-module.exports = { listarOS, buscarOS, criarOS, atualizarOS, atualizarStatus, faturarOS, excluirOS, listarParcelas, salvarParcelas };
+const buscarOSByNumero = async (req, res) => {
+  const { numero } = req.params;
+  try {
+    const os = await pool.query(
+      `SELECT os.*, v.placa, v.modelo
+       FROM ordens_servico os
+       LEFT JOIN veiculos v ON v.id = os.veiculo_id
+       WHERE os.numero = $1 OR os.numero_os = $1
+       ORDER BY os.id DESC LIMIT 1`,
+      [numero]
+    );
+    if (os.rows.length === 0) return res.status(404).json({ erro: 'OS não encontrada' });
+
+    const servicos = await pool.query('SELECT * FROM itens_servico WHERE os_id = $1', [os.rows[0].id]);
+    const pecas    = await pool.query('SELECT * FROM itens_pecas    WHERE os_id = $1', [os.rows[0].id]);
+
+    res.json({ ...os.rows[0], servicos: servicos.rows, pecas: pecas.rows });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar OS por número' });
+  }
+};
+
+module.exports = { listarOS, buscarOS, buscarOSByNumero, criarOS, atualizarOS, atualizarStatus, faturarOS, excluirOS, listarParcelas, salvarParcelas };
