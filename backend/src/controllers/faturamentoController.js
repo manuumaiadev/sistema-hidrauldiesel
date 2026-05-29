@@ -113,8 +113,9 @@ const listarFaturamentos = async (req, res) => {
     `;
     const params = [];
 
-    if (data_inicio)    { params.push(data_inicio);           query += ` AND f.data_faturamento >= $${params.length}`; }
-    if (data_fim)       { params.push(data_fim);              query += ` AND f.data_faturamento <= $${params.length}`; }
+    // NF pendentes (data nula) sempre aparecem mesmo com filtro de data ativo
+    if (data_inicio)    { params.push(data_inicio);           query += ` AND (f.data_faturamento >= $${params.length} OR f.data_faturamento IS NULL)`; }
+    if (data_fim)       { params.push(data_fim);              query += ` AND (f.data_faturamento <= $${params.length} OR f.data_faturamento IS NULL)`; }
     if (cliente)        { params.push(`%${cliente}%`);        query += ` AND f.cliente_nome ILIKE $${params.length}`; }
     if (status)         { params.push(status);                query += ` AND f.status = $${params.length}`; }
     if (os_numero)      { params.push(`%${os_numero}%`);      query += ` AND f.os_numero ILIKE $${params.length}`; }
@@ -123,7 +124,8 @@ const listarFaturamentos = async (req, res) => {
     if (pedido_servico) { params.push(`%${pedido_servico}%`); query += ` AND f.pedido_servico ILIKE $${params.length}`; }
     if (pedido_peca)    { params.push(`%${pedido_peca}%`);    query += ` AND f.pedido_peca ILIKE $${params.length}`; }
 
-    query += ' GROUP BY f.id ORDER BY f.data_faturamento DESC';
+    // NF pendentes (data nula) sempre primeiro, depois mais recentes
+    query += ' GROUP BY f.id ORDER BY (f.data_faturamento IS NULL) DESC, f.data_faturamento DESC';
 
     const resultado = await pool.query(query, params);
 
