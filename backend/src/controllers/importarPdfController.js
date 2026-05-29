@@ -1,11 +1,13 @@
 const pool = require('../config/database');
 
-// pdf-parse v2 usa classe; v1 usa função — suportamos ambos
-const { PDFParse } = require('pdf-parse');
+const { PDFParse, VerbosityLevel } = require('pdf-parse');
 
 async function extrairTextoPdf(buffer) {
-  const parser = new PDFParse();
-  const resultado = await parser.parse(buffer);
+  // pdf-parse v2: requer Uint8Array (não Buffer)
+  const data   = new Uint8Array(buffer);
+  const parser = new PDFParse(data, { verbosity: VerbosityLevel.ERRORS });
+  await parser.load();
+  const resultado = await parser.getText();
   return resultado.text;
 }
 
