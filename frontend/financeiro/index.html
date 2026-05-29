@@ -165,7 +165,7 @@ tbody tr:hover { background: #FAFAF9; }
 
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-box { background: var(--surface); border-radius: 12px; width: 780px; max-width: 96vw; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-box { background: var(--surface); border-radius: 12px; width: 1020px; max-width: 97vw; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
 .modal-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .modal-title { font-size: 15px; font-weight: 600; }
 .modal-close { background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; line-height: 1; padding: 0 4px; }
@@ -475,16 +475,17 @@ tbody tr:hover { background: #FAFAF9; }
             <thead>
               <tr style="background:#FAFAF9;border-bottom:1px solid var(--border)">
                 <th style="padding:7px 10px;width:28px;color:#AEACA6;font-size:10px;letter-spacing:.06em;text-align:center">Nº</th>
-                <th style="padding:7px 10px;width:68px;color:#AEACA6;font-size:10px;letter-spacing:.06em">DIAS</th>
-                <th style="padding:7px 10px;width:130px;color:#AEACA6;font-size:10px;letter-spacing:.06em">DATA</th>
-                <th style="padding:7px 10px;width:110px;color:#AEACA6;font-size:10px;letter-spacing:.06em">VALOR (R$)</th>
-                <th style="padding:7px 10px;width:150px;color:#AEACA6;font-size:10px;letter-spacing:.06em">FORMA</th>
+                <th style="padding:7px 10px;width:60px;color:#AEACA6;font-size:10px;letter-spacing:.06em">DIAS</th>
+                <th style="padding:7px 10px;width:128px;color:#AEACA6;font-size:10px;letter-spacing:.06em">DATA</th>
+                <th style="padding:7px 10px;width:105px;color:#AEACA6;font-size:10px;letter-spacing:.06em">VALOR (R$)</th>
+                <th style="padding:7px 10px;width:145px;color:#AEACA6;font-size:10px;letter-spacing:.06em">FORMA</th>
+                <th style="padding:7px 10px;width:130px;color:#AEACA6;font-size:10px;letter-spacing:.06em">BANCO</th>
                 <th style="padding:7px 10px;color:#AEACA6;font-size:10px;letter-spacing:.06em">OBSERVAÇÃO</th>
                 <th style="padding:7px 10px;width:30px"></th>
               </tr>
             </thead>
             <tbody id="fat-parc-tbody">
-              <tr><td colspan="7" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>
+              <tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>
             </tbody>
           </table>
         </div>
@@ -494,17 +495,9 @@ tbody tr:hover { background: #FAFAF9; }
           <button class="btn btn-ghost btn-sm" type="button" onclick="adicionarParcelaFat()">+ Adicionar outra parcela</button>
         </div>
 
-        <!-- banco + obs pagamento -->
-        <div class="field-grid" style="grid-template-columns:1fr 1fr;gap:10px">
-          <div class="field" style="margin:0">
-            <label>Banco</label>
-            <input type="text" id="fat-banco" placeholder="Ex: Itaú, Nubank…"/>
-          </div>
-          <div class="field" style="margin:0">
-            <label>Observações do Pagamento</label>
-            <textarea id="fat-obs-pagamento" rows="2" placeholder="Ex: Boleto enviado por e-mail…" style="resize:vertical"></textarea>
-          </div>
-        </div>
+        <!-- campo banco global (oculto, mantido para compatibilidade) -->
+        <input type="hidden" id="fat-obs-pagamento"/>
+        <input type="hidden" id="fat-banco"/>
 
         <!-- campos ocultos para compatibilidade -->
         <input type="hidden" id="fat-valor-total"/>
@@ -1064,44 +1057,49 @@ function renderParcelasFat() {
   if (!tbody) return;
 
   if (!_parcelasFat.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>';
     if (resumo) resumo.textContent = '';
     return;
   }
 
-  const formasOpts = _FORMAS_FAT.map(f => `<option value="${f}">${f}</option>`).join('');
+  const inp = (extra) => `font-family:var(--font);font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;${extra||''}`;
   tbody.innerHTML = _parcelasFat.map((p, i) => `
     <tr style="border-bottom:1px solid #F0EFEA">
       <td style="padding:6px 10px;text-align:center;color:var(--muted);font-size:12px">${i+1}</td>
-      <td style="padding:4px 8px">
+      <td style="padding:4px 6px">
         <input type="number" value="${p.dias ?? ''}" min="0"
-          style="width:58px;font-family:var(--mono);font-size:12.5px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;text-align:center"
+          style="${inp('width:52px;font-family:var(--mono);text-align:center')}"
           onchange="_fatDiasChange(${i},this.value)"/>
       </td>
-      <td style="padding:4px 8px">
+      <td style="padding:4px 6px">
         <input type="date" value="${p.data_vencimento||''}"
-          style="font-family:var(--font);font-size:12.5px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:130px"
+          style="${inp('width:126px')}"
           onchange="_fatDataChange(${i},this.value)"/>
       </td>
-      <td style="padding:4px 8px">
+      <td style="padding:4px 6px">
         <input type="number" value="${p.valor||0}" step="0.01" min="0"
-          style="width:100px;font-family:var(--mono);font-size:12.5px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;text-align:right"
+          style="${inp('width:96px;font-family:var(--mono);text-align:right')}"
           onchange="_parcelasFat[${i}].valor=parseFloat(this.value)||0;renderParcelasFat()"/>
       </td>
-      <td style="padding:4px 8px">
-        <select style="font-family:var(--font);font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:148px"
+      <td style="padding:4px 6px">
+        <select style="${inp('width:140px')}"
           onchange="_parcelasFat[${i}].forma=this.value">
           <option value="">Selecionar…</option>
           ${_FORMAS_FAT.map(f=>`<option value="${f}"${p.forma===f?' selected':''}>${f}</option>`).join('')}
           ${p.forma && !_FORMAS_FAT.includes(p.forma) ? `<option value="${p.forma}" selected>${p.forma}</option>` : ''}
         </select>
       </td>
-      <td style="padding:4px 8px">
+      <td style="padding:4px 6px">
+        <input type="text" value="${p.banco||''}" placeholder="Ex: Itaú…"
+          style="${inp('width:120px')}"
+          oninput="_parcelasFat[${i}].banco=this.value"/>
+      </td>
+      <td style="padding:4px 6px">
         <input type="text" value="${p.observacao||''}" placeholder="Observação…"
-          style="font-family:var(--font);font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:100%"
+          style="${inp('width:100%')}"
           oninput="_parcelasFat[${i}].observacao=this.value"/>
       </td>
-      <td style="padding:4px 8px;text-align:center">
+      <td style="padding:4px 6px;text-align:center">
         <button type="button" onclick="_remParcelaFat(${i})"
           style="background:none;border:none;cursor:pointer;color:#CBD5E1;padding:2px 4px;border-radius:4px"
           onmouseenter="this.style.color='#EF4444'" onmouseleave="this.style.color='#CBD5E1'">
