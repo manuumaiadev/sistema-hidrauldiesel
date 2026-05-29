@@ -90,6 +90,21 @@ tbody tr:hover { background: #FAFAF9; }
 /* Células Serviço / Peça */
 .cell-nf-wrap { display: flex; gap: 9px; align-items: flex-start; }
 .cell-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cell-icon-obs { position: relative; cursor: pointer; }
+.cell-icon-obs:hover { filter: brightness(.92); }
+.obs-tooltip {
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%); background: #1E293B; color: #E2E8F0;
+  padding: 10px 14px; border-radius: 9px; font-size: 11.5px;
+  font-family: var(--mono); line-height: 1.65; white-space: pre;
+  min-width: 260px; max-width: 480px; z-index: 600; pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,.3);
+}
+.obs-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #1E293B;
+}
+.cell-icon-obs:hover .obs-tooltip { display: block; }
 .cell-stack { display: flex; flex-direction: column; gap: 2px; }
 .cs-val { font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
 .cs-val-serv { color: #2563EB; }
@@ -431,39 +446,18 @@ tbody tr:hover { background: #FAFAF9; }
 
       <!-- Pagamentos -->
       <div>
-        <div class="sec-title">Pagamentos</div>
+        <div class="sec-title-row" style="padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px">
+          <span class="sec-title" style="border:none;margin:0;padding:0">Condição de pagamento</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--muted)">Total: <strong id="fat-total-display" style="color:var(--navy)">R$ 0,00</strong></span>
+        </div>
 
-        <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="field">
-            <label>Valor Total (R$)</label>
-            <input type="number" id="fat-valor-total" placeholder="0,00" step="0.01" min="0" readonly/>
+        <!-- linha: condição | categoria | gerar -->
+        <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap">
+          <div class="field" style="flex:1;min-width:180px;margin:0">
+            <label>Condição</label>
+            <input type="text" id="fat-condicao" placeholder="Ex: 30/60/90 ou À vista"/>
           </div>
-          <div class="field">
-            <label>Qtd Parcelas</label>
-            <input type="number" id="fat-parcelas" value="1" min="1" max="60" oninput="recalcularParcela();gerarVencimentos()"/>
-          </div>
-          <div class="field">
-            <label>Valor Parcela (R$)</label>
-            <input type="number" id="fat-valor-parcela" placeholder="0,00" step="0.01" min="0" readonly/>
-          </div>
-          <div class="field">
-            <label>Banco</label>
-            <input type="text" id="fat-banco" placeholder="Ex: Bradesco"/>
-          </div>
-          <div class="field">
-            <label>Forma de Pagamento</label>
-            <select id="fat-forma-pagamento">
-              <option value="">Selecionar…</option>
-              <option value="PIX">PIX</option>
-              <option value="Boleto">Boleto</option>
-              <option value="Transferência">Transferência</option>
-              <option value="Cheque">Cheque</option>
-              <option value="Cartão de Crédito">Cartão de Crédito</option>
-              <option value="Cartão de Débito">Cartão de Débito</option>
-              <option value="Dinheiro">Dinheiro</option>
-            </select>
-          </div>
-          <div class="field">
+          <div class="field" style="width:190px;margin:0">
             <label>Categoria</label>
             <select id="fat-categoria">
               <option value="Venda de Serviços" selected>Venda de Serviços</option>
@@ -472,15 +466,51 @@ tbody tr:hover { background: #FAFAF9; }
               <option value="Outros">Outros</option>
             </select>
           </div>
+          <button class="btn btn-primary btn-sm" type="button" onclick="gerarParcelasFat()" style="flex-shrink:0">Gerar parcelas</button>
         </div>
 
-        <div class="field" style="grid-column:1/-1;margin-top:4px">
-          <label>Observações do Pagamento</label>
-          <textarea id="fat-obs-pagamento" rows="2" placeholder="Ex: Boleto enviado por e-mail, aguardando confirmação…" style="resize:vertical"></textarea>
+        <!-- tabela de parcelas -->
+        <div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead>
+              <tr style="background:#FAFAF9;border-bottom:1px solid var(--border)">
+                <th style="padding:7px 10px;width:28px;color:#AEACA6;font-size:10px;letter-spacing:.06em;text-align:center">Nº</th>
+                <th style="padding:7px 10px;width:68px;color:#AEACA6;font-size:10px;letter-spacing:.06em">DIAS</th>
+                <th style="padding:7px 10px;width:130px;color:#AEACA6;font-size:10px;letter-spacing:.06em">DATA</th>
+                <th style="padding:7px 10px;width:110px;color:#AEACA6;font-size:10px;letter-spacing:.06em">VALOR (R$)</th>
+                <th style="padding:7px 10px;width:150px;color:#AEACA6;font-size:10px;letter-spacing:.06em">FORMA</th>
+                <th style="padding:7px 10px;color:#AEACA6;font-size:10px;letter-spacing:.06em">OBSERVAÇÃO</th>
+                <th style="padding:7px 10px;width:30px"></th>
+              </tr>
+            </thead>
+            <tbody id="fat-parc-tbody">
+              <tr><td colspan="7" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- Vencimentos + situação da cobrança (card único) -->
-        <div id="venc-section" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <span id="fat-parc-resumo" style="font-size:12.5px;color:var(--muted)"></span>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="adicionarParcelaFat()">+ Adicionar outra parcela</button>
+        </div>
+
+        <!-- banco + obs pagamento -->
+        <div class="field-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field" style="margin:0">
+            <label>Banco</label>
+            <input type="text" id="fat-banco" placeholder="Ex: Itaú, Nubank…"/>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Observações do Pagamento</label>
+            <textarea id="fat-obs-pagamento" rows="2" placeholder="Ex: Boleto enviado por e-mail…" style="resize:vertical"></textarea>
+          </div>
+        </div>
+
+        <!-- campos ocultos para compatibilidade -->
+        <input type="hidden" id="fat-valor-total"/>
+        <input type="hidden" id="fat-parcelas" value="1"/>
+        <input type="hidden" id="fat-valor-parcela"/>
+        <input type="hidden" id="fat-forma-pagamento"/>
       </div>
 
       <!-- Observações -->
@@ -763,12 +793,17 @@ function renderTabela(lista) {
 
   const iconServ = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`;
   const iconPeca = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`;
-  const wrapCell = (nf, ped, val, cls, lbl, icon, bg) => {
+  const wrapCell = (nf, ped, val, cls, lbl, icon, bg, obs) => {
     const hasContent = !!nf || !!ped || parseFloat(val || 0) > 0;
     const inner = cellNF(nf, ped, val, cls, lbl);
-    return hasContent
-      ? `<div class="cell-nf-wrap"><div class="cell-icon" style="background:${bg}">${icon}</div>${inner}</div>`
-      : inner;
+    if (!hasContent) return inner;
+    const iconEl = obs
+      ? `<div class="cell-icon cell-icon-obs" style="background:${bg}" onclick="copiarObs(this,event)" data-obs="${obs.replace(/"/g,'&quot;').replace(/\n/g,'&#10;')}">
+           ${icon}
+           <div class="obs-tooltip">${obs.replace(/\n/g,'<br>')}</div>
+         </div>`
+      : `<div class="cell-icon" style="background:${bg}">${icon}</div>`;
+    return `<div class="cell-nf-wrap">${iconEl}${inner}</div>`;
   };
 
   tbody.innerHTML = pagina.map(f => {
@@ -805,8 +840,8 @@ function renderTabela(lista) {
       <td><span class="mono" style="font-weight:600;font-size:13px">${f.os_numero || '<span style="color:#D4D2CC">—</span>'}</span></td>
       <td><span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '<span style="color:#D4D2CC">—</span>'}</span></td>
       <td><span class="status-badge ${si.cls}">${si.label}</span></td>
-      <td>${wrapCell(f.nf_servico, f.pedido_servico, f.valor_servico, 'cs-val-serv', 'NFS', iconServ, '#EFF6FF')}</td>
-      <td>${wrapCell(f.nf_peca,    f.pedido_peca,    f.valor_peca,    'cs-val-peca', 'NF',  iconPeca, '#FFF7ED')}</td>
+      <td>${wrapCell(f.nf_servico, f.pedido_servico, f.valor_servico, 'cs-val-serv', 'NFS', iconServ, '#EFF6FF', f.obs_nfs)}</td>
+      <td>${wrapCell(f.nf_peca,    f.pedido_peca,    f.valor_peca,    'cs-val-peca', 'NF',  iconPeca, '#FFF7ED', f.obs_nf)}</td>
       <td><span class="total-val">${fmtValor(f.valor_total)}</span></td>
       <td>
         <div class="dropdown-wrap">
@@ -923,7 +958,8 @@ function _limparModal() {
   document.getElementById('fat-erro').textContent      = '';
   document.getElementById('btn-excluir-fat').style.display = 'none';
   _vencimentos = [];
-  renderVencSection();
+  _parcelasFat = [];
+  renderParcelasFat();
 }
 
 function abrirModalNovo() {
@@ -933,10 +969,14 @@ function abrirModalNovo() {
   document.getElementById('modal-fat').style.display     = 'flex';
 }
 
+let _currentFatOsId = null;
+
 function abrirModalEditar(id) {
   const f = _faturamentos.find(x => x.id === id);
   if (!f) return;
   _limparModal();
+  _currentFatOsId = f.os_id || null;
+
   document.getElementById('fat-id').value               = f.id;
   document.getElementById('modal-fat-title').textContent = 'Editar Faturamento';
   document.getElementById('fat-data').value             = f.data_faturamento.slice(0,10);
@@ -950,18 +990,30 @@ function abrirModalEditar(id) {
   document.getElementById('fat-pedido-peca').value      = f.pedido_peca || '';
   document.getElementById('fat-valor-peca').value       = f.valor_peca || '';
   document.getElementById('fat-valor-total').value      = f.valor_total || '';
-  document.getElementById('fat-parcelas').value         = f.qtd_parcelas || 1;
-  document.getElementById('fat-valor-parcela').value    = f.valor_parcela || '';
   document.getElementById('fat-banco').value            = f.banco || '';
-  document.getElementById('fat-forma-pagamento').value  = f.forma_pagamento || '';
+  document.getElementById('fat-condicao').value         = f.condicao_pagamento || '';
   document.getElementById('fat-categoria').value        = f.categoria || 'Venda de Serviços';
   document.getElementById('fat-obs-nfs').value          = f.obs_nfs || '';
   document.getElementById('fat-obs-nf').value           = f.obs_nf  || '';
   document.getElementById('fat-obs-pagamento').value    = f.obs_pagamento || '';
   document.getElementById('fat-obs').value              = f.observacoes || '';
   document.getElementById('btn-excluir-fat').style.display = 'inline-flex';
-  _vencimentos = JSON.parse(JSON.stringify(f.vencimentos || []));
-  renderVencSection();
+
+  // atualiza display do total
+  const disp = document.getElementById('fat-total-display');
+  if (disp) disp.textContent = fmtValor(parseFloat(f.valor_total) || 0);
+
+  // popula parcelas a partir dos vencimentos existentes
+  _parcelasFat = (f.vencimentos || []).map(v => ({
+    dias:            v.data_vencimento ? _diasAte(v.data_vencimento.slice(0,10)) : 0,
+    data_vencimento: v.data_vencimento?.slice(0,10) || '',
+    valor:           parseFloat(v.valor) || 0,
+    forma:           f.forma_pagamento || '',
+    observacao:      '',
+    pago:            v.pago || false,
+  }));
+  renderParcelasFat();
+
   document.getElementById('modal-fat').style.display = 'flex';
 }
 
@@ -988,122 +1040,159 @@ async function excluirFaturamento() {
 }
 
 // ── Vencimentos ───────────────────────────────────────────────────────────────
-function renderVencSection() {
-  const el = document.getElementById('venc-section');
-  if (!el) return;
+// ── Sistema de Parcelas do Faturamento (espelha aba Pagamento da OS) ──────────
+const _FORMAS_FAT = ['PIX','Boleto','Transferência','Cheque','Cartão de Crédito','Cartão de Débito','Dinheiro'];
+let _parcelasFat = [];
 
-  const lista     = _vencimentos;
-  const total     = lista.length;
-  const pendentes = lista.filter(v => !v.pago);
-  const valorPend = pendentes.reduce((a, v) => a + (parseFloat(v.valor) || 0), 0);
-  const valorPago = lista.filter(v => v.pago).reduce((a, v) => a + (parseFloat(v.valor) || 0), 0);
+function _today() { return new Date().toISOString().slice(0, 10); }
 
-  // cabeçalho — resumo de situação
-  let headerHtml;
-  if (total === 0) {
-    headerHtml = `<span style="font-size:12px;color:var(--muted)">Nenhum vencimento definido</span>`;
-  } else if (pendentes.length === 0) {
-    headerHtml = `
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:14px">✅</span>
-        <div>
-          <div style="font-weight:700;font-size:13px;color:#15803D">Cobrança quitada</div>
-          <div style="font-size:11.5px;color:#15803D;opacity:.8">${total} parcela${total>1?'s':''} · ${fmtValor(valorPago)} recebido</div>
-        </div>
-      </div>`;
-  } else {
-    headerHtml = `
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:14px">⏳</span>
-        <div>
-          <div style="font-weight:700;font-size:13px;color:#92400E">${fmtValor(valorPend)} pendente${pendentes.length>1?'s':''}</div>
-          <div style="font-size:11.5px;color:#92400E;opacity:.8">${pendentes.length} de ${total} parcela${total>1?'s':''} em aberto${valorPago>0?` · ${fmtValor(valorPago)} recebido`:''}</div>
-        </div>
-      </div>`;
+function _addDias(dias) {
+  const d = new Date();
+  d.setDate(d.getDate() + (parseInt(dias) || 0));
+  return d.toISOString().slice(0, 10);
+}
+
+function _diasAte(dataStr) {
+  if (!dataStr) return 0;
+  const diff = new Date(dataStr + 'T12:00:00') - new Date(new Date().toISOString().slice(0,10) + 'T12:00:00');
+  return Math.round(diff / 86400000);
+}
+
+function renderParcelasFat() {
+  const tbody  = document.getElementById('fat-parc-tbody');
+  const resumo = document.getElementById('fat-parc-resumo');
+  if (!tbody) return;
+
+  if (!_parcelasFat.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>';
+    if (resumo) resumo.textContent = '';
+    return;
   }
 
-  // linhas de parcelas
-  const linhas = lista.map((v, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:7px 14px;border-top:1px solid #F0EFEA">
-      <span style="font-size:12px;color:var(--muted);min-width:68px;flex-shrink:0">${total===1?'Vencimento':`Parcela ${i+1}`}</span>
-      <input type="date" id="venc-data-${i}" value="${v.data_vencimento?v.data_vencimento.slice(0,10):''}"
-        style="font-family:var(--font);font-size:12.5px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:145px"/>
-      <span class="venc-badge ${v.pago?'badge-pago':'badge-pendente'}" style="flex-shrink:0">${v.pago?'✓ Pago':'Pendente'}</span>
-      <input type="hidden" id="venc-id-${i}"    value="${v.id||''}"/>
-      <input type="hidden" id="venc-valor-${i}"  value="${v.valor||''}"/>
-      <input type="hidden" id="venc-pago-${i}"   value="${v.pago?'true':'false'}"/>
-      <button type="button" class="btn-icon" onclick="removerVencimento(${i})" title="Remover" style="margin-left:auto">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>`).join('');
+  const formasOpts = _FORMAS_FAT.map(f => `<option value="${f}">${f}</option>`).join('');
+  tbody.innerHTML = _parcelasFat.map((p, i) => `
+    <tr style="border-bottom:1px solid #F0EFEA">
+      <td style="padding:6px 10px;text-align:center;color:var(--muted);font-size:12px">${i+1}</td>
+      <td style="padding:4px 8px">
+        <input type="number" value="${p.dias ?? ''}" min="0"
+          style="width:58px;font-family:var(--mono);font-size:12.5px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;text-align:center"
+          onchange="_fatDiasChange(${i},this.value)"/>
+      </td>
+      <td style="padding:4px 8px">
+        <input type="date" value="${p.data_vencimento||''}"
+          style="font-family:var(--font);font-size:12.5px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:130px"
+          onchange="_fatDataChange(${i},this.value)"/>
+      </td>
+      <td style="padding:4px 8px">
+        <input type="number" value="${p.valor||0}" step="0.01" min="0"
+          style="width:100px;font-family:var(--mono);font-size:12.5px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;text-align:right"
+          onchange="_parcelasFat[${i}].valor=parseFloat(this.value)||0;renderParcelasFat()"/>
+      </td>
+      <td style="padding:4px 8px">
+        <select style="font-family:var(--font);font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:148px"
+          onchange="_parcelasFat[${i}].forma=this.value">
+          <option value="">Selecionar…</option>
+          ${_FORMAS_FAT.map(f=>`<option value="${f}"${p.forma===f?' selected':''}>${f}</option>`).join('')}
+          ${p.forma && !_FORMAS_FAT.includes(p.forma) ? `<option value="${p.forma}" selected>${p.forma}</option>` : ''}
+        </select>
+      </td>
+      <td style="padding:4px 8px">
+        <input type="text" value="${p.observacao||''}" placeholder="Observação…"
+          style="font-family:var(--font);font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;width:100%"
+          oninput="_parcelasFat[${i}].observacao=this.value"/>
+      </td>
+      <td style="padding:4px 8px;text-align:center">
+        <button type="button" onclick="_remParcelaFat(${i})"
+          style="background:none;border:none;cursor:pointer;color:#CBD5E1;padding:2px 4px;border-radius:4px"
+          onmouseenter="this.style.color='#EF4444'" onmouseleave="this.style.color='#CBD5E1'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
 
-  const bgHeader = total === 0 ? '#F8F7F4' : pendentes.length === 0 ? '#F0FDF4' : '#FFFBEB';
-  const borderColor = total === 0 ? 'var(--border)' : pendentes.length === 0 ? '#BBF7D0' : '#FDE68A';
-
-  el.innerHTML = `
-    <div style="border:1px solid ${borderColor};border-radius:8px;overflow:hidden">
-      <div style="background:${bgHeader};padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        ${headerHtml}
-        <button type="button" class="btn-add-venc" onclick="adicionarVencimento()">+ Adicionar</button>
-      </div>
-      ${linhas}
-    </div>`;
+  const total = _parcelasFat.reduce((a, p) => a + (parseFloat(p.valor) || 0), 0);
+  if (resumo) resumo.textContent = `${_parcelasFat.length} parcela${_parcelasFat.length>1?'s':''} · Total: ${fmtValor(total)}`;
 }
 
-// aliases para compatibilidade com chamadas existentes
-const renderVencimentos = () => renderVencSection();
-const renderResumoPendente = () => renderVencSection();
+function _fatDiasChange(i, val) {
+  _parcelasFat[i].dias = parseInt(val) || 0;
+  _parcelasFat[i].data_vencimento = _addDias(_parcelasFat[i].dias);
+  renderParcelasFat();
+}
 
-function coletarVencimentos() {
-  _vencimentos = _vencimentos.map((v, i) => ({
-    ...v,
-    data_vencimento: document.getElementById(`venc-data-${i}`)?.value || v.data_vencimento || null,
-    valor: parseFloat(document.getElementById(`venc-valor-${i}`)?.value) || v.valor || 0,
-    pago:  document.getElementById(`venc-pago-${i}`)?.value === 'true',
-    id:    document.getElementById(`venc-id-${i}`)?.value   || v.id || undefined,
+function _fatDataChange(i, val) {
+  _parcelasFat[i].data_vencimento = val;
+  _parcelasFat[i].dias = _diasAte(val);
+  renderParcelasFat();
+}
+
+function _remParcelaFat(i) {
+  _parcelasFat.splice(i, 1);
+  renderParcelasFat();
+}
+
+function adicionarParcelaFat() {
+  const total = parseFloat(document.getElementById('fat-valor-total').value) || 0;
+  _parcelasFat.push({ dias: 30, data_vencimento: _addDias(30), valor: total, forma: '', observacao: '' });
+  renderParcelasFat();
+}
+
+function gerarParcelasFat() {
+  const condicao = document.getElementById('fat-condicao').value.trim();
+  const total    = parseFloat(document.getElementById('fat-valor-total').value) || 0;
+  if (!condicao) { adicionarParcelaFat(); return; }
+
+  // ex: "30/60/90" ou "30" ou "À vista"
+  const nums = condicao.match(/\d+/g)?.map(Number) || [0];
+  const qtd  = nums.length;
+  const val  = total / qtd;
+
+  _parcelasFat = nums.map(d => ({
+    dias:            d,
+    data_vencimento: _addDias(d),
+    valor:           parseFloat(val.toFixed(2)),
+    forma:           '',
+    observacao:      '',
   }));
-}
-
-function adicionarVencimento() {
-  coletarVencimentos();
-  const valor = parseFloat(document.getElementById('fat-valor-parcela').value) || 0;
-  _vencimentos.push({ data_vencimento: '', valor, pago: false });
-  renderVencSection();
-}
-
-function removerVencimento(i) {
-  coletarVencimentos();
-  _vencimentos.splice(i, 1);
-  renderVencSection();
-}
-
-function gerarVencimentos() {
-  coletarVencimentos();
-  const qtd   = parseInt(document.getElementById('fat-parcelas').value) || 1;
-  const valor = parseFloat(document.getElementById('fat-valor-parcela').value) || 0;
-  const base  = new Date();
-  const existentes = _vencimentos.slice(0, qtd);
-  _vencimentos = Array.from({ length: qtd }, (_, i) => {
-    if (existentes[i]?.data_vencimento) return { ...existentes[i], valor };
-    const d = new Date(base);
-    d.setMonth(d.getMonth() + i + 1);
-    return { data_vencimento: d.toISOString().slice(0,10), valor, pago: false };
-  });
-  renderVencSection();
+  renderParcelasFat();
 }
 
 // ── Cálculos ──────────────────────────────────────────────────────────────────
 function recalcularTotal() {
-  const serv = parseFloat(document.getElementById('fat-valor-servico').value) || 0;
-  const peca = parseFloat(document.getElementById('fat-valor-peca').value)    || 0;
-  document.getElementById('fat-valor-total').value = (serv + peca).toFixed(2);
-  recalcularParcela();
+  const serv  = parseFloat(document.getElementById('fat-valor-servico').value) || 0;
+  const peca  = parseFloat(document.getElementById('fat-valor-peca').value)    || 0;
+  const total = serv + peca;
+  document.getElementById('fat-valor-total').value = total.toFixed(2);
+  const disp = document.getElementById('fat-total-display');
+  if (disp) disp.textContent = fmtValor(total);
 }
 
-function recalcularParcela() {
-  const total = parseFloat(document.getElementById('fat-valor-total').value) || 0;
-  const qtd   = parseInt(document.getElementById('fat-parcelas').value) || 1;
-  document.getElementById('fat-valor-parcela').value = (total / qtd).toFixed(2);
+// mantém compatibilidade com chamadas antigas
+function recalcularParcela() {}
+function gerarVencimentos() {}
+function renderVencSection() {}
+const renderVencimentos = () => {};
+const renderResumoPendente = () => {};
+function coletarVencimentos() {}
+
+// ── copiar obs do ícone ───────────────────────────────────────────────────────
+function copiarObs(el, e) {
+  e.stopPropagation();
+  const texto = el.dataset.obs;
+  if (!texto) return;
+  navigator.clipboard.writeText(texto).then(() => {
+    el.style.outline = '2px solid #22C55E';
+    el.style.outlineOffset = '2px';
+    setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
 }
 
 // ── Salvar ────────────────────────────────────────────────────────────────────
@@ -1115,7 +1204,13 @@ async function salvarFaturamento() {
     return;
   }
   document.getElementById('fat-erro').textContent = '';
-  coletarVencimentos();
+
+  const vencimentos = _parcelasFat
+    .filter(p => p.data_vencimento)
+    .map(p => ({ data_vencimento: p.data_vencimento, valor: p.valor || 0, pago: p.pago || false }));
+
+  const formaDoForm = _parcelasFat[0]?.forma || '';
+  const totalVal    = parseFloat(document.getElementById('fat-valor-total').value) || 0;
 
   const dados = {
     os_numero:       document.getElementById('fat-os').value.trim()              || null,
@@ -1128,17 +1223,18 @@ async function salvarFaturamento() {
     nf_peca:         document.getElementById('fat-nf-peca').value.trim()         || null,
     pedido_peca:     document.getElementById('fat-pedido-peca').value.trim()     || null,
     valor_peca:      parseFloat(document.getElementById('fat-valor-peca').value) || 0,
-    valor_total:     parseFloat(document.getElementById('fat-valor-total').value) || 0,
-    qtd_parcelas:    parseInt(document.getElementById('fat-parcelas').value) || 1,
-    valor_parcela:   parseFloat(document.getElementById('fat-valor-parcela').value) || 0,
+    valor_total:     totalVal,
+    qtd_parcelas:    _parcelasFat.length || 1,
+    valor_parcela:   _parcelasFat[0]?.valor || totalVal,
     banco:           document.getElementById('fat-banco').value.trim()            || null,
-    forma_pagamento: document.getElementById('fat-forma-pagamento').value         || null,
+    forma_pagamento: formaDoForm || null,
+    condicao_pagamento: document.getElementById('fat-condicao').value.trim()     || null,
     categoria:       document.getElementById('fat-categoria').value               || 'Venda de Serviços',
     obs_nfs:         document.getElementById('fat-obs-nfs').value.trim()          || null,
     obs_nf:          document.getElementById('fat-obs-nf').value.trim()           || null,
     obs_pagamento:   document.getElementById('fat-obs-pagamento').value.trim()    || null,
     observacoes:     document.getElementById('fat-obs').value.trim()              || null,
-    vencimentos:     _vencimentos.filter(v => v.data_vencimento),
+    vencimentos,
   };
 
   try {
@@ -1300,9 +1396,10 @@ async function _blingClienteBuscar(texto) {
 
 // ── Geração automática de textos de obs ───────────────────────────────────────
 async function _fetchOSDoForm() {
-  const numero = document.getElementById('fat-os').value.trim();
-  if (!numero) { alert('Informe o Nº da OS primeiro.'); return null; }
   try {
+    if (_currentFatOsId) return await api.buscarOS(_currentFatOsId);
+    const numero = document.getElementById('fat-os').value.trim();
+    if (!numero) { alert('Informe o Nº da OS primeiro.'); return null; }
     return await api.buscarOSByNumero(numero);
   } catch {
     alert('OS não encontrada. Preencha os campos manualmente.');

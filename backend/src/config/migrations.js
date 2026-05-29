@@ -532,10 +532,11 @@ const createTables = async () => {
       );
     `);
 
-    // Campos de observação no faturamento (NFS, NF, pagamento)
-    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_nfs TEXT`).catch(() => {});
-    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_nf  TEXT`).catch(() => {});
-    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_pagamento TEXT`).catch(() => {});
+    // Campos de observação e condição no faturamento
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_nfs            TEXT`).catch(() => {});
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_nf             TEXT`).catch(() => {});
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_pagamento      TEXT`).catch(() => {});
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS condicao_pagamento VARCHAR(200)`).catch(() => {});
 
     // Copia vencimentos de faturamentos para os_parcelas das OS já vinculadas (idempotente)
     await pool.query(`

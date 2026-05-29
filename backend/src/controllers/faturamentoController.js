@@ -150,7 +150,7 @@ const criarFaturamento = async (req, res) => {
       nf_servico, pedido_servico, valor_servico, obs_nfs,
       nf_peca, pedido_peca, valor_peca, obs_nf,
       valor_total, qtd_parcelas, valor_parcela,
-      banco, forma_pagamento, categoria, obs_pagamento, observacoes, vencimentos, status
+      banco, forma_pagamento, condicao_pagamento, categoria, obs_pagamento, observacoes, vencimentos, status
     } = req.body;
 
     const statusFinal = status || 'autorizado';
@@ -168,14 +168,14 @@ const criarFaturamento = async (req, res) => {
         nf_servico, pedido_servico, valor_servico, obs_nfs,
         nf_peca, pedido_peca, valor_peca, obs_nf,
         valor_total, qtd_parcelas, valor_parcela,
-        banco, forma_pagamento, categoria, obs_pagamento, observacoes, status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+        banco, forma_pagamento, condicao_pagamento, categoria, obs_pagamento, observacoes, status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
       RETURNING *`,
       [osIdVinculado, os_numero, cliente_nome, data_faturamento,
        nf_servico, pedido_servico, valor_servico || 0, obs_nfs || null,
        nf_peca, pedido_peca, valor_peca || 0, obs_nf || null,
        valor_total || 0, qtd_parcelas || 1, valor_parcela || 0,
-       banco, forma_pagamento, categoria || 'Venda de Serviços', obs_pagamento || null, observacoes, statusFinal]
+       banco, forma_pagamento, condicao_pagamento || null, categoria || 'Venda de Serviços', obs_pagamento || null, observacoes, statusFinal]
     );
 
     const faturamentoId = resultado.rows[0].id;
@@ -211,33 +211,34 @@ const atualizarFaturamento = async (req, res) => {
       nf_servico, pedido_servico, valor_servico, obs_nfs,
       nf_peca, pedido_peca, valor_peca, obs_nf,
       valor_total, qtd_parcelas, valor_parcela,
-      banco, forma_pagamento, categoria, obs_pagamento, observacoes, vencimentos,
+      banco, forma_pagamento, condicao_pagamento, categoria, obs_pagamento, observacoes, vencimentos,
       os_numero, cliente_nome, data_faturamento, status
     } = req.body;
 
     const resultado = await client.query(
       `UPDATE faturamentos SET
-        os_numero        = $1,
-        cliente_nome     = $2,
-        data_faturamento = $3,
-        nf_servico       = $4,
-        pedido_servico   = $5,
-        valor_servico    = $6,
-        obs_nfs          = $7,
-        nf_peca          = $8,
-        pedido_peca      = $9,
-        valor_peca       = $10,
-        obs_nf           = $11,
-        valor_total      = $12,
-        qtd_parcelas     = $13,
-        valor_parcela    = $14,
-        banco            = $15,
-        forma_pagamento  = $16,
-        categoria        = $17,
-        obs_pagamento    = $18,
-        observacoes      = $19,
-        status           = $20
-       WHERE id = $21 RETURNING *`,
+        os_numero           = $1,
+        cliente_nome        = $2,
+        data_faturamento    = $3,
+        nf_servico          = $4,
+        pedido_servico      = $5,
+        valor_servico       = $6,
+        obs_nfs             = $7,
+        nf_peca             = $8,
+        pedido_peca         = $9,
+        valor_peca          = $10,
+        obs_nf              = $11,
+        valor_total         = $12,
+        qtd_parcelas        = $13,
+        valor_parcela       = $14,
+        banco               = $15,
+        forma_pagamento     = $16,
+        condicao_pagamento  = $17,
+        categoria           = $18,
+        obs_pagamento       = $19,
+        observacoes         = $20,
+        status              = $21
+       WHERE id = $22 RETURNING *`,
       [os_numero    || null,
        cliente_nome || null,
        data_faturamento,
@@ -254,6 +255,7 @@ const atualizarFaturamento = async (req, res) => {
        valor_parcela   ?? 0,
        banco           || null,
        forma_pagamento || null,
+       condicao_pagamento || null,
        categoria       || 'Venda de Serviços',
        obs_pagamento   || null,
        observacoes     || null,
