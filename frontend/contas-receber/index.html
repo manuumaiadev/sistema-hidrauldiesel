@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hidrauldiesel — Contas a Receber</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="../shared/hd-api.js"></script>
+<script src="../shared/hd-auth.js"></script>
+<link rel="stylesheet" href="../shared/hd-nav.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F3F0; --surface: #FFFFFF; --border: #E3E1DA;
+  --text: #12151F; --muted: #888680;
+  --navy: #1B2D5B; --red: #C0152A; --red2: #E01830;
+  --radius: 10px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+}
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+aside { width: 228px; min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; padding: 24px 18px; flex-shrink: 0; }
+.logo-wrap { display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.logo-img { width: 180px; height: 180px; object-fit: contain; flex-shrink: 0; }
+.logo-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0; }
+nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+nav a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; text-decoration: none; font-size: 13.5px; color: rgba(255,255,255,0.5); transition: background .15s, color .15s; }
+nav a:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+nav a.active { background: var(--red); color: #fff; font-weight: 500; }
+nav a svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+nav a.active svg { opacity: 1; }
+.sidebar-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; font-size: 12px; color: rgba(255,255,255,0.35); }
+.sidebar-bottom strong { display: block; color: rgba(255,255,255,0.72); font-weight: 500; margin-bottom: 2px; }
+
+main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 15px 32px; display: flex; align-items: center; justify-content: space-between; }
+.page-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.content { flex: 1; padding: 26px 32px; overflow-y: auto; }
+
+/* Cards */
+.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.stat-value { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; line-height: 1; margin-bottom: 4px; font-family: var(--mono); }
+.stat-sub { font-size: 12px; color: var(--muted); }
+
+/* Filtros */
+.filter-bar { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; background: var(--surface); padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+.fg { display: flex; flex-direction: column; gap: 4px; }
+.fg label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.fg input, .fg select { font-family: var(--font); font-size: 13px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text); outline: none; }
+.fg input:focus, .fg select:focus { border-color: var(--navy); }
+.search-wrap { display: flex; align-items: center; flex: 1; min-width: 220px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; gap: 8px; height: 34px; transition: border-color .15s; }
+.search-wrap:focus-within { border-color: var(--navy); }
+.search-input { flex: 1; border: none; outline: none; font-family: var(--font); font-size: 13px; color: var(--text); background: transparent; }
+.search-input::placeholder { color: #AEACA6; }
+.btn { font-family: var(--font); font-size: 13.5px; font-weight: 500; padding: 7px 16px; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: opacity .15s; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--bg); }
+
+/* Tabela */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { border-bottom: 2px solid var(--border); background: #FAFAF9; }
+th { text-align: left; padding: 10px 18px; font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #AEACA6; white-space: nowrap; }
+td { padding: 13px 18px; border-bottom: 1px solid #F0EFEA; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #FAFAF9; }
+.mono { font-family: var(--mono); font-size: 12px; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.badge-vencido  { background: #FEE2E2; color: #991B1B; }
+.badge-pendente { background: #FEF3C7; color: #92400E; }
+.badge-pago     { background: #DCFCE7; color: #15803D; }
+
+.val-pago     { font-family: var(--mono); font-weight: 700; color: #16A34A; }
+.val-vencido  { font-family: var(--mono); font-weight: 700; color: #DC2626; }
+.val-pendente { font-family: var(--mono); font-weight: 700; color: var(--navy); }
+
+.btn-pagar    { background: none; border: 1px solid #BBF7D0; color: #15803D; border-radius: 6px; padding: 4px 12px; font-size: 12px; font-family: var(--font); cursor: pointer; font-weight: 500; white-space: nowrap; }
+.btn-pagar:hover { background: #DCFCE7; }
+.btn-reverter { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 12px; font-size: 12px; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+.btn-reverter:hover { background: var(--bg); }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="logo-wrap"><img src="../imagens/Design sem nome (6).png" alt="" class="logo-img"></div>
+  <div class="logo-divider"></div>
+  <nav>
+    <a href="../dashboard/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="../lista-os/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Ordens de serviço</a>
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vales</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
+    <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+    <div class="nav-group" id="nav-group-fin">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-fin')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Financeiro <span class="nav-arrow" id="arrow-nav-group-fin">&#9662;</span>
+      </div>
+      <div class="nav-submenu open" id="sub-nav-group-fin">
+        <a href="../financeiro/" class="nav-submenu-item">Faturamento</a>
+        <a href="../contas-receber/" class="nav-submenu-item active">Contas a Receber</a>
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
+</aside>
+
+<main>
+  <header>
+    <span class="page-title">Contas a Receber</span>
+  </header>
+  <div class="content">
+
+    <!-- Cards -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Total a Receber</div>
+        <div class="stat-value" id="kpi-total" style="color:var(--navy)">—</div>
+        <div class="stat-sub" id="kpi-total-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Vencido</div>
+        <div class="stat-value" id="kpi-vencido" style="color:#DC2626">—</div>
+        <div class="stat-sub" id="kpi-vencido-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">A Vencer</div>
+        <div class="stat-value" id="kpi-pendente" style="color:#D97706">—</div>
+        <div class="stat-sub" id="kpi-pendente-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Recebido</div>
+        <div class="stat-value" id="kpi-recebido" style="color:#16A34A">—</div>
+        <div class="stat-sub" id="kpi-recebido-sub"></div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-bar">
+      <div class="fg">
+        <label>Vencimento de</label>
+        <input type="date" id="f-inicio" onchange="carregar()"/>
+      </div>
+      <div class="fg">
+        <label>Até</label>
+        <input type="date" id="f-fim" onchange="carregar()"/>
+      </div>
+      <div class="fg">
+        <label>Situação</label>
+        <select id="f-status" onchange="carregar()">
+          <option value="">Todos</option>
+          <option value="pendente">A Vencer</option>
+          <option value="vencido">Vencido</option>
+          <option value="pago">Pago</option>
+        </select>
+      </div>
+      <div class="fg" style="flex:1">
+        <label>Cliente</label>
+        <div class="search-wrap">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#8A887F" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input class="search-input" id="f-cliente" placeholder="Buscar cliente…" oninput="_debounce()"/>
+        </div>
+      </div>
+      <button class="btn btn-ghost" onclick="limparFiltros()">Limpar</button>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Vencimento</th>
+            <th>OS</th>
+            <th>Cliente</th>
+            <th>NF</th>
+            <th>Forma</th>
+            <th style="text-align:right">Valor</th>
+            <th>Situação</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cr-tbody">
+          <tr><td colspan="8" class="empty-state">Carregando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const fmtR$ = v => parseFloat(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtDt = s => s ? new Date(s.slice(0,10)+'T12:00:00').toLocaleDateString('pt-BR') : '—';
+
+let _timer;
+function _debounce() { clearTimeout(_timer); _timer = setTimeout(carregar, 350); }
+
+function limparFiltros() {
+  document.getElementById('f-inicio').value  = '';
+  document.getElementById('f-fim').value     = '';
+  document.getElementById('f-status').value  = '';
+  document.getElementById('f-cliente').value = '';
+  carregar();
+}
+
+async function carregar() {
+  const filtros = {};
+  const ini = document.getElementById('f-inicio').value;
+  const fim = document.getElementById('f-fim').value;
+  const st  = document.getElementById('f-status').value;
+  const cl  = document.getElementById('f-cliente').value.trim();
+  if (ini) filtros.data_inicio = ini;
+  if (fim) filtros.data_fim    = fim;
+  if (st)  filtros.status      = st;
+  if (cl)  filtros.cliente     = cl;
+
+  try {
+    const { vencimentos, totais } = await api.listarContasReceber(filtros);
+    renderKpis(totais, vencimentos);
+    renderTabela(vencimentos);
+  } catch(e) {
+    document.getElementById('cr-tbody').innerHTML =
+      `<tr><td colspan="8" class="empty-state" style="color:#DC2626">Erro ao carregar dados.</td></tr>`;
+  }
+}
+
+function renderKpis(t, rows) {
+  const qtdV = rows.filter(r => r.situacao === 'vencido').length;
+  const qtdP = rows.filter(r => r.situacao === 'pendente').length;
+  const qtdR = rows.filter(r => r.situacao === 'pago').length;
+
+  document.getElementById('kpi-total').textContent     = fmtR$(t.total_a_receber);
+  document.getElementById('kpi-total-sub').textContent  = `${qtdV + qtdP} parcela${qtdV+qtdP!==1?'s':''} em aberto`;
+  document.getElementById('kpi-vencido').textContent    = fmtR$(t.total_vencido);
+  document.getElementById('kpi-vencido-sub').textContent= `${qtdV} vencida${qtdV!==1?'s':''}`;
+  document.getElementById('kpi-pendente').textContent   = fmtR$(t.total_pendente);
+  document.getElementById('kpi-pendente-sub').textContent = `${qtdP} a vencer`;
+  document.getElementById('kpi-recebido').textContent   = fmtR$(t.total_recebido);
+  document.getElementById('kpi-recebido-sub').textContent = `${qtdR} recebida${qtdR!==1?'s':''}`;
+}
+
+function renderTabela(rows) {
+  const tbody = document.getElementById('cr-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum registro encontrado.</td></tr>';
+    return;
+  }
+
+  const ord = [...rows].sort((a,b) => {
+    const p = { vencido:0, pendente:1, pago:2 };
+    const d = (p[a.situacao]??3) - (p[b.situacao]??3);
+    if (d !== 0) return d;
+    return (a.data_vencimento||'').localeCompare(b.data_vencimento||'');
+  });
+
+  tbody.innerHTML = ord.map(v => {
+    const cls   = v.situacao==='vencido' ? 'val-vencido' : v.situacao==='pago' ? 'val-pago' : 'val-pendente';
+    const badge = `<span class="badge badge-${v.situacao}">${
+      v.situacao==='pago' ? '✓ Pago' : v.situacao==='vencido' ? 'Vencido' : 'A vencer'
+    }</span>`;
+    const nf    = [v.nf_servico, v.nf_peca].filter(Boolean).join(' / ') || '—';
+    const acao  = v.pago
+      ? `<button class="btn-reverter" onclick="reverter(${v.id})">Reverter</button>`
+      : `<button class="btn-pagar"   onclick="pagar(${v.id})">Marcar pago</button>`;
+
+    return `<tr>
+      <td style="white-space:nowrap">${fmtDt(v.data_vencimento)}</td>
+      <td><span class="mono">${v.os_numero||'—'}</span></td>
+      <td style="font-weight:500">${v.cliente_nome||'—'}</td>
+      <td><span class="mono" style="font-size:11.5px;color:var(--muted)">${nf}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${v.forma_pagamento||'—'}</td>
+      <td style="text-align:right"><span class="${cls}">${fmtR$(v.valor)}</span></td>
+      <td>${badge}</td>
+      <td>${acao}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function pagar(id) {
+  try { await api.marcarContaPaga(id); carregar(); }
+  catch { alert('Erro ao marcar como pago'); }
+}
+
+async function reverter(id) {
+  try { await api.reverterContaPaga(id); carregar(); }
+  catch { alert('Erro ao reverter'); }
+}
+
+function toggleNavGroup(id) {
+  const sub   = document.getElementById('sub-'+id);
+  const arrow = document.getElementById('arrow-'+id);
+  if (!sub) return;
+  sub.classList.toggle('open');
+  if (arrow) arrow.style.transform = sub.classList.contains('open') ? '' : 'rotate(-90deg)';
+}
+
+carregar();
+</script>
+</body>
+</html>

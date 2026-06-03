@@ -160,6 +160,14 @@ const api = {
     });
   },
 
+  // Contas a Receber
+  listarContasReceber: (filtros) => {
+    const p = new URLSearchParams(filtros || {}).toString();
+    return request('GET', `/contas-receber${p ? '?' + p : ''}`);
+  },
+  marcarContaPaga:     (id) => request('PATCH', `/contas-receber/${id}/pagar`),
+  reverterContaPaga:   (id) => request('PATCH', `/contas-receber/${id}/reverter`),
+
   // Mecânicos
   listarMecanicos: () => request('GET', '/mecanicos'),
   buscarMecanico: (id) => request('GET', `/mecanicos/${id}`),

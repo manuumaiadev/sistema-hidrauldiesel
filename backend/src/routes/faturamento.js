@@ -5,7 +5,7 @@ const auth    = require('../middlewares/auth');
 const { listarFaturamentos, criarFaturamento, atualizarFaturamento, marcarVencimentoPago, atualizarStatus, atualizarStatusLote, deletarFaturamento, gerarOSRetroativo } = require('../controllers/faturamentoController');
 const { importarPdfBling } = require('../controllers/importarPdfController');
 
-const uploadPdf = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+const uploadPdf = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 router.get('/',                        auth, listarFaturamentos);
 router.post('/',                       auth, criarFaturamento);

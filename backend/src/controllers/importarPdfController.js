@@ -1,6 +1,22 @@
-const pool = require('../config/database');
+const pool             = require('../config/database');
+const { blingRequest } = require('../config/bling');
 
 const { PDFParse, VerbosityLevel } = require('pdf-parse');
+
+// Busca cliente no Bling pelo nome → retorna { nome, cnpj } ou null
+async function buscarClienteBling(nome) {
+  if (!nome) return null;
+  try {
+    const data  = await blingRequest(pool, 'GET', '/contatos', { pesquisa: nome, pagina: 1, limite: 10 });
+    const lista = data?.data || [];
+    if (!lista.length) return null;
+    const exato  = lista.find(c => c.nome?.toLowerCase() === nome.toLowerCase());
+    const cliente = exato || lista[0];
+    return { nome: cliente.nome || nome, cnpj: cliente.numeroDocumento || null };
+  } catch {
+    return null; // Bling indisponível — mantém dados do PDF
+  }
+}
 
 async function extrairTextoPdf(buffer) {
   // pdf-parse v2: requer Uint8Array (não Buffer)
@@ -13,7 +29,9 @@ async function extrairTextoPdf(buffer) {
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-const trunc = (s, n) => (s || '').substring(0, n) || null;
+// remove bytes nulos e caracteres de controle inválidos para o PostgreSQL UTF-8
+const sanitize = s => s ? s.replace(/\x00/g, '').replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : s;
+const trunc    = (s, n) => (sanitize(s) || '').substring(0, n) || null;
 
 function parseBlingValue(str) {
   if (!str) return 0;
@@ -39,18 +57,25 @@ function parseServicosItems(section) {
   );
   if (!m) return [];
 
+  const block = m[1];
   const items = [];
-  for (const line of m[1].split('\n')) {
-    const t = line.trim();
-    if (!t) continue;
-    const lm = t.match(/^(.+?)\s+(\d+(?:[.,]\d*)?)\s+([\d.]+,\d{8,})\s+([\d.]+,\d{8,})\s*$/);
-    if (lm) {
-      items.push({
-        descricao:  trunc(lm[1].trim(), 195),
-        quantidade: parseFloat(lm[2].replace(',', '.')) || 1,
-        valor:      parseBlingValue(lm[4]),
-      });
-    }
+
+  // dotAll: captura descrições que quebram múltiplas linhas
+  // padrão: [descrição multi-linha] horas blingPreco blingTotal
+  const rx = /([\s\S]+?)\s+(\d+(?:[.,]\d*)?)\s+([\d.]+,\d{8,})\s+([\d.]+,\d{8,})/g;
+  let match;
+  let prevIndex = -1;
+  let guard = 0;
+  while ((match = rx.exec(block)) !== null && guard++ < 200) {
+    if (rx.lastIndex === prevIndex) { rx.lastIndex++; continue; } // evita loop infinito
+    prevIndex = rx.lastIndex;
+    const raw = match[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!raw) continue;
+    items.push({
+      descricao:  trunc(raw, 195),
+      quantidade: parseFloat(match[2].replace(',', '.')) || 1,
+      valor:      parseBlingValue(match[4]),
+    });
   }
   return items;
 }
@@ -71,7 +96,11 @@ function parsePecasItems(section) {
   );
 
   let match;
-  while ((match = rx.exec(block)) !== null) {
+  let prevIndex = -1;
+  let guard = 0;
+  while ((match = rx.exec(block)) !== null && guard++ < 500) {
+    if (rx.lastIndex === prevIndex) { rx.lastIndex++; continue; }
+    prevIndex = rx.lastIndex;
     const raw = match[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     items.push({
       descricao:  trunc(stripTrailingCode(raw), 195),
@@ -269,24 +298,25 @@ async function criarOsCompleta(client, dados) {
 
 async function criarFaturamentoVinculado(client, osId, dados) {
   const {
-    os_numero, cliente_nome, data_entrada,
+    os_numero, cliente_nome, cliente_cnpj, data_entrada,
     valor_servico, valor_peca, valor_total,
     forma_pagamento, pedido_compra, pedido_servico, parcelas,
   } = dados;
 
   const fatRes = await client.query(
     `INSERT INTO faturamentos (
-       os_id, os_numero, cliente_nome, data_faturamento,
+       os_id, os_numero, cliente_nome, cliente_cnpj, data_faturamento,
        valor_servico, valor_peca, valor_total,
        qtd_parcelas, valor_parcela,
        forma_pagamento, pedido_servico, pedido_peca,
        categoria, status
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'Venda de Serviços','autorizado')
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'Venda de Serviços','autorizado')
      RETURNING id`,
     [
       osId,
       trunc(os_numero, 50),
       trunc(cliente_nome, 200),
+      trunc(cliente_cnpj, 20) || null,
       null, // data_faturamento = data de emissão da NF, preenchida pelo usuário ao emitir
       valor_servico || 0,
       valor_peca    || 0,
@@ -317,9 +347,14 @@ async function criarFaturamentoVinculado(client, osId, dados) {
 const importarPdfBling = async (req, res) => {
   if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado' });
 
+  console.log(`[importarPDF] Arquivo recebido: ${(req.file.size / 1024).toFixed(0)} KB`);
+
   let text;
   try {
-    text = await extrairTextoPdf(req.file.buffer);
+    const raw = await extrairTextoPdf(req.file.buffer);
+    // sanitiza bytes inválidos antes de qualquer parsing
+    text = raw.replace(/\x00/g, '').replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    console.log(`[importarPDF] Texto extraído: ${text.length} caracteres`);
   } catch (err) {
     return res.status(422).json({ erro: 'Não foi possível ler o PDF: ' + err.message });
   }
@@ -327,6 +362,10 @@ const importarPdfBling = async (req, res) => {
   let registros;
   try {
     registros = parseOsSections(text);
+    console.log(`[importarPDF] OS encontradas: ${registros.length}`);
+    registros.forEach(r => console.log(
+      `  OS ${r.os_numero}: ${r.servicos_items.length} serviços, ${r.pecas_items.length} peças, ${r.parcelas.length} parcelas`
+    ));
   } catch (err) {
     return res.status(422).json({ erro: 'Erro ao interpretar o PDF: ' + err.message });
   }
@@ -340,6 +379,13 @@ const importarPdfBling = async (req, res) => {
   const erros      = [];
 
   for (const reg of registros) {
+    // Vincula dados cadastrais do Bling ao cliente do PDF
+    const clienteBling = await buscarClienteBling(reg.cliente_nome);
+    if (clienteBling) {
+      reg.cliente_nome = clienteBling.nome;
+      reg.cliente_cnpj = clienteBling.cnpj || reg.cliente_cnpj;
+    }
+
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -372,7 +418,16 @@ const importarPdfBling = async (req, res) => {
       });
     } catch (err) {
       await client.query('ROLLBACK');
-      erros.push({ os_numero: reg.os_numero, motivo: err.message });
+      console.error(`[importarPDF] Erro na OS ${reg.os_numero}:`, err.message, err.stack?.split('\n')[1]);
+      erros.push({
+        os_numero: reg.os_numero,
+        motivo: err.message,
+        detalhes: {
+          servicos_parseados: reg.servicos_items?.length ?? 0,
+          pecas_parseadas:    reg.pecas_items?.length ?? 0,
+          parcelas_parseadas: reg.parcelas?.length ?? 0,
+        }
+      });
     } finally {
       client.release();
     }

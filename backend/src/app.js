@@ -12,7 +12,8 @@ require('./config/database');
 require('./config/migrations');
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Arquivos estáticos — uploads de fotos
 app.use('/uploads/fotos', express.static(path.join(__dirname, '../uploads/fotos')));
@@ -33,6 +34,7 @@ app.use('/api/vale-transporte',  require('./routes/valeTransporte'));
 app.use('/api/vale-alimentacao', require('./routes/valeAlimentacao'));
 app.use('/api/ponto',            require('./routes/ponto'));
 app.use('/api/faturamento',      require('./routes/faturamento'));
+app.use('/api/contas-receber',   require('./routes/contasReceber'));
 
 // Rota de teste
 app.get('/api/health', (_req, res) => {

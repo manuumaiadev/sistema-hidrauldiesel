@@ -532,6 +532,9 @@ const createTables = async () => {
       );
     `);
 
+    // CNPJ do cliente no faturamento
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS cliente_cnpj VARCHAR(20)`).catch(() => {});
+
     // Campos de observação e condição no faturamento
     await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_nfs            TEXT`).catch(() => {});
     await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS obs_nf             TEXT`).catch(() => {});

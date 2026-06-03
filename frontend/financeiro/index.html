@@ -92,19 +92,63 @@ tbody tr:hover { background: #FAFAF9; }
 .cell-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .cell-icon-obs { position: relative; cursor: pointer; }
 .cell-icon-obs:hover { filter: brightness(.92); }
-.obs-tooltip {
-  display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
-  transform: translateX(-50%); background: #1E293B; color: #E2E8F0;
+#obs-tip {
+  display: none; position: fixed; background: #1E293B; color: #E2E8F0;
   padding: 10px 14px; border-radius: 9px; font-size: 11.5px;
-  font-family: var(--mono); line-height: 1.65; white-space: pre;
-  min-width: 260px; max-width: 480px; z-index: 600; pointer-events: none;
+  font-family: var(--mono); line-height: 1.65; white-space: pre-wrap;
+  min-width: 260px; max-width: 480px; z-index: 700; pointer-events: none;
   box-shadow: 0 6px 20px rgba(0,0,0,.3);
 }
-.obs-tooltip::after {
-  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+#obs-tip::after {
+  content: ''; position: absolute; top: 100%; left: 14px;
   border: 6px solid transparent; border-top-color: #1E293B;
 }
-.cell-icon-obs:hover .obs-tooltip { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Link número da OS */
+.os-link { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--navy); text-decoration: none; border-bottom: 1.5px dotted var(--navy); transition: color .12s; }
+.os-link:hover { color: var(--red); border-bottom-color: var(--red); }
+
+/* Tooltip pagamento no total */
+.total-wrap { position: relative; display: inline-block; cursor: default; }
+#pagto-tip {
+  display: none; position: fixed; background: #1E293B; color: #E2E8F0;
+  padding: 12px 16px; border-radius: 9px; min-width: 320px; max-width: 420px;
+  font-size: 12px; font-family: var(--font); z-index: 900;
+  pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.3); line-height: 1.6;
+}
+#pagto-tip::after {
+  content: ''; position: absolute; top: 100%; right: 12px;
+  border: 6px solid transparent; border-top-color: #1E293B;
+}
+.pt-header { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #94A3B8; margin-bottom: 8px; }
+.pt-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.06); white-space: nowrap; }
+.pt-row:last-child { border-bottom: none; }
+.pt-data { font-family: var(--mono); font-size: 11.5px; color: #CBD5E1; }
+.pt-valor { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.pt-pago { color: #4ADE80; }
+.pt-pendente { color: #FCD34D; }
+.pt-vencido { color: #F87171; }
+.pt-badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+.pt-badge.pago { background: rgba(74,222,128,.18); color: #4ADE80; }
+.pt-badge.pendente { background: rgba(252,211,77,.18); color: #FCD34D; }
+.pt-badge.vencido { background: rgba(248,113,113,.18); color: #F87171; }
+
+/* Tooltip CNPJ no nome do cliente */
+.cliente-cnpj-wrap { position: relative; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.cliente-cnpj-wrap:hover > span { text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.cnpj-tooltip {
+  display: none; position: absolute; top: calc(100% + 6px); left: 0;
+  background: #1E293B; color: #E2E8F0;
+  padding: 6px 12px; border-radius: 7px; font-size: 12px;
+  font-family: var(--mono); white-space: nowrap; z-index: 900;
+  pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.cnpj-tooltip::before {
+  content: ''; position: absolute; bottom: 100%; left: 14px;
+  border: 5px solid transparent; border-bottom-color: #1E293B;
+}
+.cliente-cnpj-wrap:hover .cnpj-tooltip { display: block; }
 .cell-stack { display: flex; flex-direction: column; gap: 2px; }
 .cs-val { font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
 .cs-val-serv { color: #2563EB; }
@@ -247,6 +291,7 @@ tbody tr:hover { background: #FAFAF9; }
       </div>
       <div class="nav-submenu open" id="sub-nav-group-fin">
         <a href="../financeiro/" class="nav-submenu-item active">Faturamento</a>
+        <a href="../contas-receber/" class="nav-submenu-item">Contas a Receber</a>
       </div>
     </div>
   </nav>
@@ -261,6 +306,10 @@ tbody tr:hover { background: #FAFAF9; }
       <button class="btn btn-ghost" onclick="document.getElementById('input-pdf-bling').click()">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Importar PDF Bling
+      </button>
+      <button class="btn btn-ghost" id="btn-sync-bling" onclick="sincronizarBling()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+        Sincronizar Bling
       </button>
       <button class="btn btn-primary" onclick="abrirModalNovo()">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -361,12 +410,16 @@ tbody tr:hover { background: #FAFAF9; }
             <label>Data de emissão da NF</label>
             <input type="date" id="fat-data"/>
           </div>
-          <div class="field">
+          <div class="field" style="flex:1">
             <label>Cliente <span style="font-size:10px;color:#6B7280;font-weight:400">⚡ Bling</span></label>
             <div id="fat-cliente-wrap" style="position:relative">
               <input type="text" id="fat-cliente" placeholder="Buscar cliente no Bling…" autocomplete="off" oninput="_blingClienteInput()"/>
               <div id="fat-cliente-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:360px;width:max-content;max-width:560px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:300;max-height:260px;overflow-y:auto;padding:4px 0"></div>
             </div>
+          </div>
+          <div class="field" style="max-width:180px">
+            <label>CNPJ / CPF</label>
+            <input type="text" id="fat-cnpj" placeholder="00.000.000/0001-00" style="font-family:var(--mono)"/>
           </div>
           <div class="field">
             <label>Nº OS</label>
@@ -531,6 +584,161 @@ tbody tr:hover { background: #FAFAF9; }
   </div>
 </div>
 
+<!-- Tooltips portal (position:fixed, acima de tudo) -->
+<div id="obs-tip"></div>
+<div id="pagto-tip"></div>
+
+<!-- Modal Emitir Cobrança -->
+<div id="modal-cobranca" class="modal-overlay" style="display:none">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title">Confirmar dados de cobrança</span>
+      <button class="modal-close" onclick="fecharModalCobranca()">×</button>
+    </div>
+    <div class="modal-body" style="gap:16px">
+      <p style="font-size:13px;color:var(--muted);margin:0">Revise os dados abaixo antes de marcar a cobrança como emitida.</p>
+
+      <div style="background:#F8F8F6;border:1px solid var(--border);border-radius:9px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">Cliente</span>
+          <span id="cob-cliente" style="font-size:13.5px;font-weight:600"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">Total</span>
+          <span id="cob-total" style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--navy)"></span>
+        </div>
+      </div>
+
+      <div class="field-grid g2">
+        <div class="field">
+          <label>Forma de pagamento</label>
+          <input type="text" id="cob-forma" placeholder="Ex: Boleto, PIX, Cheque…"/>
+        </div>
+        <div class="field">
+          <label>Banco</label>
+          <select id="cob-banco">
+            <option value="">— Selecionar —</option>
+            <option value="Cora">Cora</option>
+            <option value="Nubank">Nubank</option>
+            <option value="Itaú">Itaú</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Condição de pagamento</label>
+          <input type="text" id="cob-condicao" placeholder="Ex: 30/60/90 ou À vista"/>
+        </div>
+      </div>
+
+      <!-- Parcelas editáveis -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">Vencimentos</span>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="cobAdicionarParcela()">+ Adicionar</button>
+        </div>
+        <div id="cob-parcelas" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <div id="cob-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button class="btn btn-ghost" onclick="fecharModalCobranca()">Cancelar</button>
+        <button class="btn btn-primary" id="cob-btn-salvar" onclick="salvarCobranca()">Confirmar cobrança</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Enviar ao Cliente -->
+<div id="modal-envio" class="modal-overlay" style="display:none">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-header">
+      <span class="modal-title">Enviar ao cliente</span>
+      <button class="modal-close" onclick="fecharModalEnvio()">×</button>
+    </div>
+    <div class="modal-body" style="gap:14px">
+
+      <div class="field">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <label style="margin:0">Mensagem para envio</label>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="copiarMensagemEnvio()">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copiar texto
+          </button>
+        </div>
+        <textarea id="envio-msg" rows="14" style="font-family:var(--mono);font-size:12px;resize:vertical;line-height:1.7"></textarea>
+      </div>
+
+      <div class="field-grid g2">
+        <div class="field">
+          <label>Canal de envio</label>
+          <select id="envio-canal">
+            <option value="">— Selecionar —</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="E-mail">E-mail</option>
+            <option value="Impressa (em mãos)">Impressa (em mãos)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Observações do registro</label>
+          <input type="text" id="envio-obs" placeholder="Obs. gerais do faturamento…"/>
+        </div>
+      </div>
+
+      <div id="envio-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button class="btn btn-ghost" onclick="fecharModalEnvio()">Cancelar</button>
+        <button class="btn btn-primary" id="envio-btn-salvar" onclick="salvarEnvio()">Confirmar envio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Emitir NF -->
+<div id="modal-emitir-nf" class="modal-overlay" style="display:none">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-header">
+      <span class="modal-title">Emitir NF</span>
+      <button class="modal-close" onclick="fecharModalEmitirNF()">×</button>
+    </div>
+    <div class="modal-body" style="gap:16px">
+      <p style="font-size:13px;color:var(--muted);margin:0">Informe os números das notas emitidas. Somente após preencher todos os campos obrigatórios o status será atualizado.</p>
+
+      <div id="enf-campo-servico" style="display:none">
+        <div class="field">
+          <label>Nº NF de Serviço (NFS-e) <span style="color:var(--red)">*</span></label>
+          <input type="text" id="enf-nf-servico" placeholder="Ex: 000456" oninput="enfValidar()"/>
+        </div>
+      </div>
+
+      <div id="enf-campo-peca" style="display:none">
+        <div class="field">
+          <label>Nº NF de Peça (NF-e) <span style="color:var(--red)">*</span></label>
+          <input type="text" id="enf-nf-peca" placeholder="Ex: 000789" oninput="enfValidar()"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Data de emissão</label>
+        <input type="date" id="enf-data"/>
+      </div>
+
+      <div id="enf-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button class="btn btn-ghost" onclick="fecharModalEmitirNF()">Cancelar</button>
+        <button class="btn btn-primary" id="enf-btn-salvar" onclick="salvarEmissaoNF()" disabled>Emitir NF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Barra de ação em lote -->
 <div id="bulk-bar" class="bulk-bar" style="display:none">
   <span class="bulk-count" id="bulk-count-label"></span>
@@ -551,10 +759,47 @@ tbody tr:hover { background: #FAFAF9; }
 const fmtValor = v => parseFloat(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtData  = d => d ? new Date(d.slice(0,10) + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
 
+function _tooltipPagamento(f) {
+  const vencs = f.vencimentos || [];
+  const hoje  = new Date().toISOString().slice(0,10);
+
+  let inner = '';
+
+  // cabeçalho: condição + forma
+  const info = [f.condicao_pagamento, f.forma_pagamento].filter(Boolean).join(' · ');
+  if (info) inner += `<div class="pt-header">${info}</div>`;
+  else      inner += `<div class="pt-header">Pagamento</div>`;
+
+  if (!vencs.length) {
+    inner += `<div style="font-size:12px;color:#94A3B8;padding:4px 0">Sem vencimentos definidos</div>`;
+  } else {
+    vencs.forEach((v, i) => {
+      const dt   = v.data_vencimento?.slice(0,10) || '';
+      const sit  = v.pago ? 'pago' : (dt && dt < hoje ? 'vencido' : 'pendente');
+      const lbl  = sit === 'pago' ? '✓ Pago' : sit === 'vencido' ? 'Vencido' : 'A vencer';
+      const cls  = `pt-${sit}`;
+      inner += `<div class="pt-row">
+        <span class="pt-data">${vencs.length > 1 ? `${i+1}ª ` : ''}${fmtData(dt)}</span>
+        <span class="pt-valor ${cls}">${fmtValor(v.valor)}</span>
+        <span class="pt-badge ${sit}">${lbl}</span>
+      </div>`;
+    });
+
+    // subtotal se mais de 1
+    if (vencs.length > 1) {
+      const pago = vencs.filter(v=>v.pago).reduce((a,v)=>a+parseFloat(v.valor||0),0);
+      const pend = vencs.filter(v=>!v.pago).reduce((a,v)=>a+parseFloat(v.valor||0),0);
+      if (pago > 0) inner += `<div style="font-size:11px;color:#4ADE80;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.1)">Recebido: ${fmtValor(pago)} · Pendente: ${fmtValor(pend)}</div>`;
+    }
+  }
+
+  return `<div class="total-wrap" data-pagto="${inner.replace(/"/g,'&quot;')}"><span class="total-val">${fmtValor(f.valor_total)}</span></div>`;
+}
+
 const STATUS_INFO = {
   autorizado:       { label: 'Autorizado para Faturamento', cls: 'status-autorizado',       split: false, proximo: 'nf_emitida', proximoLabel: 'Emitir NF' },
   nf_emitida:       { label: 'NF Emitida',                  cls: 'status-nf_emitida',       split: true,  proximo: null,        proximoLabel: null },
-  cobranca_emitida: { label: 'Cobrança Emitida',            cls: 'status-cobranca_emitida', split: false, proximo: 'enviado',   proximoLabel: 'Marcar Enviado' },
+  cobranca_emitida: { label: 'Cobrança Emitida',            cls: 'status-cobranca_emitida', split: false, proximo: 'enviado',   proximoLabel: 'Enviar para Cliente' },
   enviado:          { label: 'Enviado ao Cliente',           cls: 'status-enviado',          split: false, proximo: null,        proximoLabel: null },
   cancelado:        { label: 'Cancelado',                   cls: 'status-cancelado',        split: false, proximo: null,        proximoLabel: null },
   rejeitado:        { label: 'Rejeitado',                   cls: 'status-rejeitado',        split: false, proximo: null,        proximoLabel: null },
@@ -675,8 +920,9 @@ function renderFiltros() {
 }
 
 function limparFiltros() {
-  document.getElementById('filtro-inicio').value = '';
-  document.getElementById('filtro-fim').value    = '';
+  const hoje = new Date();
+  document.getElementById('filtro-inicio').value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  document.getElementById('filtro-fim').value    = hoje.toISOString().slice(0,10);
   document.getElementById('busca-geral').value   = '';
   document.getElementById('busca-clear').style.display = 'none';
   _busca   = '';
@@ -762,6 +1008,12 @@ function renderTabela(lista) {
   }
 
   const sorted = [...lista].sort((a, b) => {
+    // NF pendentes (sem data de emissão) sempre no topo, acima de qualquer ordenação
+    const aPend = !a.data_faturamento;
+    const bPend = !b.data_faturamento;
+    if (aPend && !bPend) return -1;
+    if (!aPend && bPend) return  1;
+
     let va = a[_sortCol] ?? '';
     let vb = b[_sortCol] ?? '';
     if (typeof va === 'string') va = va.toLowerCase();
@@ -793,7 +1045,6 @@ function renderTabela(lista) {
     const iconEl = obs
       ? `<div class="cell-icon cell-icon-obs" style="background:${bg}" onclick="copiarObs(this,event)" data-obs="${obs.replace(/"/g,'&quot;').replace(/\n/g,'&#10;')}">
            ${icon}
-           <div class="obs-tooltip">${obs.replace(/\n/g,'<br>')}</div>
          </div>`
       : `<div class="cell-icon" style="background:${bg}">${icon}</div>`;
     return `<div class="cell-nf-wrap">${iconEl}${inner}</div>`;
@@ -808,18 +1059,23 @@ function renderTabela(lista) {
     if (si.split) {
       menuStatus = `
         <div class="dropdown-sep"></div>
-        <button class="dropdown-item" onclick="avancarStatus(${f.id},'cobranca_emitida','Cobrança Emitida');fecharMenus()">
+        <button class="dropdown-item" onclick="emitirCobranca(${f.id});fecharMenus()">
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           Cobrança Emitida
         </button>
-        <button class="dropdown-item" onclick="avancarStatus(${f.id},'enviado','Enviado ao Cliente');fecharMenus()">
+        <button class="dropdown-item" onclick="marcarEnviado(${f.id});fecharMenus()">
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Finalizar (Enviado)
+          Enviar para Cliente
         </button>`;
     } else if (si.proximo) {
+      const acaoProximo = si.proximo === 'nf_emitida'
+        ? `emitirNF(${f.id});fecharMenus()`
+        : si.proximo === 'enviado'
+        ? `marcarEnviado(${f.id});fecharMenus()`
+        : `avancarStatus(${f.id},'${si.proximo}','${si.proximoLabel}');fecharMenus()`;
       menuStatus = `
         <div class="dropdown-sep"></div>
-        <button class="dropdown-item" onclick="avancarStatus(${f.id},'${si.proximo}','${si.proximoLabel}');fecharMenus()">
+        <button class="dropdown-item" onclick="${acaoProximo}">
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           ${si.proximoLabel}
         </button>`;
@@ -834,12 +1090,21 @@ function renderTabela(lista) {
           : `<span style="font-size:12px;font-weight:600;color:#F59E0B;background:#FEF3C7;padding:3px 8px;border-radius:5px;white-space:nowrap">NF pendente</span>`
         }
       </td>
-      <td><span class="mono" style="font-weight:600;font-size:13px">${f.os_numero || '<span style="color:#D4D2CC">—</span>'}</span></td>
-      <td><span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '<span style="color:#D4D2CC">—</span>'}</span></td>
+      <td>${f.os_id && f.os_numero
+        ? `<a href="../orcamento/?id=${f.os_id}" target="_blank" class="os-link">${f.os_numero}</a>`
+        : `<span class="mono" style="font-weight:600;font-size:13px;color:#D4D2CC">${f.os_numero || '—'}</span>`
+      }</td>
+      <td>${f.cliente_cnpj
+        ? `<div class="cliente-cnpj-wrap" onclick="copiarCnpj('${f.cliente_cnpj}',event)" title="">
+             <span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '—'}</span>
+             <div class="cnpj-tooltip">${fmtCnpj(f.cliente_cnpj)}</div>
+           </div>`
+        : `<span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '<span style="color:#D4D2CC">—</span>'}</span>`
+      }</td>
       <td><span class="status-badge ${si.cls}">${si.label}</span></td>
       <td>${wrapCell(f.nf_servico, f.pedido_servico, f.valor_servico, 'cs-val-serv', 'NFS', iconServ, '#EFF6FF', f.obs_nfs)}</td>
       <td>${wrapCell(f.nf_peca,    f.pedido_peca,    f.valor_peca,    'cs-val-peca', 'NF',  iconPeca, '#FFF7ED', f.obs_nf)}</td>
-      <td><span class="total-val">${fmtValor(f.valor_total)}</span></td>
+      <td>${_tooltipPagamento(f)}</td>
       <td>
         <div class="dropdown-wrap">
           <button class="menu-btn" onclick="toggleMenu(${f.id},event)">⋮</button>
@@ -927,6 +1192,391 @@ function sortBy(col) {
   renderTabela(_faturamentos);
 }
 
+// ── Modal Enviar ao Cliente ───────────────────────────────────────────────────
+let _envioFatId = null;
+
+async function marcarEnviado(id) {
+  const f = _faturamentos.find(x => x.id === id);
+  if (!f) return;
+  _envioFatId = id;
+
+  document.getElementById('envio-canal').value = '';
+  document.getElementById('envio-obs').value   = f.observacoes || '';
+  document.getElementById('envio-erro').textContent = '';
+  document.getElementById('envio-btn-salvar').disabled = false;
+
+  // Gera mensagem base com dados já disponíveis
+  document.getElementById('envio-msg').value = _gerarMensagem(f, null);
+  document.getElementById('modal-envio').style.display = 'flex';
+
+  // Busca OS em background para complementar com placa/modelo
+  if (f.os_id) {
+    try {
+      const os = await api.buscarOS(f.os_id);
+      document.getElementById('envio-msg').value = _gerarMensagem(f, os);
+    } catch { /* sem OS vinculada, mantém mensagem base */ }
+  }
+}
+
+function _gerarMensagem(f, os) {
+  const cliente = f.cliente_nome || 'Cliente';
+
+  // referência descritiva da OS em linha única
+  const ref = [];
+  if (f.os_numero)      ref.push(`Ordem de Serviço nº ${f.os_numero}`);
+  if (os?.placa)        ref.push(`placa ${os.placa}`);
+  if (os?.modelo)       ref.push(os.modelo + (os.ano ? ` ${os.ano}` : ''));
+  if (f.pedido_servico && f.pedido_peca && f.pedido_servico !== f.pedido_peca)
+    ref.push(`Pedidos nº ${f.pedido_servico} / ${f.pedido_peca}`);
+  else if (f.pedido_servico) ref.push(`Pedido nº ${f.pedido_servico}`);
+  else if (f.pedido_peca)    ref.push(`Pedido nº ${f.pedido_peca}`);
+  const refTexto = ref.length ? ref.join(', ') : 'serviços prestados';
+
+  // notas fiscais
+  const linhasNF = [];
+  if (f.nf_servico) linhasNF.push(`  • Nota Fiscal de Serviço nº: ${f.nf_servico}`);
+  if (f.nf_peca)    linhasNF.push(`  • Nota Fiscal de Peça nº: ${f.nf_peca}`);
+  const blocoNF = linhasNF.length ? `\n\nDocumentos anexos:\n${linhasNF.join('\n')}` : '';
+
+  // dados de pagamento
+  const linhasPgto = [];
+  if (f.forma_pagamento)    linhasPgto.push(`  • Forma de pagamento: ${f.forma_pagamento}`);
+  if (f.banco)              linhasPgto.push(`  • Banco: ${f.banco}`);
+  if (f.condicao_pagamento) linhasPgto.push(`  • Condição: ${f.condicao_pagamento}`);
+
+  const vencs = f.vencimentos || [];
+  if (vencs.length === 1) {
+    const dt = vencs[0].data_vencimento?.slice(0,10);
+    linhasPgto.push(`  • Vencimento: ${dt ? fmtData(dt) : '—'} — ${fmtValor(vencs[0].valor)}`);
+  } else {
+    vencs.forEach((v, i) => {
+      const dt = v.data_vencimento?.slice(0,10);
+      linhasPgto.push(`  • ${i+1}ª parcela: ${dt ? fmtData(dt) : '—'} — ${fmtValor(v.valor)}`);
+    });
+  }
+
+  const total = parseFloat(f.valor_total) || 0;
+  if (total > 0) linhasPgto.push(`  • Valor total: ${fmtValor(total)}`);
+
+  const blocoPgto = linhasPgto.length ? `\n\nDados para pagamento:\n${linhasPgto.join('\n')}` : '';
+
+  return `Prezado(a) ${cliente},
+
+Encaminhamos em anexo as Notas Fiscais e Boleto referentes à ${refTexto}, emitidos pela Hidrauldiesel.${blocoNF}${blocoPgto}
+
+Em caso de dúvidas sobre o faturamento ou os serviços realizados, nosso setor financeiro está à disposição para atendimento.
+
+Agradecemos pela confiança em nossos serviços.
+
+⚠️ ATENÇÃO: informamos que, conforme nossa política interna, títulos não regularizados até 7 dias após o vencimento poderão ser encaminhados ao Serasa.`;
+}
+
+function copiarMensagemEnvio() {
+  const txt = document.getElementById('envio-msg').value;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = event.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copiado!';
+    btn.style.color = '#16A34A';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 1800);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+function fecharModalEnvio() {
+  document.getElementById('modal-envio').style.display = 'none';
+  _envioFatId = null;
+}
+
+async function salvarEnvio() {
+  if (!_envioFatId) return;
+  const f = _faturamentos.find(x => x.id === _envioFatId);
+  if (!f) return;
+
+  const canal = document.getElementById('envio-canal').value;
+  const obs   = document.getElementById('envio-obs').value.trim() || null;
+
+  if (!canal) {
+    document.getElementById('envio-erro').textContent = 'Selecione o canal de envio.';
+    return;
+  }
+
+  document.getElementById('envio-btn-salvar').disabled = true;
+  document.getElementById('envio-erro').textContent = '';
+
+  try {
+    const vencimentos = (f.vencimentos || []).map(v => ({
+      data_vencimento: v.data_vencimento?.slice(0,10) || '',
+      valor: parseFloat(v.valor) || 0,
+      pago:  v.pago || false,
+    }));
+
+    // canal salvo em obs_pagamento; obs geral salva em observacoes
+    await api.atualizarFaturamento(_envioFatId, {
+      os_numero:          f.os_numero,
+      cliente_nome:       f.cliente_nome,
+      cliente_cnpj:       f.cliente_cnpj,
+      data_faturamento:   f.data_faturamento?.slice(0,10) || null,
+      status:             'enviado',
+      nf_servico:         f.nf_servico,
+      pedido_servico:     f.pedido_servico,
+      valor_servico:      parseFloat(f.valor_servico) || 0,
+      obs_nfs:            f.obs_nfs,
+      nf_peca:            f.nf_peca,
+      pedido_peca:        f.pedido_peca,
+      valor_peca:         parseFloat(f.valor_peca) || 0,
+      obs_nf:             f.obs_nf,
+      valor_total:        parseFloat(f.valor_total) || 0,
+      qtd_parcelas:       f.qtd_parcelas || 1,
+      valor_parcela:      parseFloat(f.valor_parcela) || 0,
+      banco:              f.banco,
+      forma_pagamento:    f.forma_pagamento,
+      condicao_pagamento: f.condicao_pagamento,
+      categoria:          f.categoria || 'Venda de Serviços',
+      obs_pagamento:      canal,
+      observacoes:        obs,
+      vencimentos,
+    });
+    fecharModalEnvio();
+    carregar();
+  } catch (err) {
+    document.getElementById('envio-erro').textContent = err.message || 'Erro ao salvar.';
+    document.getElementById('envio-btn-salvar').disabled = false;
+  }
+}
+
+document.getElementById('modal-envio').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalEnvio();
+});
+
+// ── Modal Emitir Cobrança ─────────────────────────────────────────────────────
+let _cobFatId    = null;
+let _cobParcelas = [];
+
+function emitirCobranca(id) {
+  const f = _faturamentos.find(x => x.id === id);
+  if (!f) return;
+  _cobFatId = id;
+
+  document.getElementById('cob-cliente').textContent = f.cliente_nome || '—';
+  document.getElementById('cob-total').textContent   = fmtValor(f.valor_total);
+  document.getElementById('cob-forma').value         = f.forma_pagamento    || '';
+  document.getElementById('cob-banco').value         = f.banco              || '';
+  document.getElementById('cob-condicao').value      = f.condicao_pagamento || '';
+  document.getElementById('cob-erro').textContent    = '';
+
+  _cobParcelas = (f.vencimentos || []).map(v => ({
+    data_vencimento: v.data_vencimento?.slice(0,10) || '',
+    valor: parseFloat(v.valor) || 0,
+    pago:  v.pago || false,
+  }));
+
+  if (!_cobParcelas.length) {
+    const total = parseFloat(f.valor_total) || 0;
+    _cobParcelas = [{ data_vencimento: '', valor: total, pago: false }];
+  }
+
+  renderCobParcelas();
+  document.getElementById('modal-cobranca').style.display = 'flex';
+}
+
+function renderCobParcelas() {
+  const hoje = new Date().toISOString().slice(0,10);
+  document.getElementById('cob-parcelas').innerHTML = _cobParcelas.map((p, i) => {
+    const sit = p.pago ? 'pago' : (p.data_vencimento && p.data_vencimento < hoje ? 'vencido' : 'pendente');
+    const badgeBg  = sit === 'pago' ? '#DCFCE7' : sit === 'vencido' ? '#FEE2E2' : '#FEF3C7';
+    const badgeCor = sit === 'pago' ? '#15803D' : sit === 'vencido' ? '#991B1B' : '#92400E';
+    const badgeLbl = sit === 'pago' ? '✓ Pago'  : sit === 'vencido' ? 'Vencido' : 'A vencer';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--border);border-radius:8px">
+      ${_cobParcelas.length > 1 ? `<span style="font-size:11px;font-weight:700;color:var(--muted);min-width:18px">${i+1}ª</span>` : ''}
+      <input type="date" value="${p.data_vencimento}" style="flex:1;min-width:130px;font-family:var(--font);font-size:13px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none"
+        onchange="_cobParcelas[${i}].data_vencimento=this.value;renderCobParcelas()"/>
+      <input type="number" value="${p.valor}" step="0.01" min="0" style="width:110px;font-family:var(--mono);font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--border);border-radius:6px;outline:none;text-align:right"
+        onchange="_cobParcelas[${i}].valor=parseFloat(this.value)||0"/>
+      <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;background:${badgeBg};color:${badgeCor};cursor:pointer"
+        onclick="_cobParcelas[${i}].pago=!_cobParcelas[${i}].pago;renderCobParcelas()" title="Clique para alternar">${badgeLbl}</span>
+      <button type="button" onclick="_cobParcelas.splice(${i},1);renderCobParcelas()"
+        style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:16px;line-height:1;padding:0 2px" title="Remover">×</button>
+    </div>`;
+  }).join('') || `<span style="font-size:12.5px;color:var(--muted)">Nenhuma parcela. Clique em "+ Adicionar".</span>`;
+}
+
+function cobAdicionarParcela() {
+  const totalExist = _cobParcelas.reduce((a, p) => a + p.valor, 0);
+  const f = _faturamentos.find(x => x.id === _cobFatId);
+  const restante = Math.max(0, (parseFloat(f?.valor_total) || 0) - totalExist);
+  _cobParcelas.push({ data_vencimento: '', valor: restante, pago: false });
+  renderCobParcelas();
+}
+
+function fecharModalCobranca() {
+  document.getElementById('modal-cobranca').style.display = 'none';
+  _cobFatId = null;
+  _cobParcelas = [];
+}
+
+async function salvarCobranca() {
+  if (!_cobFatId) return;
+  const f = _faturamentos.find(x => x.id === _cobFatId);
+  if (!f) return;
+
+  const forma    = document.getElementById('cob-forma').value.trim()    || null;
+  const banco    = document.getElementById('cob-banco').value.trim()    || null;
+  const condicao = document.getElementById('cob-condicao').value.trim() || null;
+
+  document.getElementById('cob-btn-salvar').disabled = true;
+  document.getElementById('cob-erro').textContent = '';
+
+  try {
+    await api.atualizarFaturamento(_cobFatId, {
+      os_numero:          f.os_numero,
+      cliente_nome:       f.cliente_nome,
+      cliente_cnpj:       f.cliente_cnpj,
+      data_faturamento:   f.data_faturamento?.slice(0,10) || null,
+      status:             'cobranca_emitida',
+      nf_servico:         f.nf_servico,
+      pedido_servico:     f.pedido_servico,
+      valor_servico:      parseFloat(f.valor_servico) || 0,
+      obs_nfs:            f.obs_nfs,
+      nf_peca:            f.nf_peca,
+      pedido_peca:        f.pedido_peca,
+      valor_peca:         parseFloat(f.valor_peca) || 0,
+      obs_nf:             f.obs_nf,
+      valor_total:        parseFloat(f.valor_total) || 0,
+      qtd_parcelas:       _cobParcelas.length || 1,
+      valor_parcela:      _cobParcelas[0]?.valor || parseFloat(f.valor_total) || 0,
+      banco,
+      forma_pagamento:    forma,
+      condicao_pagamento: condicao,
+      categoria:          f.categoria || 'Venda de Serviços',
+      obs_pagamento:      f.obs_pagamento,
+      observacoes:        f.observacoes,
+      vencimentos:        _cobParcelas.filter(p => p.data_vencimento),
+    });
+    fecharModalCobranca();
+    carregar();
+  } catch (err) {
+    document.getElementById('cob-erro').textContent = err.message || 'Erro ao salvar.';
+    document.getElementById('cob-btn-salvar').disabled = false;
+  }
+}
+
+document.getElementById('modal-cobranca').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalCobranca();
+});
+
+// ── Modal Emitir NF ───────────────────────────────────────────────────────────
+let _enfFatId = null;
+let _enfNeedServ = false;
+let _enfNeedPeca = false;
+
+function emitirNF(id) {
+  const f = _faturamentos.find(x => x.id === id);
+  if (!f) return;
+  _enfFatId = id;
+
+  _enfNeedServ = parseFloat(f.valor_servico || 0) > 0 || !!f.pedido_servico;
+  _enfNeedPeca = parseFloat(f.valor_peca    || 0) > 0 || !!f.pedido_peca;
+
+  // se não tem nenhum dos dois, emite direto (não deveria acontecer)
+  if (!_enfNeedServ && !_enfNeedPeca) {
+    avancarStatus(id, 'nf_emitida', 'Emitir NF');
+    return;
+  }
+
+  document.getElementById('enf-campo-servico').style.display = _enfNeedServ ? '' : 'none';
+  document.getElementById('enf-campo-peca').style.display    = _enfNeedPeca ? '' : 'none';
+  document.getElementById('enf-nf-servico').value = f.nf_servico || '';
+  document.getElementById('enf-nf-peca').value    = f.nf_peca    || '';
+  document.getElementById('enf-data').value       = f.data_faturamento
+    ? f.data_faturamento.slice(0,10)
+    : new Date().toISOString().slice(0,10);
+  document.getElementById('enf-erro').textContent = '';
+  enfValidar();
+  document.getElementById('modal-emitir-nf').style.display = 'flex';
+}
+
+function fecharModalEmitirNF() {
+  document.getElementById('modal-emitir-nf').style.display = 'none';
+  _enfFatId = null;
+}
+
+function enfValidar() {
+  const servOk = !_enfNeedServ || document.getElementById('enf-nf-servico').value.trim();
+  const pecaOk = !_enfNeedPeca || document.getElementById('enf-nf-peca').value.trim();
+  document.getElementById('enf-btn-salvar').disabled = !(servOk && pecaOk);
+}
+
+async function salvarEmissaoNF() {
+  if (!_enfFatId) return;
+  const f = _faturamentos.find(x => x.id === _enfFatId);
+  if (!f) return;
+
+  const nfServ = document.getElementById('enf-nf-servico').value.trim() || null;
+  const nfPeca = document.getElementById('enf-nf-peca').value.trim()    || null;
+  const data   = document.getElementById('enf-data').value              || null;
+
+  if (_enfNeedServ && !nfServ) {
+    document.getElementById('enf-erro').textContent = 'Informe o número da NF de Serviço.';
+    return;
+  }
+  if (_enfNeedPeca && !nfPeca) {
+    document.getElementById('enf-erro').textContent = 'Informe o número da NF de Peça.';
+    return;
+  }
+
+  document.getElementById('enf-btn-salvar').disabled = true;
+  document.getElementById('enf-erro').textContent = '';
+
+  try {
+    // monta payload completo reaproveitando dados existentes
+    const vencimentos = (f.vencimentos || []).map(v => ({
+      data_vencimento: v.data_vencimento?.slice(0,10) || '',
+      valor: parseFloat(v.valor) || 0,
+      pago: v.pago || false,
+    }));
+
+    await api.atualizarFaturamento(_enfFatId, {
+      os_numero:          f.os_numero,
+      cliente_nome:       f.cliente_nome,
+      cliente_cnpj:       f.cliente_cnpj,
+      data_faturamento:   data,
+      status:             'nf_emitida',
+      nf_servico:         nfServ,
+      pedido_servico:     f.pedido_servico,
+      valor_servico:      parseFloat(f.valor_servico) || 0,
+      obs_nfs:            f.obs_nfs,
+      nf_peca:            nfPeca,
+      pedido_peca:        f.pedido_peca,
+      valor_peca:         parseFloat(f.valor_peca) || 0,
+      obs_nf:             f.obs_nf,
+      valor_total:        parseFloat(f.valor_total) || 0,
+      qtd_parcelas:       f.qtd_parcelas || 1,
+      valor_parcela:      parseFloat(f.valor_parcela) || 0,
+      banco:              f.banco,
+      forma_pagamento:    f.forma_pagamento,
+      condicao_pagamento: f.condicao_pagamento,
+      categoria:          f.categoria || 'Venda de Serviços',
+      obs_pagamento:      f.obs_pagamento,
+      observacoes:        f.observacoes,
+      vencimentos,
+    });
+    fecharModalEmitirNF();
+    carregar();
+  } catch (err) {
+    document.getElementById('enf-erro').textContent = err.message || 'Erro ao emitir NF.';
+    document.getElementById('enf-btn-salvar').disabled = false;
+  }
+}
+
+document.getElementById('modal-emitir-nf').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalEmitirNF();
+});
+
 // ── Status ────────────────────────────────────────────────────────────────────
 async function avancarStatus(id, novoStatus, label) {
   if (!confirm(`Avançar para "${label}"?`)) return;
@@ -941,7 +1591,7 @@ async function avancarStatus(id, novoStatus, label) {
 // ── Modal ──────────────────────────────────────────────────────────────────────
 function _limparModal() {
   _fecharClienteDropdown();
-  ['fat-id','fat-cliente','fat-os','fat-nf-servico','fat-pedido-servico',
+  ['fat-id','fat-cliente','fat-cnpj','fat-os','fat-nf-servico','fat-pedido-servico',
    'fat-nf-peca','fat-pedido-peca','fat-banco','fat-obs',
    'fat-obs-nfs','fat-obs-nf','fat-obs-pagamento',
    'fat-valor-servico','fat-valor-peca','fat-valor-total','fat-valor-parcela'].forEach(id => {
@@ -978,6 +1628,10 @@ function abrirModalEditar(id) {
   document.getElementById('modal-fat-title').textContent = 'Editar Faturamento';
   document.getElementById('fat-data').value             = f.data_faturamento ? f.data_faturamento.slice(0,10) : '';
   document.getElementById('fat-cliente').value          = f.cliente_nome || '';
+  document.getElementById('fat-cnpj').value             = f.cliente_cnpj || '';
+
+  // busca CNPJ atualizado direto no Bling pelo nome do cliente
+  if (f.cliente_nome) _buscaCnpjBling(f.cliente_nome);
   document.getElementById('fat-os').value               = f.os_numero || '';
   document.getElementById('fat-status').value           = f.status || 'autorizado';
   document.getElementById('fat-nf-servico').value       = f.nf_servico || '';
@@ -1094,9 +1748,12 @@ function renderParcelasFat() {
         </select>
       </td>
       <td style="padding:4px 6px">
-        <input type="text" value="${p.banco||''}" placeholder="Ex: Itaú…"
-          style="${inp('width:120px')}"
-          oninput="_parcelasFat[${i}].banco=this.value"/>
+        <select style="${inp('width:120px')}" onchange="_parcelasFat[${i}].banco=this.value">
+          <option value="" ${!p.banco?'selected':''}>—</option>
+          <option value="Cora"  ${ p.banco==='Cora' ?'selected':''}>Cora</option>
+          <option value="Nubank"${ p.banco==='Nubank'?'selected':''}>Nubank</option>
+          <option value="Itaú"  ${ p.banco==='Itaú' ?'selected':''}>Itaú</option>
+        </select>
       </td>
       <td style="padding:4px 6px">
         <input type="text" value="${p.observacao||''}" placeholder="Observação…"
@@ -1177,6 +1834,31 @@ const renderVencimentos = () => {};
 const renderResumoPendente = () => {};
 function coletarVencimentos() {}
 
+// ── CNPJ tooltip + copiar ─────────────────────────────────────────────────────
+function fmtCnpj(v) {
+  if (!v) return '';
+  const d = v.replace(/\D/g, '');
+  if (d.length === 14) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  if (d.length === 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  return v;
+}
+
+function copiarCnpj(cnpj, e) {
+  e.stopPropagation();
+  const texto = fmtCnpj(cnpj);
+  navigator.clipboard.writeText(texto).then(() => {
+    const el = e.currentTarget;
+    const orig = el.querySelector('span')?.style.color;
+    if (el.querySelector('span')) el.querySelector('span').style.color = '#22C55E';
+    setTimeout(() => { if (el.querySelector('span')) el.querySelector('span').style.color = orig || ''; }, 1200);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = texto; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
 // ── copiar obs do ícone ───────────────────────────────────────────────────────
 function copiarObs(el, e) {
   e.stopPropagation();
@@ -1213,6 +1895,7 @@ async function salvarFaturamento() {
   const dados = {
     os_numero:       document.getElementById('fat-os').value.trim()              || null,
     cliente_nome:    document.getElementById('fat-cliente').value.trim()         || null,
+    cliente_cnpj:    document.getElementById('fat-cnpj').value.trim()            || null,
     data_faturamento,
     status:          document.getElementById('fat-status').value,
     nf_servico:      document.getElementById('fat-nf-servico').value.trim()      || null,
@@ -1360,6 +2043,18 @@ function _blingClienteInput() {
   _blingClienteTimer = setTimeout(() => _blingClienteBuscar(texto), 250);
 }
 
+async function _buscaCnpjBling(nomeCliente) {
+  try {
+    const lista = await api.blingBuscarClientes(nomeCliente);
+    if (!lista?.length) return;
+    // pega o cliente cujo nome bate exatamente (case insensitive), ou o primeiro resultado
+    const match = lista.find(c => c.nome?.toLowerCase() === nomeCliente.toLowerCase()) || lista[0];
+    if (match?.numeroDocumento) {
+      document.getElementById('fat-cnpj').value = match.numeroDocumento;
+    }
+  } catch { /* silencioso — campo fica com o valor anterior */ }
+}
+
 async function _blingClienteBuscar(texto) {
   const dd = document.getElementById('fat-cliente-dropdown');
   if (!dd) return;
@@ -1383,6 +2078,7 @@ async function _blingClienteBuscar(texto) {
       item.addEventListener('mousedown', e => {
         e.preventDefault();
         document.getElementById('fat-cliente').value = c.nome || '';
+        if (c.numeroDocumento) document.getElementById('fat-cnpj').value = c.numeroDocumento;
         _fecharClienteDropdown();
       });
       dd.appendChild(item);
@@ -1447,7 +2143,81 @@ async function gerarObsNF() {
   document.getElementById('fat-obs-nf').value = partes.join(' | ');
 }
 
+// Inicia com o mês atual nos filtros de data para as métricas
+(function() {
+  const hoje = new Date();
+  const ini  = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0, 10);
+  const fim  = hoje.toISOString().slice(0, 10);
+  document.getElementById('filtro-inicio').value = ini;
+  document.getElementById('filtro-fim').value    = fim;
+})();
+
+// ── Tooltips portal (position:fixed, z-index:900, escapam de qualquer overflow) ──
+const _obsTip   = document.getElementById('obs-tip');
+const _pagtoTip = document.getElementById('pagto-tip');
+
+function _showTip(tip, anchorRect, html, alignRight = false) {
+  tip.innerHTML = html;
+  tip.style.display = 'block';
+  // posiciona acima do ícone
+  const tipH = tip.offsetHeight || 0;
+  const top  = anchorRect.top - tipH - 10;
+  tip.style.top  = Math.max(8, top) + 'px';
+  tip.style.bottom = 'auto';
+  if (alignRight) {
+    const right = window.innerWidth - anchorRect.right;
+    tip.style.right = Math.max(8, right) + 'px';
+    tip.style.left  = 'auto';
+  } else {
+    tip.style.left  = Math.max(8, anchorRect.left) + 'px';
+    tip.style.right = 'auto';
+  }
+}
+
+document.addEventListener('mouseover', e => {
+  // tooltip de obs (ícone de serviço/peça)
+  const obsCell = e.target.closest('.cell-icon-obs');
+  if (obsCell) {
+    const obs = obsCell.dataset.obs?.replace(/&#10;/g, '\n') || '';
+    if (obs) _showTip(_obsTip, obsCell.getBoundingClientRect(), obs.replace(/\n/g, '<br>'));
+    return;
+  }
+  // tooltip de pagamento (total)
+  const pagtoWrap = e.target.closest('.total-wrap');
+  if (pagtoWrap && pagtoWrap.dataset.pagto) {
+    _showTip(_pagtoTip, pagtoWrap.getBoundingClientRect(), pagtoWrap.dataset.pagto, true);
+    return;
+  }
+});
+
+document.addEventListener('mouseout', e => {
+  if (e.target.closest('.cell-icon-obs') && !e.relatedTarget?.closest('.cell-icon-obs'))
+    _obsTip.style.display = 'none';
+  if (e.target.closest('.total-wrap') && !e.relatedTarget?.closest('.total-wrap'))
+    _pagtoTip.style.display = 'none';
+});
+
 carregar();
+
+async function sincronizarBling() {
+  const btn = document.getElementById('btn-sync-bling');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg> Sincronizando…`;
+  try {
+    const r = await api.blingSincronizarFaturamento();
+    let msg = `✅ Sincronização concluída\n${r.novos} novo(s) importado(s)`;
+    if (r.ja_existentes) msg += `\n⏭ ${r.ja_existentes} já existia(m)`;
+    if (r.erros) msg += `\n❌ ${r.erros} com erro`;
+    alert(msg);
+    if (r.novos > 0) carregar();
+  } catch (err) {
+    alert('Erro ao sincronizar com o Bling: ' + (err.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
 
 async function importarPdfBling(input) {
   const file = input.files[0];
@@ -1465,7 +2235,10 @@ async function importarPdfBling(input) {
 
     let msg = `✅ ${importados.length} OS importada(s)`;
     if (ignorados.length) msg += `\n⏭ ${ignorados.length} ignorada(s) (já existiam)`;
-    if (erros.length)     msg += `\n❌ ${erros.length} com erro`;
+    if (erros.length) {
+      msg += `\n❌ ${erros.length} com erro:`;
+      erros.forEach(e => { msg += `\n   • OS ${e.os_numero}: ${e.motivo}`; });
+    }
 
     alert(msg);
     if (importados.length) carregar();

@@ -4,7 +4,7 @@ const auth = require('../middlewares/auth');
 const {
   autorizar, callback, listarTodosClientes, criarCliente, buscarProdutos,
   criarServico, buscarServicos, criarPeca, buscarPecas, consultarEstoque,
-  importarPedidosBling
+  importarPedidosBling, sincronizarFaturamentoBling
 } = require('../controllers/blingController');
 
 router.get('/autorizar', auth, autorizar);
@@ -17,6 +17,7 @@ router.post('/servicos', auth, criarServico);
 router.get('/pecas', auth, buscarPecas);
 router.post('/pecas', auth, criarPeca);
 router.get('/estoque/:id',       auth, consultarEstoque);
-router.post('/importar-pedidos', auth, importarPedidosBling);
+router.post('/importar-pedidos',         auth, importarPedidosBling);
+router.post('/sincronizar-faturamento',  auth, sincronizarFaturamentoBling);
 
 module.exports = router;

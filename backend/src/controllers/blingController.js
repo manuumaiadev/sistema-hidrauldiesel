@@ -15,7 +15,14 @@ const STATUS_MAP = {
 
 // Iniciar autenticação OAuth2
 const autorizar = (req, res) => {
-  const url = `https://www.bling.com.br/Api/v3/oauth/authorize?response_type=code&client_id=${process.env.BLING_CLIENT_ID}&state=hidrauldiesel`;
+  const scopes = [
+    'contatos.todos',
+    'produtos.todos',
+    'estoque.todos',
+    'ordens.servicos.todos',
+    'notasfiscais.todos',
+  ].join(' ');
+  const url = `https://www.bling.com.br/Api/v3/oauth/authorize?response_type=code&client_id=${process.env.BLING_CLIENT_ID}&state=hidrauldiesel&scope=${encodeURIComponent(scopes)}`;
   res.json({ url });
 };
 
@@ -328,4 +335,89 @@ const importarPedidosBling = async (req, res) => {
   }
 };
 
-module.exports = { autorizar, callback, listarTodosClientes, criarCliente, buscarProdutos, criarServico, buscarServicos, criarPeca, buscarPecas, consultarEstoque, importarPedidosBling };
+// Sincronizar pedidos do Bling com a tabela de faturamentos (merge por os_numero)
+const sincronizarFaturamentoBling = async (req, res) => {
+  try {
+    // 1. Busca pedidos do Bling
+    let pagina = 1;
+    let todosPedidos = [];
+    let temMais = true;
+    while (temMais) {
+      const data = await blingRequest(pool, 'GET', '/ordens/servicos', { pagina, limite: 100 });
+      const pedidos = data.data || [];
+      todosPedidos = [...todosPedidos, ...pedidos];
+      temMais = pedidos.length === 100;
+      pagina++;
+    }
+
+    console.log(`[Bling sync] ${todosPedidos.length} ordens de serviço recebidas`);
+    if (todosPedidos.length > 0) {
+      const p0 = todosPedidos[0];
+      console.log('[Bling sync] estrutura da 1ª OS:', JSON.stringify({
+        id: p0.id, numero: p0.numero, situacao: p0.situacao,
+        contato: p0.contato?.nome, data: p0.data, total: p0.total
+      }));
+    }
+
+    // 2. Filtra por status
+    const STATUS_FATURAR = [
+      'Autorizado para Faturamento',
+      'Autorizado Para Faturamento',
+      'Servico concluido',
+      'Serviço concluído',
+      'Faturada',
+      'Finalizada',
+    ];
+    const paraFaturar = todosPedidos.filter(p => STATUS_FATURAR.includes(p.situacao?.valor));
+    console.log(`[Bling sync] ${paraFaturar.length} pedidos elegíveis para faturamento`);
+
+    let novos = 0, jaExistentes = 0, erros = 0;
+    const detalhesErro = [];
+
+    // 3. Processa cada pedido individualmente
+    for (const pedido of paraFaturar) {
+      try {
+        const osNumero = String(pedido.numero || pedido.id);
+
+        const existe = await pool.query(
+          'SELECT id FROM faturamentos WHERE os_numero = $1',
+          [osNumero]
+        );
+
+        if (existe.rows.length > 0) {
+          if (pedido.contato?.nome) {
+            await pool.query(
+              'UPDATE faturamentos SET cliente_nome = $1 WHERE os_numero = $2',
+              [pedido.contato.nome, osNumero]
+            );
+          }
+          jaExistentes++;
+          continue;
+        }
+
+        const dataFat = (pedido.data || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
+        const total   = parseFloat(pedido.total || 0);
+
+        await pool.query(
+          `INSERT INTO faturamentos
+             (os_numero, cliente_nome, data_faturamento, valor_total, status, observacoes)
+           VALUES ($1, $2, $3, $4, 'autorizado', $5)`,
+          [osNumero, pedido.contato?.nome || '', dataFat, total,
+           `Importado do Bling em ${new Date().toLocaleDateString('pt-BR')}`]
+        );
+        novos++;
+      } catch (itemErr) {
+        erros++;
+        detalhesErro.push({ os: pedido.numero, erro: itemErr.message });
+        console.error('[Bling sync] erro no pedido', pedido.numero, itemErr.message);
+      }
+    }
+
+    res.json({ mensagem: 'Sincronização concluída', novos, ja_existentes: jaExistentes, total_bling: paraFaturar.length, erros, detalhesErro });
+  } catch (err) {
+    console.error('Erro ao sincronizar faturamento Bling:', err.response?.data || err.message, err.stack);
+    res.status(500).json({ erro: 'Erro ao sincronizar com o Bling', detalhe: err.response?.data?.error?.message || err.message });
+  }
+};
+
+module.exports = { autorizar, callback, listarTodosClientes, criarCliente, buscarProdutos, criarServico, buscarServicos, criarPeca, buscarPecas, consultarEstoque, importarPedidosBling, sincronizarFaturamentoBling };

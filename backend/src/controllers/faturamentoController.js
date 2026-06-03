@@ -148,7 +148,7 @@ const criarFaturamento = async (req, res) => {
     await client.query('BEGIN');
 
     const {
-      os_id, os_numero, cliente_nome, data_faturamento,
+      os_id, os_numero, cliente_nome, cliente_cnpj, data_faturamento,
       nf_servico, pedido_servico, valor_servico, obs_nfs,
       nf_peca, pedido_peca, valor_peca, obs_nf,
       valor_total, qtd_parcelas, valor_parcela,
@@ -182,6 +182,14 @@ const criarFaturamento = async (req, res) => {
 
     const faturamentoId = resultado.rows[0].id;
 
+    // cliente_cnpj em update separado — coluna pode não existir em instâncias antigas
+    if (cliente_cnpj) {
+      await client.query(
+        `UPDATE faturamentos SET cliente_cnpj = $1 WHERE id = $2`,
+        [cliente_cnpj, faturamentoId]
+      ).catch(() => {});
+    }
+
     if (vencimentos && vencimentos.length > 0) {
       for (const v of vencimentos) {
         await client.query(
@@ -214,7 +222,7 @@ const atualizarFaturamento = async (req, res) => {
       nf_peca, pedido_peca, valor_peca, obs_nf,
       valor_total, qtd_parcelas, valor_parcela,
       banco, forma_pagamento, condicao_pagamento, categoria, obs_pagamento, observacoes, vencimentos,
-      os_numero, cliente_nome, data_faturamento, status
+      os_numero, cliente_nome, cliente_cnpj, data_faturamento, status
     } = req.body;
 
     const resultado = await client.query(
@@ -264,6 +272,14 @@ const atualizarFaturamento = async (req, res) => {
        status          || 'autorizado',
        id]
     );
+
+    // cliente_cnpj em update separado — coluna pode não existir em instâncias antigas
+    if (cliente_cnpj !== undefined) {
+      await client.query(
+        `UPDATE faturamentos SET cliente_cnpj = $1 WHERE id = $2`,
+        [cliente_cnpj || null, id]
+      ).catch(() => {});
+    }
 
     if (vencimentos) {
       await client.query('DELETE FROM faturamento_vencimentos WHERE faturamento_id = $1', [id]);
@@ -331,7 +347,17 @@ const atualizarStatus = async (req, res) => {
     return res.status(400).json({ erro: 'Status inválido' });
   }
   try {
-    await pool.query('UPDATE faturamentos SET status = $1 WHERE id = $2', [status, id]);
+    // Se mudou para NF Emitida e ainda não tem data de faturamento, registra hoje
+    if (status === 'nf_emitida') {
+      await pool.query(
+        `UPDATE faturamentos SET status = $1,
+          data_faturamento = CASE WHEN data_faturamento IS NULL THEN CURRENT_DATE ELSE data_faturamento END
+         WHERE id = $2`,
+        [status, id]
+      );
+    } else {
+      await pool.query('UPDATE faturamentos SET status = $1 WHERE id = $2', [status, id]);
+    }
     // Sincroniza status da OS vinculada
     const statusOS = FAT_PARA_OS_STATUS[status];
     if (statusOS) {
@@ -356,10 +382,19 @@ const atualizarStatusLote = async (req, res) => {
     return res.status(400).json({ erro: 'Nenhum registro selecionado' });
   }
   try {
-    await pool.query(
-      'UPDATE faturamentos SET status = $1 WHERE id = ANY($2::int[])',
-      [status, ids]
-    );
+    if (status === 'nf_emitida') {
+      await pool.query(
+        `UPDATE faturamentos SET status = $1,
+          data_faturamento = CASE WHEN data_faturamento IS NULL THEN CURRENT_DATE ELSE data_faturamento END
+         WHERE id = ANY($2::int[])`,
+        [status, ids]
+      );
+    } else {
+      await pool.query(
+        'UPDATE faturamentos SET status = $1 WHERE id = ANY($2::int[])',
+        [status, ids]
+      );
+    }
     // Sincroniza OS vinculadas
     const statusOS = FAT_PARA_OS_STATUS[status];
     if (statusOS) {
