@@ -35,6 +35,8 @@ app.use('/api/vale-alimentacao', require('./routes/valeAlimentacao'));
 app.use('/api/ponto',            require('./routes/ponto'));
 app.use('/api/faturamento',      require('./routes/faturamento'));
 app.use('/api/contas-receber',   require('./routes/contasReceber'));
+app.use('/api/email',            require('./routes/email'));
+app.use('/api/configuracoes',    require('./routes/configuracoes'));
 
 // Rota de teste
 app.get('/api/health', (_req, res) => {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -82,6 +82,22 @@ tbody tr:hover { background: #FAFAF9; }
 .btn-pagar:hover { background: #DCFCE7; }
 .btn-reverter { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 12px; font-size: 12px; font-family: var(--font); cursor: pointer; white-space: nowrap; }
 .btn-reverter:hover { background: var(--bg); }
+.btn-cobrar { background: none; border: 1px solid #BFDBFE; color: #1D4ED8; border-radius: 6px; padding: 4px 12px; font-size: 12px; font-family: var(--font); cursor: pointer; font-weight: 500; white-space: nowrap; }
+.btn-cobrar:hover { background: #EFF6FF; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-box { background: #fff; border-radius: 12px; width: 580px; max-width: 96vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px 14px; border-bottom: 1px solid var(--border); }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); line-height: 1; padding: 0 4px; }
+.modal-body { padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { opacity: .88; }
+.field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 5px; }
+.field textarea, .field input, .field select { width: 100%; font-family: var(--font); font-size: 13px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--text); outline: none; }
+.field textarea:focus, .field input:focus, .field select:focus { border-color: var(--navy); }
 </style>
 </head>
 <body>
@@ -127,6 +143,7 @@ tbody tr:hover { background: #FAFAF9; }
         <a href="../contas-receber/" class="nav-submenu-item active">Contas a Receber</a>
       </div>
     </div>
+      <a href="../configuracoes/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Configurações</a>
   </nav>
   <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
 </aside>
@@ -134,6 +151,13 @@ tbody tr:hover { background: #FAFAF9; }
 <main>
   <header>
     <span class="page-title">Contas a Receber</span>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input type="file" id="input-csv-bling" accept=".csv" style="display:none" onchange="importarCSV(this)"/>
+      <button class="btn btn-ghost" onclick="document.getElementById('input-csv-bling').click()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar CSV Bling
+      </button>
+    </div>
   </header>
   <div class="content">
 
@@ -214,6 +238,73 @@ tbody tr:hover { background: #FAFAF9; }
   </div>
 </main>
 
+<!-- Modal Importar CSV -->
+<div id="modal-csv" class="modal-overlay" style="display:none">
+  <div class="modal-box" style="max-width:660px">
+    <div class="modal-header">
+      <span class="modal-title">Importar CSV Bling — Baixas</span>
+      <button class="modal-close" onclick="fecharModalCsv()">×</button>
+    </div>
+    <div class="modal-body" style="gap:16px">
+
+      <div id="csv-resumo" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+
+      <div id="csv-seção-pagar" style="display:none">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#15803D;margin-bottom:8px">
+          ✅ Serão marcados como pagos
+        </div>
+        <div id="csv-lista-pagar" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+
+      <div id="csv-seção-japaos" style="display:none">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6B7280;margin-bottom:8px">
+          ℹ️ Já estavam pagos — sem alteração
+        </div>
+        <div id="csv-lista-japagos" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+
+      <div id="csv-seção-ignorados" style="display:none">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#AEACA6;margin-bottom:8px">
+          ⏭️ Não encontrados no sistema — ignorados
+        </div>
+        <div id="csv-lista-ignorados" style="display:flex;flex-direction:column;gap:5px;max-height:140px;overflow-y:auto"></div>
+      </div>
+
+      <div id="csv-erro" style="color:#DC2626;font-size:12.5px;min-height:16px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalCsv()">Cancelar</button>
+      <button class="btn btn-primary" id="csv-btn-aplicar" onclick="aplicarBaixasCSV()" style="display:none">Aplicar baixas</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Fazer Cobrança -->
+<div id="modal-cobrar" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Fazer Cobrança</span>
+      <button class="modal-close" onclick="fecharModalCobrar()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <label style="margin:0">Mensagem de cobrança</label>
+          <button class="btn btn-ghost" id="btn-copiar-cob" type="button" onclick="copiarCobranca()"
+            style="font-size:12px;padding:4px 12px;display:inline-flex;align-items:center;gap:6px">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copiar texto
+          </button>
+        </div>
+        <textarea id="cobrar-msg" rows="16" style="font-family:var(--mono);font-size:12px;line-height:1.75;resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalCobrar()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const fmtR$ = v => parseFloat(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const fmtDt = s => s ? new Date(s.slice(0,10)+'T12:00:00').toLocaleDateString('pt-BR') : '—';
@@ -242,6 +333,7 @@ async function carregar() {
 
   try {
     const { vencimentos, totais } = await api.listarContasReceber(filtros);
+    _dadosVencimentos = vencimentos;
     renderKpis(totais, vencimentos);
     renderTabela(vencimentos);
   } catch(e) {
@@ -285,6 +377,9 @@ function renderTabela(rows) {
       v.situacao==='pago' ? '✓ Pago' : v.situacao==='vencido' ? 'Vencido' : 'A vencer'
     }</span>`;
     const nf    = [v.nf_servico, v.nf_peca].filter(Boolean).join(' / ') || '—';
+    const cobrar = !v.pago
+      ? `<button class="btn-cobrar" onclick="abrirCobranca(${v.id})">Cobrar</button>`
+      : '';
     const acao  = v.pago
       ? `<button class="btn-reverter" onclick="reverter(${v.id})">Reverter</button>`
       : `<button class="btn-pagar"   onclick="pagar(${v.id})">Marcar pago</button>`;
@@ -297,10 +392,265 @@ function renderTabela(rows) {
       <td style="font-size:12px;color:var(--muted)">${v.forma_pagamento||'—'}</td>
       <td style="text-align:right"><span class="${cls}">${fmtR$(v.valor)}</span></td>
       <td>${badge}</td>
-      <td>${acao}</td>
+      <td style="display:flex;gap:6px;align-items:center">${cobrar}${acao}</td>
     </tr>`;
   }).join('');
 }
+
+// ── Importar CSV Bling ────────────────────────────────────────────────────────
+let _csvParaAplicar = [];
+
+function _parseCSV(texto) {
+  const sep = texto.split('\n')[0].includes(';') ? ';' : ',';
+  const linhas = texto.trim().split('\n');
+  const headers = _splitCSVLinha(linhas[0], sep).map(h => h.trim().toLowerCase().replace(/[“”]/g,''));
+  return linhas.slice(1).map(linha => {
+    const cols = _splitCSVLinha(linha, sep);
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim().replace(/^[“”]|[“”]$/g,'').trim(); });
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+function _splitCSVLinha(linha, sep) {
+  const cols = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < linha.length; i++) {
+    const c = linha[i];
+    if ((c === '”' || c === '“' || c === '”') && !inQ) { inQ = true; continue; }
+    if ((c === '”' || c === '”') && inQ) { inQ = false; continue; }
+    if (c === sep && !inQ) { cols.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  cols.push(cur);
+  return cols;
+}
+
+// Extrai TODOS os números de OS de um texto (retorna array)
+function _extrairTodosOS(texto) {
+  const nums = new Set();
+  const t = texto.replace(/\r/g, ' ');
+
+  // 1. “Ref. a ordem de serviço nº X” (inclui variantes com ç garbled: serviço/serviÃ§o)
+  for (const m of [...t.matchAll(
+    /ref\.?\s+a?\s*ordem\s+de\s+servi(?:[cç]|ã§)o\s+n(?:[º°o]|Â[º°])?\.?\s*(\d{2,4})(?!\d)/gi
+  )]) nums.add(m[1]);
+
+  // 2. “OS X” ou “OSX” — 2 a 4 dígitos — inclui OS no meio/fim da frase
+  //    “OS 1371-06” → extrai 1371 (ignora sufixo -N de parcela)
+  for (const m of [...t.matchAll(/\bOS\s*(\d{2,4})(?:-\d+)?(?!\d)/gi)])
+    nums.add(m[1]);
+
+  // 3. Lista “Os 62, 63 E 73” — números adicionais após o primeiro OS sem prefixo
+  for (const m of [...t.matchAll(
+    /\bOs\s+\d{2,4}((?:\s*,\s*\d{2,4})+(?:\s+[Ee]\s+\d{2,4})?|\s+[Ee]\s+\d{2,4})/g
+  )]) {
+    for (const n of [...m[0].matchAll(/\b(\d{2,4})\b/g)]) nums.add(n[1]);
+  }
+
+  return [...nums];
+}
+
+function importarCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      // Remove BOM (aparece como ï»¿ ao ler Latin-1 com BOM UTF-8)
+      let texto = e.target.result.replace(/^ï»¿/, '').replace(/^﻿/, '');
+      const rows = _parseCSV(texto);
+      if (!rows.length) { alert('Arquivo CSV vazio ou sem dados reconhecíveis.'); return; }
+      // Processa apenas créditos (Tipo = C)
+      const creditos = rows.filter(r => (r['tipo'] || r['tipo '] || '').trim().toUpperCase() === 'C');
+      _processarCSV(creditos.length ? creditos : rows);
+    } catch (err) {
+      alert('Erro ao ler o CSV: ' + err.message);
+    }
+  };
+  reader.readAsText(file, 'ISO-8859-1');
+}
+
+function _processarCSV(rows) {
+  const osIndex = {};
+  _dadosVencimentos.forEach(v => {
+    if (!v.os_numero) return;
+    const key = String(v.os_numero).trim();
+    if (!osIndex[key]) osIndex[key] = [];
+    osIndex[key].push(v);
+  });
+
+  const aPagar    = [];
+  const jaPagos   = [];
+  const ignorados = [];
+  const jaProcessados = new Set(); // evita duplicar vencimentos quando OS aparece em várias linhas
+
+  rows.forEach(row => {
+    const tudo = Object.values(row).join(' ');
+    const osLista = _extrairTodosOS(tudo);
+
+    if (!osLista.length) { ignorados.push(row); return; }
+
+    let encontrou = false;
+    osLista.forEach(os => {
+      const vencs = osIndex[os];
+      if (!vencs) return;
+      encontrou = true;
+      vencs.forEach(v => {
+        if (jaProcessados.has(v.id)) return;
+        jaProcessados.add(v.id);
+        if (v.pago) jaPagos.push({ v, row });
+        else        aPagar.push({ v, row });
+      });
+    });
+
+    if (!encontrou) ignorados.push(row);
+  });
+
+  _csvParaAplicar = aPagar;
+
+  // preenche modal
+  const card = (label, valor, cor) =>
+    `<div style="background:#F8F8F6;border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center">
+       <div style="font-size:22px;font-weight:700;font-family:var(--mono);color:${cor}">${valor}</div>
+       <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:3px">${label}</div>
+     </div>`;
+
+  document.getElementById('csv-resumo').innerHTML =
+    card('A receber baixa', aPagar.length, '#15803D') +
+    card('Já pagos', jaPagos.length, '#6B7280') +
+    card('Ignorados', ignorados.length, '#AEACA6');
+
+  const itemRow = (v, row) => {
+    const desc = Object.values(row).filter(Boolean).slice(0,3).join(' · ').slice(0,80);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#fff;border:1px solid var(--border);border-radius:7px;font-size:12.5px">
+      <span><span class="mono" style="font-weight:600">OS ${v.os_numero}</span> · ${v.cliente_nome || '—'}</span>
+      <span style="font-family:var(--mono);font-weight:700;color:#1B2D5B">${fmtR$(v.valor)}</span>
+    </div>`;
+  };
+
+  const secPagar = document.getElementById('csv-seção-pagar');
+  secPagar.style.display = aPagar.length ? '' : 'none';
+  document.getElementById('csv-lista-pagar').innerHTML = aPagar.map(({v, row}) => itemRow(v, row)).join('');
+
+  const secJapagos = document.getElementById('csv-seção-japaos');
+  secJapagos.style.display = jaPagos.length ? '' : 'none';
+  document.getElementById('csv-lista-japagos').innerHTML = jaPagos.map(({v, row}) => itemRow(v, row)).join('');
+
+  const secIgn = document.getElementById('csv-seção-ignorados');
+  secIgn.style.display = ignorados.length ? '' : 'none';
+  document.getElementById('csv-lista-ignorados').innerHTML = ignorados.map(row => {
+    const desc = Object.values(row).filter(Boolean).slice(0,3).join(' · ').slice(0,90);
+    return `<div style="padding:5px 10px;font-size:12px;color:var(--muted);border-bottom:1px solid #F0EFEA">${desc || '(linha vazia)'}</div>`;
+  }).join('');
+
+  document.getElementById('csv-erro').textContent = '';
+  document.getElementById('csv-btn-aplicar').style.display = aPagar.length ? '' : 'none';
+  document.getElementById('modal-csv').style.display = 'flex';
+}
+
+async function aplicarBaixasCSV() {
+  if (!_csvParaAplicar.length) return;
+  const btn = document.getElementById('csv-btn-aplicar');
+  btn.disabled = true;
+  btn.textContent = 'Aplicando…';
+
+  let ok = 0, erros = 0;
+  for (const { v } of _csvParaAplicar) {
+    try { await api.marcarContaPaga(v.id); ok++; }
+    catch { erros++; }
+  }
+
+  fecharModalCsv();
+  await carregar();
+
+  const msg = `✅ ${ok} baixa(s) aplicada(s)` + (erros ? `\n❌ ${erros} erro(s)` : '');
+  alert(msg);
+}
+
+function fecharModalCsv() {
+  document.getElementById('modal-csv').style.display = 'none';
+  _csvParaAplicar = [];
+  const btn = document.getElementById('csv-btn-aplicar');
+  btn.disabled = false;
+  btn.textContent = 'Aplicar baixas';
+}
+
+document.getElementById('modal-csv').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalCsv();
+});
+
+// ── Modal Cobrança ────────────────────────────────────────────────────────────
+let _dadosVencimentos = [];
+
+function abrirCobranca(id) {
+  const v = _dadosVencimentos.find(x => x.id === id);
+  if (!v) return;
+
+  const cliente   = v.cliente_nome || 'Cliente';
+  const vencto    = fmtDt(v.data_vencimento);
+  const valor     = fmtR$(v.valor);
+  const hoje      = new Date().toISOString().slice(0,10);
+  const vencido   = v.data_vencimento && v.data_vencimento.slice(0,10) < hoje;
+
+  const linhasRef = [];
+  if (v.os_numero)       linhasRef.push(`OS nº ${v.os_numero}`);
+  if (v.nf_servico)      linhasRef.push(`NFS-e nº ${v.nf_servico}`);
+  if (v.nf_peca)         linhasRef.push(`NF-e nº ${v.nf_peca}`);
+  if (v.forma_pagamento) linhasRef.push(v.forma_pagamento);
+  const refTexto = linhasRef.length ? linhasRef.join(' | ') : 'serviços prestados';
+
+  const introVencto = vencido
+    ? `com vencimento em ${vencto} (${_diasAtraso(v.data_vencimento)} dias em atraso)`
+    : `com vencimento em ${vencto}`;
+
+  const msg = `Prezado(a) ${cliente},
+
+Gostaríamos de lembrá-lo(a) que consta em nosso sistema um título em aberto no valor de ${valor}, referente à ${refTexto}, ${introVencto}.
+
+Solicitamos, por gentileza, que o pagamento seja regularizado o mais breve possível, a fim de evitar inconvenientes futuros.
+
+Em caso de dúvidas ou necessidade de negociação, nosso setor financeiro está à disposição para atendimento.
+
+Agradecemos pela atenção e pela confiança em nossos serviços.
+
+⚠️ ATENÇÃO: informamos que, conforme nossa política interna, títulos não regularizados até 7 dias após o vencimento poderão ser encaminhados ao Serasa.`;
+
+  document.getElementById('cobrar-msg').value = msg;
+  document.getElementById('modal-cobrar').style.display = 'flex';
+}
+
+function _diasAtraso(dataVenc) {
+  if (!dataVenc) return 0;
+  const diff = new Date() - new Date(dataVenc.slice(0,10) + 'T12:00:00');
+  return Math.max(0, Math.floor(diff / 86400000));
+}
+
+function fecharModalCobrar() {
+  document.getElementById('modal-cobrar').style.display = 'none';
+}
+
+function copiarCobranca() {
+  const txt = document.getElementById('cobrar-msg').value;
+  const btn = document.getElementById('btn-copiar-cob');
+  navigator.clipboard.writeText(txt).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copiado!';
+    btn.style.color = '#16A34A';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 1800);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+document.getElementById('modal-cobrar').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModalCobrar();
+});
 
 async function pagar(id) {
   try { await api.marcarContaPaga(id); carregar(); }

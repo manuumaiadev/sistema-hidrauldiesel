@@ -78,20 +78,31 @@ const gerarFolhaDia05 = async (req, res) => {
         AND desconto_em = $2
       `, [f.id, `05/${String(mes).padStart(2,'0')}/${ano}`]);
 
-      const totalAdiantamentos = parseFloat(adiantamentos.rows[0].total) || 0;
+      const totalAdiantamentos = (parseFloat(adiantamentos.rows[0].total) || 0)
+                               + (parseFloat(f.adiantamento_dia05) || 0);
       const propOficial   = parseFloat(f.salario_oficial)   / 2;
       const propAdicional = parseFloat(f.salario_adicional) / 2;
 
       const valorPago = propOficial + propAdicional - descontoInss - descontoFaltas - totalAdiantamentos;
 
+      // Guardar detalhe das faltas (data formatada DD/MM/YYYY + status)
+      const pad = n => String(n).padStart(2, '0');
+      const faltasDetalhes = pontoDados.rows
+        .filter(r => r.status === 'falta' || r.status === 'meia_falta')
+        .map(r => {
+          const [a, m, d] = r.data.split('-');
+          return { data: `${d}/${m}/${a}`, status: r.status };
+        });
+
       const registro = await client.query(
         `INSERT INTO folha_pagamento
          (funcionario_id, tipo, data_pagamento, salario_oficial, salario_adicional,
-          desconto_inss, desconto_adiantamento, desconto_faltas, valor_pago)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          desconto_inss, desconto_adiantamento, desconto_faltas, valor_pago, faltas_detalhes)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
          RETURNING *`,
         [f.id, 'mensal', dataPagamento, propOficial, propAdicional,
-         descontoInss, totalAdiantamentos, descontoFaltas, valorPago]
+         descontoInss, totalAdiantamentos, descontoFaltas, valorPago,
+         JSON.stringify(faltasDetalhes)]
       );
 
       await client.query(`
@@ -213,8 +224,29 @@ const gerarFolhaDia20 = async (req, res) => {
 const buscarFolha = async (req, res) => {
   const { data_pagamento } = req.params;
   try {
+    // Para dia 05: faltas são do mês anterior; para dia 20: mês atual (sem faltas)
     const resultado = await pool.query(`
-      SELECT fp.*, f.nome as funcionario_nome, f.tipo as funcionario_tipo, f.cargo, f.cargo_tipo, f.comentario_importante
+      SELECT fp.*,
+        f.nome  AS funcionario_nome, f.tipo AS funcionario_tipo,
+        f.cargo, f.cargo_tipo, f.comentario_importante,
+        COALESCE(fp.faltas_detalhes, '[]'::jsonb) AS dias_falta,
+        COALESCE((
+          SELECT json_agg(
+            json_build_object(
+              'data',        TO_CHAR(a.data, 'DD/MM/YYYY'),
+              'valor',       a.valor,
+              'desconto_em', a.desconto_em,
+              'observacoes', a.observacoes
+            )
+            ORDER BY a.data
+          )
+          FROM adiantamentos a
+          WHERE a.funcionario_id = fp.funcionario_id
+            AND a.descontado = true
+            AND a.desconto_em IS NOT NULL
+            AND LENGTH(a.desconto_em) = 10
+            AND TO_DATE(a.desconto_em, 'DD/MM/YYYY') = fp.data_pagamento
+        ), '[]'::json) AS adiantamentos_detalhes
       FROM folha_pagamento fp
       JOIN funcionarios f ON f.id = fp.funcionario_id
       WHERE fp.data_pagamento = $1
@@ -232,6 +264,7 @@ const buscarFolha = async (req, res) => {
 
     res.json({ data_pagamento, funcionarios: resultado.rows, totais });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ erro: 'Erro ao buscar folha' });
   }
 };

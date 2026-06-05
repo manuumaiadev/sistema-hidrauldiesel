@@ -86,55 +86,75 @@ function buildFolhaHTML({ data_pagamento, funcionarios, totais }) {
   const isQuinzena = funcionarios.length > 0 && funcionarios[0].tipo === 'quinzena';
   const dp = sliceDate(data_pagamento);
 
-  const thead = isQuinzena ? `
-    <th>Funcionário</th>
-    <th style="text-align:right">Prop. Oficial</th>
-    <th style="text-align:right">Prop. Adicional</th>
-    <th style="text-align:right">Adiantamentos</th>
-    <th style="text-align:right">Outros desc.</th>
-    <th style="text-align:right">Outros acrés.</th>
-    <th style="text-align:right">Valor pago</th>
-    <th></th>
+  // Cabeçalho com duas linhas: grupos + colunas individuais
+  const theadGroups = isQuinzena ? `
+    <th class="th-nome" rowspan="2">Funcionário</th>
+    <th class="th-group th-group-provento" colspan="3">Proventos</th>
+    <th class="th-group th-group-desconto" colspan="2">Descontos</th>
+    <th class="th-group th-group-resultado" colspan="1">Resultado</th>
+    <th rowspan="2"></th>
   ` : `
-    <th>Funcionário</th>
-    <th style="text-align:right">Prop. Oficial</th>
-    <th style="text-align:right">Prop. Adicional</th>
-    <th style="text-align:right">INSS</th>
-    <th style="text-align:right">Faltas</th>
-    <th style="text-align:right">Adiantamentos</th>
-    <th style="text-align:right">Outros desc.</th>
-    <th style="text-align:right">Outros acrés.</th>
-    <th style="text-align:right">Valor pago</th>
-    <th></th>
+    <th class="th-nome" rowspan="2">Funcionário</th>
+    <th class="th-group th-group-provento" colspan="3">Proventos</th>
+    <th class="th-group th-group-desconto" colspan="4">Descontos</th>
+    <th class="th-group th-group-resultado" colspan="1">Resultado</th>
+    <th rowspan="2"></th>
   `;
+
+  const theadCols = isQuinzena ? `
+    <th class="th-provento">Prop. Oficial</th>
+    <th class="th-provento">Prop. Adicional</th>
+    <th class="th-provento">Outros acrés.</th>
+    <th class="th-desconto">Adiantamentos</th>
+    <th class="th-desconto">Outros desc.</th>
+    <th class="th-resultado">Valor pago</th>
+  ` : `
+    <th class="th-provento">Prop. Oficial</th>
+    <th class="th-provento">Prop. Adicional</th>
+    <th class="th-provento">Outros acrés.</th>
+    <th class="th-desconto">INSS</th>
+    <th class="th-desconto">Faltas</th>
+    <th class="th-desconto">Adiantamentos</th>
+    <th class="th-desconto">Outros desc.</th>
+    <th class="th-resultado">Valor pago</th>
+  `;
+
+  const comentarioBadge = f => f.comentario_importante
+    ? `<span class="badge-comentario">!<span class="tooltip-box">${(f.comentario_importante||'').replace(/</g,'&lt;')}</span></span>`
+    : '';
+
+  const nomeCell = f => `<td class="cel-nome cel-nome-link" onclick="abrirModalFuncionario(${f.funcionario_id})" title="Abrir cadastro de ${f.funcionario_nome}">${f.funcionario_nome}${comentarioBadge(f)}</td>`;
+
+  const btnRemover = id => `<td class="cel-acoes">
+    <button onclick="removerFuncFolha(${id},'${dp}')"
+      style="font-family:inherit;font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid #FCA5A5;background:#FEE2E2;color:#B91C1C;cursor:pointer">✕</button>
+  </td>`;
 
   const tbody = funcionarios.map(f => {
     const id = f.id;
-    const btnRemover = `<td style="padding:0 8px"><button onclick="removerFuncFolha(${id},'${dp}')"
-      style="font-family:inherit;font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid #FCA5A5;background:#FEE2E2;color:#B91C1C;cursor:pointer">✕</button></td>`;
     if (isQuinzena) {
       return `<tr data-id="${id}">
-        <td class="cel-nome">${f.funcionario_nome}${f.comentario_importante ? `<span class="badge-comentario">!<span class="tooltip-box">${(f.comentario_importante||'').replace(/</g,'&lt;')}</span></span>` : ''}</td>
-        <td class="cel-edit"><input type="text" data-campo="salario_oficial"       value="${fmtNum(f.salario_oficial)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="salario_adicional"     value="${fmtNum(f.salario_adicional)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="desconto_adiantamento" value="${fmtNum(f.desconto_adiantamento)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="outros_descontos"      value="${fmtNum(f.outros_descontos)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="outros_acrescimos"     value="${fmtNum(f.outros_acrescimos)}"/></td>
-        <td class="cel-pago" data-pago>${fmtValor(f.valor_pago)}</td>
-        ${btnRemover}
+        ${nomeCell(f)}
+        <td class="cel-provento cel-edit"><input type="text" data-campo="salario_oficial"       value="${fmtNum(f.salario_oficial)}"/></td>
+        <td class="cel-provento cel-edit"><input type="text" data-campo="salario_adicional"     value="${fmtNum(f.salario_adicional)}"/></td>
+        <td class="cel-provento cel-edit"><input type="text" data-campo="outros_acrescimos"     value="${fmtNum(f.outros_acrescimos)}"/></td>
+        <td class="cel-desconto cel-edit"><input type="text" data-campo="desconto_adiantamento" value="${fmtNum(f.desconto_adiantamento)}"/></td>
+        <td class="cel-desconto cel-edit"><input type="text" data-campo="outros_descontos"      value="${fmtNum(f.outros_descontos)}"/></td>
+        <td class="cel-resultado cel-pago" data-pago>${fmtValor(f.valor_pago)}</td>
+        ${btnRemover(id)}
       </tr>`;
     } else {
       return `<tr data-id="${id}">
-        <td class="cel-nome">${f.funcionario_nome}${f.comentario_importante ? `<span class="badge-comentario">!<span class="tooltip-box">${(f.comentario_importante||'').replace(/</g,'&lt;')}</span></span>` : ''}</td>
-        <td class="cel-edit"><input type="text" data-campo="salario_oficial"       value="${fmtNum(f.salario_oficial)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="salario_adicional"     value="${fmtNum(f.salario_adicional)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="desconto_inss"         value="${fmtNum(f.desconto_inss)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="desconto_faltas"       value="${fmtNum(f.desconto_faltas)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="desconto_adiantamento" value="${fmtNum(f.desconto_adiantamento)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="outros_descontos"      value="${fmtNum(f.outros_descontos)}"/></td>
-        <td class="cel-edit"><input type="text" data-campo="outros_acrescimos"     value="${fmtNum(f.outros_acrescimos)}"/></td>
-        <td class="cel-pago" data-pago>${fmtValor(f.valor_pago)}</td>
-        ${btnRemover}
+        ${nomeCell(f)}
+        <td class="cel-provento cel-edit"><input type="text" data-campo="salario_oficial"       value="${fmtNum(f.salario_oficial)}"/></td>
+        <td class="cel-provento cel-edit"><input type="text" data-campo="salario_adicional"     value="${fmtNum(f.salario_adicional)}"/></td>
+        <td class="cel-provento cel-edit"><input type="text" data-campo="outros_acrescimos"     value="${fmtNum(f.outros_acrescimos)}"/></td>
+        <td class="cel-desconto cel-edit"><input type="text" data-campo="desconto_inss"         value="${fmtNum(f.desconto_inss)}"/></td>
+        <td class="cel-desconto cel-edit"><input type="text" data-campo="desconto_faltas"       value="${fmtNum(f.desconto_faltas)}"/></td>
+        <td class="cel-desconto cel-edit"><input type="text" data-campo="desconto_adiantamento" value="${fmtNum(f.desconto_adiantamento)}"/></td>
+        <td class="cel-desconto cel-edit"><input type="text" data-campo="outros_descontos"      value="${fmtNum(f.outros_descontos)}"/></td>
+        <td class="cel-resultado cel-pago" data-pago>${fmtValor(f.valor_pago)}</td>
+        ${btnRemover(id)}
       </tr>`;
     }
   }).join('');
@@ -152,13 +172,16 @@ function buildFolhaHTML({ data_pagamento, funcionarios, totais }) {
   `;
 
   return `
-    <div style="overflow-x:auto;padding:0 20px">
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr>${thead}</tr></thead>
+    <div class="folha-table-wrap">
+      <table class="folha-table">
+        <thead>
+          <tr class="thead-groups">${theadGroups}</tr>
+          <tr class="thead-cols">${theadCols}</tr>
+        </thead>
         <tbody>${tbody}</tbody>
       </table>
     </div>
-    <div style="padding:12px 20px;border-top:1px solid #E3E1DA">
+    <div style="padding:10px 16px;border-top:1px solid #E3E1DA">
       <div id="add-func-bar-${dp}" style="display:none;align-items:center;gap:8px;margin-bottom:8px">
         <select id="add-func-sel-${dp}"
           style="font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid #E3E1DA;border-radius:7px;flex:1;min-width:200px">
@@ -178,7 +201,7 @@ function buildFolhaHTML({ data_pagamento, funcionarios, totais }) {
         + Adicionar funcionário
       </button>
     </div>
-    <div class="totais-wrap" style="margin:0 20px 16px">${totalHTML}</div>
+    <div class="totais-wrap">${totalHTML}</div>
   `;
 }
 
@@ -227,7 +250,7 @@ async function salvarLinha(tr) {
 // ── Toggle expandir/recolher item ─────────────────────────────────────────────
 window.toggleFolhaItem = async function(dp, headerEl) {
   const body  = document.getElementById('folha-body-' + dp);
-  const arrow = headerEl.querySelector('.toggle-arrow');
+  const arrow = headerEl.querySelector('.toggle-arrow-btn');
 
   if (body.style.display !== 'none') {
     body.style.display = 'none';
@@ -273,32 +296,41 @@ async function carregarHistorico() {
       return;
     }
     el.innerHTML = lista.map(f => {
-      const dp     = sliceDate(f.data_pagamento);
-      const titulo = tituloFolha(dp);
-      const tipo   = f.tipo === 'mensal' ? 'Dia 05 — Mensal' : 'Dia 20 — Quinzena';
+      const dp        = sliceDate(f.data_pagamento);
+      const titulo    = tituloFolha(dp);
+      const isMensal  = f.tipo === 'mensal';
+      const diaBadge  = isMensal ? '05' : '20';
+      const tipoBadge = isMensal ? 'Mensal' : 'Quinzena';
+      const badgeClass = isMensal ? 'badge-mensal' : 'badge-quinzena';
       return `
-        <div style="background:#fff;border:1px solid #E3E1DA;border-radius:10px;margin-bottom:12px;overflow:hidden">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none"
-               onclick="toggleFolhaItem('${dp}', this)">
-            <div>
-              <div class="historico-data">${titulo}</div>
-              <div class="historico-tipo">${tipo}</div>
+        <div class="historico-card">
+          <div class="historico-card-header" onclick="toggleFolhaItem('${dp}', this)">
+            <div class="historico-card-left">
+              <div class="historico-tipo-badge ${badgeClass}">
+                <span class="badge-dia">${diaBadge}</span>
+                <span class="badge-tipo">${tipoBadge}</span>
+              </div>
+              <div class="historico-info">
+                <div class="historico-data">${titulo}</div>
+                <div class="historico-meta">
+                  <span class="historico-qtd"><strong>${f.qtd_funcionarios}</strong> funcionários</span>
+                </div>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <span class="historico-qtd">${f.qtd_funcionarios} funcionários</span>
-              <span class="historico-total">${fmtValor(f.total_pago)}</span>
-              <button onclick="event.stopPropagation();imprimirFolha('${dp}')"
-                      style="font-family:inherit;font-size:11.5px;padding:4px 10px;border-radius:6px;border:1px solid #93C5FD;background:#EFF6FF;color:#1D4ED8;cursor:pointer">
-                Imprimir
-              </button>
-              <button onclick="excluirFolhaItem('${dp}', '${titulo.replace(/'/g,"\\'")}', event)"
-                      style="font-family:inherit;font-size:11.5px;padding:4px 10px;border-radius:6px;border:1px solid #FCA5A5;background:#FEE2E2;color:#B91C1C;cursor:pointer">
-                Excluir
-              </button>
-              <span class="toggle-arrow" style="font-size:11px;color:var(--muted);min-width:10px">▼</span>
+            <div class="historico-card-right">
+              <div class="historico-total-wrap">
+                <span class="historico-total-label">Total pago</span>
+                <span class="historico-total">${fmtValor(f.total_pago)}</span>
+              </div>
+              <div class="historico-actions">
+                <button class="btn-imprimir" onclick="event.stopPropagation();imprimirFolhaResumida('${dp}')">Resumida</button>
+                <button class="btn-imprimir btn-imprimir-completo" onclick="event.stopPropagation();imprimirFolha('${dp}')">Completa</button>
+                <button class="btn-excluir" onclick="excluirFolhaItem('${dp}', '${titulo.replace(/'/g,"\\'")}', event)">Excluir</button>
+                <span class="toggle-arrow-btn">▼</span>
+              </div>
             </div>
           </div>
-          <div id="folha-body-${dp}" style="display:none;border-top:1px solid #E3E1DA"></div>
+          <div id="folha-body-${dp}" class="historico-body" style="display:none"></div>
         </div>
       `;
     }).join('');
@@ -360,43 +392,9 @@ window.confirmarAddFuncFolha = async function(dp) {
   }
 };
 
-// ── Impressão da Folha ────────────────────────────────────────────────────────
-window.imprimirFolha = async function(dp) {
-  let dados;
-  try { dados = await api.buscarFolha(dp); }
-  catch (err) { mostrarErro('Erro ao carregar folha: ' + err.message); return; }
-
-  const { funcionarios, totais, data_pagamento } = dados;
-  const titulo = tituloFolha(sliceDate(data_pagamento));
-  const isQuinzena = funcionarios[0]?.tipo === 'quinzena';
-  const dataImpressao = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-
-  const thCols = isQuinzena
-    ? ['Funcionário','Prop. Oficial','Prop. Adicional','Adiantamentos','Outros desc.','Outros acrés.','Valor pago']
-    : ['Funcionário','Prop. Oficial','Prop. Adicional','INSS','Faltas','Adiantamentos','Outros desc.','Outros acrés.','Valor pago'];
-  const thead = thCols.map(c => `<th>${c}</th>`).join('');
-
-  const tbody = funcionarios.map(f => {
-    const cols = isQuinzena
-      ? [f.funcionario_nome, fmtValor(f.salario_oficial), fmtValor(f.salario_adicional),
-         fmtValor(f.desconto_adiantamento), fmtValor(f.outros_descontos), fmtValor(f.outros_acrescimos), fmtValor(f.valor_pago)]
-      : [f.funcionario_nome, fmtValor(f.salario_oficial), fmtValor(f.salario_adicional),
-         fmtValor(f.desconto_inss), fmtValor(f.desconto_faltas), fmtValor(f.desconto_adiantamento),
-         fmtValor(f.outros_descontos), fmtValor(f.outros_acrescimos), fmtValor(f.valor_pago)];
-    return '<tr>' + cols.map((v, i) =>
-      `<td${i === cols.length - 1 ? ' class="destaque"' : ''}>${v}</td>`
-    ).join('') + '</tr>';
-  }).join('');
-
-  const assinaturas = funcionarios.map(f => `
-    <div class="assinatura-box">
-      <div class="assinatura-linha"></div>
-      <div class="assinatura-nome">${f.funcionario_nome}</div>
-    </div>`).join('');
-
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
-  <meta charset="UTF-8"/><title>${titulo}</title>
-  <style>
+// ── Estilos base compartilhados entre impressões ──────────────────────────────
+function _printBaseStyles() {
+  return `
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,sans-serif;font-size:11px;color:#111;padding:18mm 14mm}
     .cab{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;border-bottom:2px solid #1B2D5B;padding-bottom:10px}
@@ -412,33 +410,263 @@ window.imprimirFolha = async function(dp) {
     td:first-child{text-align:left;font-weight:500}
     tr:nth-child(even) td{background:#F8F7F4}
     td.destaque{font-weight:700;color:#1B2D5B}
-    .totais{display:flex;justify-content:flex-end;gap:20px;background:#EFF6FF;border-radius:6px;padding:9px 14px;font-size:12px;margin-bottom:26px}
-    .totais strong{color:#1B2D5B}
-    .assinaturas h4{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:18px}
-    .assinaturas-grid{display:flex;flex-wrap:wrap;gap:18px 36px}
-    .assinatura-box{width:190px}
-    .assinatura-linha{border-top:1px solid #333;margin-bottom:4px}
-    .assinatura-nome{font-size:9.5px;color:#555;text-align:center}
     .rodape{margin-top:24px;border-top:1px solid #E3E1DA;padding-top:6px;font-size:9px;color:#aaa;display:flex;justify-content:space-between}
+    /* Quadro de observações — estilos base (detalhes usam inline styles) */
+    .obs-secao{margin-top:20px;page-break-inside:avoid}
+    .obs-titulo{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1B2D5B;border-bottom:2px solid #1B2D5B;padding-bottom:4px;margin-bottom:0}
+    .obs-outer{width:100%;border-collapse:collapse;margin-bottom:0}
+    .obs-outer th{background:#EFF6FF;color:#1D4ED8;padding:5px 10px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;border:1px solid #BFDBFE}
+    .obs-outer td{padding:6px 8px;border:1px solid #E3E1DA;vertical-align:top;text-align:left}
     @media print{@page{margin:14mm}body{padding:0}}
-  </style></head><body>
-  <div class="cab">
-    <div class="empresa">Hidrauldiesel<small>Sistema de Gestão</small></div>
-    <div class="doc-info"><div class="doc-titulo">${titulo}</div><div class="doc-data">Impresso em ${dataImpressao}</div></div>
-  </div>
-  <table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table>
-  <div class="totais"><div>Total a pagar: <strong>${fmtValor(totais.total_pago)}</strong></div></div>
-  <div class="assinaturas">
-    <h4>Assinaturas de recebimento</h4>
-    <div class="assinaturas-grid">${assinaturas}</div>
-  </div>
-  <div class="rodape"><span>Hidrauldiesel — documento gerado pelo sistema</span><span>${titulo}</span></div>
-  <script>window.onload=()=>window.print()<\/script>
-  </body></html>`;
+  `;
+}
 
+// ── Construir quadro de observações para impressão ──────────────────────────
+// dp = "YYYY-MM-DD" (data_pagamento da folha)
+function _buildObsBlock(funcionarios, dp) {
+  const linhas = funcionarios.filter(f => {
+    const temFalta  = (f.dias_falta             && f.dias_falta.length             > 0) || parseFloat(f.desconto_faltas)       > 0;
+    const temAdiant = (f.adiantamentos_detalhes && f.adiantamentos_detalhes.length > 0) || parseFloat(f.desconto_adiantamento) > 0;
+    const temOutros = parseFloat(f.outros_descontos) > 0;
+    const temObs    = !!(f.observacoes && f.observacoes.trim());
+    return temFalta || temAdiant || temOutros || temObs;
+  });
+  if (!linhas.length) return '';
+
+  const MESES_PT = ['janeiro','fevereiro','março','abril','maio','junho',
+                    'julho','agosto','setembro','outubro','novembro','dezembro'];
+  let mesRefFalta = '', dpFmt = '';
+  if (dp) {
+    const [ano, mes, dia] = dp.split('-').map(Number);
+    dpFmt = `${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano}`;
+    let mf = mes, af = ano;
+    if (dia === 5) { mf = mes === 1 ? 12 : mes - 1; af = mes === 1 ? ano - 1 : ano; }
+    mesRefFalta = `${MESES_PT[mf - 1]}/${af}`;
+  }
+
+  // Seção sem bordas — só fundo e tipografia
+  const secHeader = (cor, bg, titulo) =>
+    `<tr><td colspan="2" style="background:${bg};color:${cor};padding:3px 10px;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em">${titulo}</td></tr>`;
+
+  const kvRow = (chave, valor, negrito = true) =>
+    `<tr>
+      <td style="padding:2px 10px 2px 10px;color:#777;font-size:9px;white-space:nowrap;width:1%">${chave}</td>
+      <td style="padding:2px 8px;font-size:9.5px;${negrito ? 'font-weight:600;' : ''}color:#111">${valor}</td>
+    </tr>`;
+
+  const totalRow = (valor) =>
+    `<tr><td colspan="2" style="padding:2px 10px 5px;font-size:9px;color:#555">
+      Desconto total: <strong style="color:#B91C1C">${valor}</strong>
+    </td></tr>`;
+
+  const card = (conteudo) =>
+    `<table style="width:100%;border-collapse:collapse;margin-bottom:4px">${conteudo}</table>`;
+
+  const rows = linhas.map(f => {
+    const cards = [];
+
+    // ── Faltas ────────────────────────────────────────────────────────────────
+    const diasFalta = Array.isArray(f.dias_falta) ? f.dias_falta : [];
+    if (diasFalta.length > 0) {
+      const sep = '<span style="color:#bbb;margin:0 5px">·</span>';
+      const diaRows = diasFalta.map((d, i) => {
+        const isMeia = d.status === 'meia_falta';
+        const chip = isMeia
+          ? `<span style="background:#FEF9C3;color:#92400E;padding:1px 5px;border-radius:3px;font-size:8.5px;font-weight:700">Meia falta</span>`
+          : `<span style="background:#FEE2E2;color:#B91C1C;padding:1px 5px;border-radius:3px;font-size:8.5px;font-weight:700">Falta integral</span>`;
+        const valor = i === diasFalta.length - 1
+          ? `${sep}<strong style="color:#B91C1C">${fmtValor(f.desconto_faltas)}</strong>` : '';
+        return `<tr><td style="padding:2px 10px;font-size:9.5px"><strong>${d.data}</strong>${valor}${sep}${chip}</td></tr>`;
+      }).join('');
+      cards.push(card(secHeader('#B91C1C','#FEE2E2','Faltas') + diaRows));
+    } else if (parseFloat(f.desconto_faltas) > 0) {
+      cards.push(card(
+        secHeader('#B91C1C','#FEE2E2',`Faltas${mesRefFalta ? ' — ' + mesRefFalta : ''}`) +
+        `<tr><td style="padding:3px 10px 5px;font-size:9.5px">
+          Desconto: <strong style="color:#B91C1C">${fmtValor(f.desconto_faltas)}</strong>
+          <span style="color:#aaa;font-size:8.5px"> · datas não registradas no ponto</span>
+        </td></tr>`
+      ));
+    }
+
+    // ── Adiantamentos ─────────────────────────────────────────────────────────
+    const adiantamentos = Array.isArray(f.adiantamentos_detalhes) ? f.adiantamentos_detalhes : [];
+    const sepA = '<span style="color:#bbb;margin:0 5px">·</span>';
+    if (adiantamentos.length > 0) {
+      adiantamentos.forEach(a => {
+        const partes = [
+          `<strong>${a.data || '—'}</strong>`,
+          `<strong style="color:#5B21B6">${fmtValor(a.valor)}</strong>`,
+          ...(a.observacoes && a.observacoes.trim() ? [`<em style="color:#555">${a.observacoes}</em>`] : [])
+        ].join(sepA);
+        const linha = `<tr><td style="padding:3px 10px 5px;font-size:9.5px">${partes}</td></tr>`;
+        cards.push(card(secHeader('#5B21B6','#EDE9FE','Adiantamento') + linha));
+      });
+    } else if (parseFloat(f.desconto_adiantamento) > 0) {
+      const partes = [
+        `<strong>${dpFmt || '—'}</strong>`,
+        `<strong style="color:#5B21B6">${fmtValor(f.desconto_adiantamento)}</strong>`
+      ].join(sepA);
+      const linha = `<tr><td style="padding:3px 10px 5px;font-size:9.5px">${partes}</td></tr>`;
+      cards.push(card(secHeader('#5B21B6','#EDE9FE','Adiantamento') + linha));
+    }
+
+    // ── Outros descontos ──────────────────────────────────────────────────────
+    if (parseFloat(f.outros_descontos) > 0) {
+      const rows = kvRow('Em', dpFmt || '—') + kvRow('Valor', fmtValor(f.outros_descontos));
+      cards.push(card(secHeader('#475569','#F1F5F9','Outros descontos') + rows));
+    }
+
+    // ── Observação livre ──────────────────────────────────────────────────────
+    if (f.observacoes && f.observacoes.trim()) {
+      cards.push(card(
+        secHeader('#92400E','#FEF9C3','Observação') +
+        `<tr><td style="padding:3px 10px 5px;font-size:9.5px">${f.observacoes}</td></tr>`
+      ));
+    }
+
+    return `<tr>
+      <td style="padding:7px 10px;font-weight:700;font-size:10.5px;white-space:nowrap;background:#F8F7F4;width:20%;border-right:2px solid #E3E1DA;vertical-align:top">${f.funcionario_nome}</td>
+      <td style="padding:6px 8px;vertical-align:top">${cards.join('')}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="obs-secao">
+      <div class="obs-titulo">Observações e Justificativas de Descontos</div>
+      <table class="obs-outer">
+        <thead><tr><th>Funcionário</th><th>Detalhes</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function _printCabecalho(titulo, dataImpressao) {
+  return `
+    <div class="cab">
+      <div class="empresa">Hidrauldiesel<small>Sistema de Gestão</small></div>
+      <div class="doc-info"><div class="doc-titulo">${titulo}</div><div class="doc-data">Impresso em ${dataImpressao}</div></div>
+    </div>
+  `;
+}
+
+function _printRodape(titulo) {
+  return `<div class="rodape"><span>Hidrauldiesel — documento gerado pelo sistema</span><span>${titulo}</span></div>`;
+}
+
+function _abrirJanela(html) {
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
+}
+
+// ── Impressão completa ────────────────────────────────────────────────────────
+window.imprimirFolha = async function(dp) {
+  let dados;
+  try { dados = await api.buscarFolha(dp); }
+  catch (err) { mostrarErro('Erro ao carregar folha: ' + err.message); return; }
+
+  const { funcionarios, totais, data_pagamento } = dados;
+  const titulo = tituloFolha(sliceDate(data_pagamento));
+  const isQuinzena = funcionarios[0]?.tipo === 'quinzena';
+  const dataImpressao = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const thCols = isQuinzena
+    ? ['Funcionário','Prop. Oficial','Prop. Adicional','Outros acrés.','Adiantamentos','Outros desc.','Valor pago']
+    : ['Funcionário','Prop. Oficial','Prop. Adicional','Outros acrés.','INSS','Faltas','Adiantamentos','Outros desc.','Valor pago'];
+  const thead = thCols.map(c => `<th>${c}</th>`).join('');
+
+  const tbody = funcionarios.map(f => {
+    const cols = isQuinzena
+      ? [f.funcionario_nome, fmtValor(f.salario_oficial), fmtValor(f.salario_adicional),
+         fmtValor(f.outros_acrescimos), fmtValor(f.desconto_adiantamento), fmtValor(f.outros_descontos), fmtValor(f.valor_pago)]
+      : [f.funcionario_nome, fmtValor(f.salario_oficial), fmtValor(f.salario_adicional),
+         fmtValor(f.outros_acrescimos), fmtValor(f.desconto_inss), fmtValor(f.desconto_faltas),
+         fmtValor(f.desconto_adiantamento), fmtValor(f.outros_descontos), fmtValor(f.valor_pago)];
+    return '<tr>' + cols.map((v, i) =>
+      `<td${i === cols.length - 1 ? ' class="destaque"' : ''}>${v}</td>`
+    ).join('') + '</tr>';
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+  <meta charset="UTF-8"/><title>${titulo}</title>
+  <style>
+    ${_printBaseStyles()}
+    .totais{display:flex;justify-content:flex-end;gap:20px;background:#EFF6FF;border-radius:6px;padding:9px 14px;font-size:12px;margin-bottom:8px}
+    .totais strong{color:#1B2D5B}
+  </style></head><body>
+  ${_printCabecalho(titulo, dataImpressao)}
+  <table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table>
+  <div class="totais">
+    <div>Total descontos: <strong style="color:#B91C1C">${fmtValor(totais.total_descontos)}</strong></div>
+    <div>Total a pagar: <strong>${fmtValor(totais.total_pago)}</strong></div>
+  </div>
+  ${_buildObsBlock(funcionarios, dp)}
+  ${_printRodape(titulo)}
+  <script>window.onload=()=>window.print()<\/script>
+  </body></html>`;
+
+  _abrirJanela(html);
+};
+
+// ── Impressão resumida ────────────────────────────────────────────────────────
+window.imprimirFolhaResumida = async function(dp) {
+  let dados;
+  try { dados = await api.buscarFolha(dp); }
+  catch (err) { mostrarErro('Erro ao carregar folha: ' + err.message); return; }
+
+  const { funcionarios, totais, data_pagamento } = dados;
+  const titulo = tituloFolha(sliceDate(data_pagamento));
+  const dataImpressao = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const tbody = funcionarios.map(f => {
+    const proventos = (Number(f.salario_oficial) || 0) + (Number(f.salario_adicional) || 0) + (Number(f.outros_acrescimos) || 0);
+    const descontos = (Number(f.desconto_inss) || 0) + (Number(f.desconto_faltas) || 0)
+                    + (Number(f.desconto_adiantamento) || 0) + (Number(f.outros_descontos) || 0);
+    return `<tr>
+      <td>${f.funcionario_nome}</td>
+      <td>${fmtValor(proventos)}</td>
+      <td>${fmtValor(descontos)}</td>
+      <td class="destaque">${fmtValor(f.valor_pago)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+  <meta charset="UTF-8"/><title>Resumo — ${titulo}</title>
+  <style>
+    ${_printBaseStyles()}
+    .badge-resumo{display:inline-block;background:#F0FDF4;border:1px solid #86EFAC;color:#166534;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle}
+    .totais-bloco{margin-top:4px;border:2px solid #1B2D5B;border-radius:6px;padding:12px 18px;display:flex;justify-content:flex-end;gap:36px;align-items:center}
+    .totais-bloco .t-item{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+    .totais-bloco .t-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:#777;font-weight:700}
+    .totais-bloco .t-val{font-size:14px;font-weight:700;color:#1B2D5B}
+    .totais-bloco .t-val.red{color:#B91C1C}
+    .totais-bloco .t-val.green{color:#15803D;font-size:17px}
+    .totais-bloco .divider{width:1px;height:36px;background:#E3E1DA}
+  </style></head><body>
+  ${_printCabecalho(`${titulo} <span class="badge-resumo">Resumida</span>`, dataImpressao)}
+  <table>
+    <thead><tr>
+      <th>Funcionário</th>
+      <th>Total proventos</th>
+      <th>Total descontos</th>
+      <th>Valor a receber</th>
+    </tr></thead>
+    <tbody>${tbody}</tbody>
+  </table>
+  <div class="totais-bloco">
+    <div class="t-item"><span class="t-label">Funcionários</span><span class="t-val">${funcionarios.length}</span></div>
+    <div class="divider"></div>
+    <div class="t-item"><span class="t-label">Total descontos</span><span class="t-val red">${fmtValor(totais.total_descontos)}</span></div>
+    <div class="divider"></div>
+    <div class="t-item"><span class="t-label">Total a pagar</span><span class="t-val green">${fmtValor(totais.total_pago)}</span></div>
+  </div>
+  ${_buildObsBlock(funcionarios, dp)}
+  ${_printRodape(titulo)}
+  <script>window.onload=()=>window.print()<\/script>
+  </body></html>`;
+
+  _abrirJanela(html);
 };
 
 carregarHistorico();

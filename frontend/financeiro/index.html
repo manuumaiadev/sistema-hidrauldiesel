@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -221,6 +221,7 @@ tbody tr:hover { background: #FAFAF9; }
 .sec-title { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .sec-title-row { display: flex; justify-content: space-between; align-items: center; }
 .field-grid { display: grid; gap: 12px; }
+.g2 { grid-template-columns: 1fr 1fr; }
 .g3 { grid-template-columns: 1fr 1fr 1fr; }
 .g4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 .field { display: flex; flex-direction: column; gap: 4px; }
@@ -294,6 +295,7 @@ tbody tr:hover { background: #FAFAF9; }
         <a href="../contas-receber/" class="nav-submenu-item">Contas a Receber</a>
       </div>
     </div>
+      <a href="../configuracoes/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Configurações</a>
   </nav>
   <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
 </aside>
@@ -394,7 +396,7 @@ tbody tr:hover { background: #FAFAF9; }
 
 <!-- ═══ Modal Faturamento ═══ -->
 <div id="modal-fat" class="modal-overlay" style="display:none">
-  <div class="modal-box">
+  <div class="modal-box" style="width:min(1180px,97vw)">
     <div class="modal-header">
       <span class="modal-title" id="modal-fat-title">Novo Faturamento</span>
       <button class="modal-close" onclick="fecharModal()">×</button>
@@ -402,109 +404,109 @@ tbody tr:hover { background: #FAFAF9; }
     <div class="modal-body">
       <input type="hidden" id="fat-id"/>
 
-      <!-- Identificação -->
-      <div>
-        <div class="sec-title">Identificação</div>
-        <div class="field-grid g4">
-          <div class="field">
-            <label>Data de emissão da NF</label>
-            <input type="date" id="fat-data"/>
+      <!-- ── Linha 1: todos os campos de cabeçalho ── -->
+      <div class="field-grid" style="grid-template-columns:minmax(280px,3fr) minmax(150px,1fr) 80px 145px 152px;align-items:end;width:100%">
+        <div class="field" style="margin:0">
+          <label>Cliente <span style="font-size:10px;color:#6B7280;font-weight:400">⚡ Bling</span></label>
+          <div id="fat-cliente-wrap" style="position:relative;width:100%">
+            <input type="text" id="fat-cliente" placeholder="Buscar cliente no Bling…" autocomplete="off" oninput="_blingClienteInput()" style="width:100%"/>
+            <div id="fat-cliente-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:360px;width:max-content;max-width:560px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:300;max-height:260px;overflow-y:auto;padding:4px 0"></div>
           </div>
-          <div class="field" style="flex:1">
-            <label>Cliente <span style="font-size:10px;color:#6B7280;font-weight:400">⚡ Bling</span></label>
-            <div id="fat-cliente-wrap" style="position:relative">
-              <input type="text" id="fat-cliente" placeholder="Buscar cliente no Bling…" autocomplete="off" oninput="_blingClienteInput()"/>
-              <div id="fat-cliente-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:360px;width:max-content;max-width:560px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:300;max-height:260px;overflow-y:auto;padding:4px 0"></div>
+        </div>
+        <div class="field" style="margin:0">
+          <label>CNPJ / CPF</label>
+          <input type="text" id="fat-cnpj" placeholder="00.000.000/0001-00" style="font-family:var(--mono)"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Nº OS</label>
+          <input type="text" id="fat-os" placeholder="00123"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Data emissão NF</label>
+          <input type="date" id="fat-data"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label>Status</label>
+          <select id="fat-status">
+            <option value="autorizado">Autorizado</option>
+            <option value="nf_emitida">NF Emitida</option>
+            <option value="cobranca_emitida">Cobrança Emitida</option>
+            <option value="enviado">Enviado</option>
+            <option value="cancelado">Cancelado</option>
+            <option value="rejeitado">Rejeitado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Notas Fiscais lado a lado ── -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+        <!-- NFS-e -->
+        <div style="background:#F0F6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:12px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:.05em">NFS-e · Serviço</span>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="gerarObsNFS()" style="font-size:11px;padding:3px 10px;border-color:#BFDBFE;color:#1D4ED8">
+              ✦ Gerar texto
+            </button>
+          </div>
+          <div class="field-grid g3" style="gap:8px">
+            <div class="field" style="margin:0">
+              <label>Nº NFS-e</label>
+              <input type="text" id="fat-nf-servico" placeholder="Ex: 000456"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Nº Pedido</label>
+              <input type="text" id="fat-pedido-servico" placeholder="Ex: 391099"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Valor (R$)</label>
+              <input type="number" id="fat-valor-servico" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
             </div>
           </div>
-          <div class="field" style="max-width:180px">
-            <label>CNPJ / CPF</label>
-            <input type="text" id="fat-cnpj" placeholder="00.000.000/0001-00" style="font-family:var(--mono)"/>
-          </div>
-          <div class="field">
-            <label>Nº OS</label>
-            <input type="text" id="fat-os" placeholder="Ex: 00123"/>
-          </div>
-          <div class="field">
-            <label>Status</label>
-            <select id="fat-status">
-              <option value="autorizado">Autorizado para Faturamento</option>
-              <option value="nf_emitida">NF Emitida</option>
-              <option value="cobranca_emitida">Cobrança Emitida</option>
-              <option value="enviado">Enviado ao Cliente</option>
-              <option value="cancelado">Cancelado</option>
-              <option value="rejeitado">Rejeitado</option>
-            </select>
+          <div class="field" style="margin:0">
+            <label>Informações Complementares</label>
+            <textarea id="fat-obs-nfs" rows="4" placeholder="Texto da NFS-e…" style="font-family:var(--mono);font-size:11.5px;resize:vertical"></textarea>
           </div>
         </div>
-      </div>
 
-      <!-- NF Serviço -->
-      <div>
-        <div class="sec-title">Nota Fiscal de Serviço (NFS-e)</div>
-        <div class="field-grid g3">
-          <div class="field">
-            <label>Nº NF Serviço</label>
-            <input type="text" id="fat-nf-servico" placeholder="Ex: 000456"/>
-          </div>
-          <div class="field">
-            <label>Nº Pedido Serviço</label>
-            <input type="text" id="fat-pedido-servico" placeholder="Ex: PED-001"/>
-          </div>
-          <div class="field">
-            <label>Valor Serviço (R$)</label>
-            <input type="number" id="fat-valor-servico" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
-          </div>
-        </div>
-        <div class="field" style="margin-top:8px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <label style="margin:0">Informações Complementares (NFS-e)</label>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="gerarObsNFS()" title="Gerar texto automático">
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              Gerar texto
+        <!-- NF-e -->
+        <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:12px;font-weight:700;color:#C2410C;text-transform:uppercase;letter-spacing:.05em">NF-e · Peça</span>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="gerarObsNF()" style="font-size:11px;padding:3px 10px;border-color:#FED7AA;color:#C2410C">
+              ✦ Gerar texto
             </button>
           </div>
-          <textarea id="fat-obs-nfs" rows="4" placeholder="Informações complementares para a NFS-e…" style="font-family:var(--mono);font-size:12px;resize:vertical"></textarea>
+          <div class="field-grid g3" style="gap:8px">
+            <div class="field" style="margin:0">
+              <label>Nº NF-e</label>
+              <input type="text" id="fat-nf-peca" placeholder="Ex: 000789"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Nº Pedido</label>
+              <input type="text" id="fat-pedido-peca" placeholder="Ex: 390491"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Valor (R$)</label>
+              <input type="number" id="fat-valor-peca" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Informações Complementares</label>
+            <textarea id="fat-obs-nf" rows="4" placeholder="Texto da NF-e…" style="font-family:var(--mono);font-size:11.5px;resize:vertical"></textarea>
+          </div>
         </div>
       </div>
 
-      <!-- NF Peça -->
-      <div>
-        <div class="sec-title">Nota Fiscal de Peça (NF-e)</div>
-        <div class="field-grid g3">
-          <div class="field">
-            <label>Nº NF Peça</label>
-            <input type="text" id="fat-nf-peca" placeholder="Ex: 000789"/>
-          </div>
-          <div class="field">
-            <label>Nº Pedido Peça</label>
-            <input type="text" id="fat-pedido-peca" placeholder="Ex: PED-002"/>
-          </div>
-          <div class="field">
-            <label>Valor Peça (R$)</label>
-            <input type="number" id="fat-valor-peca" placeholder="0,00" step="0.01" min="0" oninput="recalcularTotal()"/>
-          </div>
-        </div>
-        <div class="field" style="margin-top:8px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <label style="margin:0">Informações Complementares (NF-e)</label>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="gerarObsNF()" title="Gerar texto automático">
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              Gerar texto
-            </button>
-          </div>
-          <textarea id="fat-obs-nf" rows="2" placeholder="Informações complementares para a NF-e…" style="font-family:var(--mono);font-size:12px;resize:vertical"></textarea>
-        </div>
+      <!-- ── Total ── -->
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:10px 16px;background:#DCFCE7;border:1px solid #86EFAC;border-radius:9px">
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#15803D">Total do faturamento</span>
+        <span style="font-size:22px;font-weight:700;font-family:var(--mono);color:#15803D" id="fat-total-display">R$ 0,00</span>
       </div>
 
-      <!-- Pagamentos -->
+      <!-- ── Pagamento ── -->
       <div>
-        <div class="sec-title-row" style="padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px">
-          <span class="sec-title" style="border:none;margin:0;padding:0">Condição de pagamento</span>
-          <span style="font-family:var(--mono);font-size:13px;color:var(--muted)">Total: <strong id="fat-total-display" style="color:var(--navy)">R$ 0,00</strong></span>
-        </div>
-
-        <!-- linha: condição | categoria | gerar -->
+        <div class="sec-title">Condição de Pagamento</div>
         <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap">
           <div class="field" style="flex:1;min-width:180px;margin:0">
             <label>Condição</label>
@@ -522,7 +524,6 @@ tbody tr:hover { background: #FAFAF9; }
           <button class="btn btn-primary btn-sm" type="button" onclick="gerarParcelasFat()" style="flex-shrink:0">Gerar parcelas</button>
         </div>
 
-        <!-- tabela de parcelas -->
         <div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px">
           <table style="width:100%;border-collapse:collapse;font-size:12.5px">
             <thead>
@@ -543,28 +544,39 @@ tbody tr:hover { background: #FAFAF9; }
           </table>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <span id="fat-parc-resumo" style="font-size:12.5px;color:var(--muted)"></span>
           <button class="btn btn-ghost btn-sm" type="button" onclick="adicionarParcelaFat()">+ Adicionar outra parcela</button>
         </div>
 
-        <!-- campo banco global (oculto, mantido para compatibilidade) -->
         <input type="hidden" id="fat-obs-pagamento"/>
         <input type="hidden" id="fat-banco"/>
-
-        <!-- campos ocultos para compatibilidade -->
         <input type="hidden" id="fat-valor-total"/>
         <input type="hidden" id="fat-parcelas" value="1"/>
         <input type="hidden" id="fat-valor-parcela"/>
         <input type="hidden" id="fat-forma-pagamento"/>
       </div>
 
-      <!-- Observações -->
-      <div>
-        <div class="sec-title">Observações</div>
-        <div class="field">
-          <textarea id="fat-obs" placeholder="Observações gerais…"></textarea>
+      <!-- ── Observações gerais ── -->
+      <div class="field">
+        <label>Observações gerais</label>
+        <textarea id="fat-obs" rows="2" placeholder="Observações gerais do registro…"></textarea>
+      </div>
+
+      <!-- ── Histórico de envios ── -->
+      <div id="fat-envios-section" style="display:none;flex-direction:column;gap:10px">
+        <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Histórico de envios</span>
+        <div id="fat-envios-lista"></div>
+      </div>
+
+      <!-- ── Documentos do faturamento ── -->
+      <div id="fat-anexos-section" style="display:none;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Documentos anexados</span>
+          <span id="fat-anexos-dica" style="font-size:12px;color:var(--muted)"></span>
         </div>
+        <div id="fat-anexos-lista" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="fat-anexos-btns"></div>
       </div>
 
       <div id="fat-erro" class="form-erro"></div>
@@ -643,8 +655,8 @@ tbody tr:hover { background: #FAFAF9; }
     <div class="modal-footer">
       <div></div>
       <div class="modal-footer-right">
-        <button class="btn btn-ghost" onclick="fecharModalCobranca()">Cancelar</button>
-        <button class="btn btn-primary" id="cob-btn-salvar" onclick="salvarCobranca()">Confirmar cobrança</button>
+        <button type="button" class="btn btn-ghost" onclick="fecharModalCobranca()">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="cob-btn-salvar" onclick="salvarCobranca()">Confirmar cobrança</button>
       </div>
     </div>
   </div>
@@ -673,7 +685,7 @@ tbody tr:hover { background: #FAFAF9; }
       <div class="field-grid g2">
         <div class="field">
           <label>Canal de envio</label>
-          <select id="envio-canal">
+          <select id="envio-canal" onchange="toggleEmailFields()">
             <option value="">— Selecionar —</option>
             <option value="WhatsApp">WhatsApp</option>
             <option value="E-mail">E-mail</option>
@@ -686,10 +698,55 @@ tbody tr:hover { background: #FAFAF9; }
         </div>
       </div>
 
+      <!-- Campos de e-mail — visíveis só quando canal = E-mail -->
+      <div id="envio-email-fields" style="display:none;flex-direction:column;gap:12px">
+        <div style="height:1px;background:var(--border)"></div>
+        <div class="field-grid g2">
+          <div class="field" style="grid-column:1/-1">
+            <label>E-mail(s) do destinatário <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">(separe múltiplos com vírgula)</span></label>
+            <input type="text" id="envio-email-para" placeholder="financeiro@empresa.com, contato@empresa.com"
+              oninput="document.getElementById('envio-email-dica').style.display='none'"/>
+            <span id="envio-email-dica" style="display:none;font-size:11.5px;color:#16A34A;margin-top:2px">
+              ✓ Sugerido de envios anteriores
+            </span>
+          </div>
+          <div class="field">
+            <label>Assunto</label>
+            <input type="text" id="envio-email-assunto" placeholder="OS 000 - NOTAS FISCAIS E BOLETOS - CLIENTE"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Documentos do faturamento</label>
+          <div id="envio-anexos-salvos" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px">
+            <span style="font-size:12px;color:var(--muted)">Carregando…</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Adicionar arquivos extras</label>
+          <div id="envio-anexos-wrap" style="border:1.5px dashed var(--border);border-radius:8px;padding:10px 14px;background:#fafaf8;cursor:pointer;transition:border-color .15s"
+               onclick="document.getElementById('envio-anexos-input').click()"
+               ondragover="event.preventDefault();this.style.borderColor='var(--navy)'"
+               ondragleave="this.style.borderColor='var(--border)'"
+               ondrop="event.preventDefault();this.style.borderColor='var(--border)';_adicionarAnexos(event.dataTransfer.files)">
+            <div id="envio-anexos-placeholder" style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+              Clique ou arraste arquivos extras aqui (PDF, imagens…)
+            </div>
+            <div id="envio-anexos-lista" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:0"></div>
+          </div>
+          <input type="file" id="envio-anexos-input" multiple accept=".pdf,.png,.jpg,.jpeg,.xml,.xlsx,.xls" style="display:none" onchange="_adicionarAnexos(this.files)"/>
+        </div>
+      </div>
+
       <div id="envio-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
     </div>
     <div class="modal-footer">
-      <div></div>
+      <div>
+        <button class="btn btn-ghost" id="envio-btn-email" style="display:none" onclick="enviarPorEmail()">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          Enviar por E-mail
+        </button>
+      </div>
       <div class="modal-footer-right">
         <button class="btn btn-ghost" onclick="fecharModalEnvio()">Cancelar</button>
         <button class="btn btn-primary" id="envio-btn-salvar" onclick="salvarEnvio()">Confirmar envio</button>
@@ -932,6 +989,9 @@ function limparFiltros() {
 }
 
 async function carregar() {
+  // Carrega dados bancários em segundo plano para usar na geração de mensagem
+  _carregarConfigBanco();
+
   const v = id => document.getElementById(id).value;
   const filtros = {};
   if (v('filtro-inicio')) filtros.data_inicio = v('filtro-inicio');
@@ -1193,17 +1253,43 @@ function sortBy(col) {
 }
 
 // ── Modal Enviar ao Cliente ───────────────────────────────────────────────────
-let _envioFatId = null;
+let _envioFatId    = null;
+let _envioAnexosSalvos = [];   // anexos já salvos no faturamento
+let _cfgBanco      = null;     // dados bancários carregados das configurações
+
+async function _carregarConfigBanco() {
+  if (_cfgBanco) return _cfgBanco;
+  try {
+    const cfg = await api.listarConfiguracoes();
+    const b   = cfg.banco || {};
+    _cfgBanco = {
+      titular:  b.banco_titular?.valor || '',
+      nome:     b.banco_nome?.valor    || '',
+      agencia:  b.banco_agencia?.valor || '',
+      conta:    b.banco_conta?.valor   || '',
+      pix:      b.banco_pix?.valor     || '',
+    };
+  } catch { _cfgBanco = {}; }
+  return _cfgBanco;
+}
 
 async function marcarEnviado(id) {
   const f = _faturamentos.find(x => x.id === id);
   if (!f) return;
   _envioFatId = id;
 
-  document.getElementById('envio-canal').value = '';
-  document.getElementById('envio-obs').value   = f.observacoes || '';
-  document.getElementById('envio-erro').textContent = '';
-  document.getElementById('envio-btn-salvar').disabled = false;
+  document.getElementById('envio-canal').value              = '';
+  document.getElementById('envio-obs').value                = f.observacoes || '';
+  document.getElementById('envio-erro').textContent         = '';
+  document.getElementById('envio-btn-salvar').disabled      = false;
+  document.getElementById('envio-email-fields').style.display = 'none';
+  document.getElementById('envio-btn-email').style.display    = 'none';
+  document.getElementById('envio-email-para').value           = '';
+  document.getElementById('envio-email-assunto').value        = '';
+  const _dica = document.getElementById('envio-email-dica');
+  if (_dica) _dica.style.display = 'none';
+  _envioAnexos = [];
+  _renderAnexos();
 
   // Gera mensagem base com dados já disponíveis
   document.getElementById('envio-msg').value = _gerarMensagem(f, null);
@@ -1223,52 +1309,81 @@ function _gerarMensagem(f, os) {
 
   // referência descritiva da OS em linha única
   const ref = [];
-  if (f.os_numero)      ref.push(`Ordem de Serviço nº ${f.os_numero}`);
-  if (os?.placa)        ref.push(`placa ${os.placa}`);
+  if (f.os_numero)      ref.push(`OS nº *${f.os_numero}*`);
+  if (os?.placa)        ref.push(`placa *${os.placa}*`);
   if (os?.modelo)       ref.push(os.modelo + (os.ano ? ` ${os.ano}` : ''));
   if (f.pedido_servico && f.pedido_peca && f.pedido_servico !== f.pedido_peca)
-    ref.push(`Pedidos nº ${f.pedido_servico} / ${f.pedido_peca}`);
-  else if (f.pedido_servico) ref.push(`Pedido nº ${f.pedido_servico}`);
-  else if (f.pedido_peca)    ref.push(`Pedido nº ${f.pedido_peca}`);
+    ref.push(`Pedidos *${f.pedido_servico}* / *${f.pedido_peca}*`);
+  else if (f.pedido_servico) ref.push(`Pedido *${f.pedido_servico}*`);
+  else if (f.pedido_peca)    ref.push(`Pedido *${f.pedido_peca}*`);
   const refTexto = ref.length ? ref.join(', ') : 'serviços prestados';
 
   // notas fiscais
   const linhasNF = [];
-  if (f.nf_servico) linhasNF.push(`  • Nota Fiscal de Serviço nº: ${f.nf_servico}`);
-  if (f.nf_peca)    linhasNF.push(`  • Nota Fiscal de Peça nº: ${f.nf_peca}`);
-  const blocoNF = linhasNF.length ? `\n\nDocumentos anexos:\n${linhasNF.join('\n')}` : '';
+  if (f.nf_servico) linhasNF.push(`  • NF de Serviço nº *${f.nf_servico}*`);
+  if (f.nf_peca)    linhasNF.push(`  • NF de Peça nº *${f.nf_peca}*`);
+  const blocoNF = linhasNF.length ? `\n\n*Documentos em anexo:*\n${linhasNF.join('\n')}` : '';
 
-  // dados de pagamento
-  const linhasPgto = [];
-  if (f.forma_pagamento)    linhasPgto.push(`  • Forma de pagamento: ${f.forma_pagamento}`);
-  if (f.banco)              linhasPgto.push(`  • Banco: ${f.banco}`);
-  if (f.condicao_pagamento) linhasPgto.push(`  • Condição: ${f.condicao_pagamento}`);
-
+  // bloco de pagamento
+  const total = parseFloat(f.valor_total) || 0;
   const vencs = f.vencimentos || [];
+  const linhasPgto = [];
+
+  // Forma + banco numa linha só (omite banco se já está contido na forma)
+  const forma  = f.forma_pagamento || '';
+  const banco  = f.banco || '';
+  const bancoJaNaForma = banco && forma.toLowerCase().includes(banco.toLowerCase());
+  if (forma) {
+    const sufixo = (!bancoJaNaForma && banco) ? ` (${banco})` : '';
+    linhasPgto.push(`  • *${forma}${sufixo}*`);
+  }
+  if (f.condicao_pagamento) linhasPgto.push(`  • Condição: *${f.condicao_pagamento}*`);
+
   if (vencs.length === 1) {
     const dt = vencs[0].data_vencimento?.slice(0,10);
-    linhasPgto.push(`  • Vencimento: ${dt ? fmtData(dt) : '—'} — ${fmtValor(vencs[0].valor)}`);
-  } else {
+    linhasPgto.push(`  • Vence *${dt ? fmtData(dt) : '—'}* — *${fmtValor(vencs[0].valor)}*`);
+  } else if (vencs.length > 1) {
     vencs.forEach((v, i) => {
       const dt = v.data_vencimento?.slice(0,10);
-      linhasPgto.push(`  • ${i+1}ª parcela: ${dt ? fmtData(dt) : '—'} — ${fmtValor(v.valor)}`);
+      linhasPgto.push(`  • ${i+1}ª parcela: *${dt ? fmtData(dt) : '—'}* — *${fmtValor(v.valor)}*`);
     });
+    if (total > 0) linhasPgto.push(`  • Total: *${fmtValor(total)}*`);
+  } else if (total > 0 && !forma) {
+    linhasPgto.push(`  • *${fmtValor(total)}*`);
   }
 
-  const total = parseFloat(f.valor_total) || 0;
-  if (total > 0) linhasPgto.push(`  • Valor total: ${fmtValor(total)}`);
+  const blocoPgto = linhasPgto.length ? `\n\n*Dados para pagamento:*\n${linhasPgto.join('\n')}` : '';
 
-  const blocoPgto = linhasPgto.length ? `\n\nDados para pagamento:\n${linhasPgto.join('\n')}` : '';
+  // prazo de vencimento para o aviso
+  let avisoVenc = '';
+  if (vencs.length > 0) {
+    const primeiraDt = vencs[0].data_vencimento?.slice(0,10);
+    avisoVenc = primeiraDt ? ` até *${fmtData(primeiraDt)}*` : '';
+  }
 
-  return `Prezado(a) ${cliente},
+  // Bloco de dados bancários (depósito / TED / PIX)
+  const formaLower = (f.forma_pagamento || '').toLowerCase();
+  const isTransferencia = /deposito|depósito|transfer|ted|doc|pix/i.test(formaLower)
+    || _parcelasFat?.some(p => /deposito|depósito|transfer|ted|doc|pix/i.test((p.forma || '').toLowerCase()));
+  let blocoBanco = '';
+  if (isTransferencia && _cfgBanco) {
+    const b = _cfgBanco;
+    const linhas = ['Solicitamos a gentileza de realizar o pagamento através dos dados bancários abaixo:',''];
+    if (b.titular)  linhas.push(`💳 *Dados para Pagamento – ${b.titular}*`);
+    if (b.nome)     linhas.push(b.nome);
+    if (b.agencia)  linhas.push(`Agência: *${b.agencia}*`);
+    if (b.conta)    linhas.push(`Conta Corrente: *${b.conta}*`);
+    if (b.pix)      linhas.push(`Pix (CNPJ): *${b.pix}*`);
+    if (linhas.length > 2) blocoBanco = '\n\n' + linhas.join('\n');
+  }
 
-Encaminhamos em anexo as Notas Fiscais e Boleto referentes à ${refTexto}, emitidos pela Hidrauldiesel.${blocoNF}${blocoPgto}
+  return `Olá, *${cliente}*!
 
-Em caso de dúvidas sobre o faturamento ou os serviços realizados, nosso setor financeiro está à disposição para atendimento.
+Segue em anexo a cobrança referente à ${refTexto}.${blocoNF}${blocoPgto}${blocoBanco}
 
-Agradecemos pela confiança em nossos serviços.
+*Solicitamos que o pagamento seja efetuado${avisoVenc}.* Títulos em aberto após *7 dias do vencimento* serão encaminhados ao Serasa.
 
-⚠️ ATENÇÃO: informamos que, conforme nossa política interna, títulos não regularizados até 7 dias após o vencimento poderão ser encaminhados ao Serasa.`;
+Em caso de dúvidas sobre o faturamento ou os serviços realizados, nosso setor financeiro está à disposição para atendimento.`;
 }
 
 function copiarMensagemEnvio() {
@@ -1290,6 +1405,177 @@ function copiarMensagemEnvio() {
 function fecharModalEnvio() {
   document.getElementById('modal-envio').style.display = 'none';
   _envioFatId = null;
+  _envioAnexos = [];
+  _renderAnexos();
+}
+
+// ── Anexos ────────────────────────────────────────────────────────────────────
+let _envioAnexos = [];
+
+function _adicionarAnexos(files) {
+  for (const f of files) {
+    if (!_envioAnexos.find(x => x.name === f.name && x.size === f.size)) {
+      _envioAnexos.push(f);
+    }
+  }
+  document.getElementById('envio-anexos-input').value = '';
+  _renderAnexos();
+}
+
+function _renderAnexos() {
+  const lista = document.getElementById('envio-anexos-lista');
+  const placeholder = document.getElementById('envio-anexos-placeholder');
+  if (!_envioAnexos.length) {
+    placeholder.style.display = 'flex';
+    lista.innerHTML = '';
+    lista.style.marginTop = '0';
+    return;
+  }
+  placeholder.style.display = 'none';
+  lista.style.marginTop = '4px';
+  lista.innerHTML = _envioAnexos.map((f, i) => {
+    const kb = (f.size / 1024).toFixed(0);
+    return `<div style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:12px;max-width:220px">
+      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px" title="${f.name}">${f.name}</span>
+      <span style="color:var(--muted);white-space:nowrap">${kb}kb</span>
+      <button type="button" onclick="_removerAnexo(${i})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 1px">×</button>
+    </div>`;
+  }).join('');
+}
+
+function _removerAnexo(i) {
+  _envioAnexos.splice(i, 1);
+  _renderAnexos();
+}
+
+function toggleEmailFields() {
+  const canal      = document.getElementById('envio-canal').value;
+  const fields     = document.getElementById('envio-email-fields');
+  const btnEmail   = document.getElementById('envio-btn-email');
+  const isEmail    = canal === 'E-mail';
+  fields.style.display   = isEmail ? 'flex' : 'none';
+  btnEmail.style.display = isEmail ? 'inline-flex' : 'none';
+
+  if (isEmail) {
+    const f = _faturamentos.find(x => x.id === _envioFatId);
+    if (f) {
+      // Assunto
+      const os      = f.os_numero    ? `OS ${f.os_numero}`    : '';
+      const cliente = f.cliente_nome ? f.cliente_nome.toUpperCase() : '';
+      const partes  = [os, 'NOTAS FISCAIS E BOLETOS', cliente].filter(Boolean);
+      document.getElementById('envio-email-assunto').value = partes.join(' - ');
+
+      // Sugere e-mail de envios anteriores do mesmo cliente
+      const campoEmail = document.getElementById('envio-email-para');
+      if (!campoEmail.value) {
+        // 1. Tenta no próprio faturamento
+        let emailSalvo = f.cliente_email || '';
+        // 2. Se não tiver, busca em outro faturamento do mesmo cliente (por CNPJ ou nome)
+        if (!emailSalvo) {
+          const outro = _faturamentos.find(x =>
+            x.id !== _envioFatId && x.cliente_email &&
+            (f.cliente_cnpj ? x.cliente_cnpj === f.cliente_cnpj : x.cliente_nome === f.cliente_nome)
+          );
+          if (outro) emailSalvo = outro.cliente_email;
+        }
+        if (emailSalvo) {
+          campoEmail.value = emailSalvo;
+          // Hint visual
+          const dica = document.getElementById('envio-email-dica');
+          if (dica) { dica.textContent = 'Sugerido de envios anteriores'; dica.style.display = 'block'; }
+        }
+      }
+    }
+    // Carrega anexos salvos do faturamento
+    _carregarAnexosSalvosEnvio(_envioFatId);
+  }
+}
+
+async function _carregarAnexosSalvosEnvio(fatId) {
+  const container = document.getElementById('envio-anexos-salvos');
+  container.innerHTML = '<span style="font-size:12px;color:var(--muted)">Carregando…</span>';
+  _envioAnexosSalvos = [];
+  if (!fatId) { container.innerHTML = ''; return; }
+  try {
+    const lista = await api.listarAnexosFaturamento(fatId);
+    _envioAnexosSalvos = lista;
+    if (!lista.length) {
+      container.innerHTML = '<span style="font-size:12px;color:var(--muted)">Nenhum documento salvo neste faturamento.</span>';
+      return;
+    }
+    container.innerHTML = lista.map(a => {
+      const t = _tipoDocInfo ? _tipoDocInfo(a.tipo_doc) : { cor:'#F1F0ED', corText:'#888680', label: a.tipo_doc };
+      return `<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:5px 10px;border-radius:7px;background:${t.cor};border:1px solid ${t.corText}33;font-size:12.5px;font-weight:500;color:${t.corText}">
+        <input type="checkbox" data-id="${a.id}" checked style="cursor:pointer"/>
+        ${a.nome_original}
+        <span style="font-size:10.5px;opacity:.75">${t.label}</span>
+      </label>`;
+    }).join('');
+  } catch {
+    container.innerHTML = '<span style="font-size:12px;color:var(--muted)">Não foi possível carregar os documentos.</span>';
+  }
+}
+
+async function enviarPorEmail() {
+  const para     = document.getElementById('envio-email-para').value.trim();
+  const assunto  = document.getElementById('envio-email-assunto').value.trim();
+  const mensagem = document.getElementById('envio-msg').value.trim();
+  const erroEl   = document.getElementById('envio-erro');
+  const btn      = document.getElementById('envio-btn-email');
+  const iconoEmail = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>';
+
+  if (!para)     { erroEl.textContent = 'Informe pelo menos um e-mail do destinatário.'; return; }
+  // Normaliza formatos: "Nome" <email> → email, <email> → email, depois split por vírgula
+  const _normalizarEmails = s => s
+    .replace(/"[^"]*"\s*<([^>]+)>/g, '$1')
+    .replace(/<([^>]+)>/g, '$1')
+    .split(',').map(e => e.trim()).filter(e => e.includes('@'));
+  const emailsExtraidos = _normalizarEmails(para);
+  if (!emailsExtraidos.length) { erroEl.textContent = 'Nenhum e-mail válido encontrado.'; return; }
+  const emailRegexVal = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailsInvalidos = emailsExtraidos.filter(e => !emailRegexVal.test(e));
+  if (emailsInvalidos.length) { erroEl.textContent = `E-mail inválido: ${emailsInvalidos.join(', ')}`; return; }
+  if (!assunto)  { erroEl.textContent = 'Informe o assunto do e-mail.'; return; }
+  if (!mensagem) { erroEl.textContent = 'A mensagem não pode estar vazia.'; return; }
+
+  erroEl.textContent = '';
+  btn.disabled       = true;
+  btn.textContent    = 'Enviando…';
+
+  try {
+    // IDs dos anexos salvos marcados para incluir
+    const checkboxes = document.querySelectorAll('#envio-anexos-salvos input[type=checkbox]:checked');
+    const anexosIds  = Array.from(checkboxes).map(c => c.dataset.id).join(',');
+
+    const form = new FormData();
+    form.append('para',           para);
+    form.append('assunto',        assunto);
+    form.append('mensagem',       mensagem);
+    form.append('setor',          'financeiro');
+    form.append('faturamento_id', _envioFatId || '');
+    form.append('anexos_ids',     anexosIds);
+    for (const f of _envioAnexos) form.append('anexos', f, f.name);
+
+    const resultado = await api.enviarEmailComAnexos(form);
+    // Atualiza o e-mail salvo em todos os faturamentos do mesmo cliente em memória
+    if (resultado?.cliente_email_salvo && _envioFatId) {
+      const fatAtual = _faturamentos.find(x => x.id === _envioFatId);
+      const cnpj = fatAtual?.cliente_cnpj;
+      _faturamentos.forEach(x => {
+        if (cnpj ? x.cliente_cnpj === cnpj : x.id === _envioFatId) {
+          x.cliente_email = resultado.cliente_email_salvo;
+        }
+      });
+    }
+    mostrarToast(`E-mail enviado para ${para}`, 'ok');
+    btn.innerHTML = iconoEmail + ' ✓ Enviado';
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = iconoEmail + ' Enviar por E-mail'; }, 3000);
+  } catch (err) {
+    erroEl.textContent = err.message || 'Erro ao enviar e-mail.';
+    btn.disabled       = false;
+    btn.innerHTML      = iconoEmail + ' Enviar por E-mail';
+  }
 }
 
 async function salvarEnvio() {
@@ -1362,12 +1648,15 @@ function emitirCobranca(id) {
   if (!f) return;
   _cobFatId = id;
 
-  document.getElementById('cob-cliente').textContent = f.cliente_nome || '—';
-  document.getElementById('cob-total').textContent   = fmtValor(f.valor_total);
-  document.getElementById('cob-forma').value         = f.forma_pagamento    || '';
-  document.getElementById('cob-banco').value         = f.banco              || '';
-  document.getElementById('cob-condicao').value      = f.condicao_pagamento || '';
-  document.getElementById('cob-erro').textContent    = '';
+  document.getElementById('cob-cliente').textContent  = f.cliente_nome || '—';
+  document.getElementById('cob-total').textContent    = fmtValor(f.valor_total);
+  document.getElementById('cob-forma').value          = f.forma_pagamento    || '';
+  document.getElementById('cob-banco').value          = f.banco              || '';
+  document.getElementById('cob-condicao').value       = f.condicao_pagamento || '';
+  document.getElementById('cob-erro').textContent     = '';
+  const _btnCob = document.getElementById('cob-btn-salvar');
+  _btnCob.disabled    = false;
+  _btnCob.textContent = 'Confirmar cobrança';
 
   _cobParcelas = (f.vencimentos || []).map(v => ({
     data_vencimento: v.data_vencimento?.slice(0,10) || '',
@@ -1420,24 +1709,34 @@ function fecharModalCobranca() {
 }
 
 async function salvarCobranca() {
-  if (!_cobFatId) return;
-  const f = _faturamentos.find(x => x.id === _cobFatId);
-  if (!f) return;
+  const fatId = _cobFatId;
+  if (!fatId) { alert('Erro interno: ID do faturamento não encontrado. Feche e abra novamente.'); return; }
+
+  const f = _faturamentos.find(x => x.id === fatId);
+  if (!f) { alert('Faturamento não encontrado na listagem atual. Recarregue a página.'); return; }
 
   const forma    = document.getElementById('cob-forma').value.trim()    || null;
   const banco    = document.getElementById('cob-banco').value.trim()    || null;
   const condicao = document.getElementById('cob-condicao').value.trim() || null;
 
-  document.getElementById('cob-btn-salvar').disabled = true;
-  document.getElementById('cob-erro').textContent = '';
+  const btnSalvar = document.getElementById('cob-btn-salvar');
+  const erroEl    = document.getElementById('cob-erro');
+  btnSalvar.disabled = true;
+  btnSalvar.textContent = 'Salvando…';
+  erroEl.textContent = '';
 
   try {
-    await api.atualizarFaturamento(_cobFatId, {
+    const vencimentos = _cobParcelas
+      .filter(p => p.data_vencimento)
+      .map(p => ({ data_vencimento: p.data_vencimento, valor: parseFloat(p.valor) || 0, pago: p.pago || false }));
+
+    // 1. Atualiza dados de pagamento e vencimentos
+    await api.atualizarFaturamento(fatId, {
       os_numero:          f.os_numero,
       cliente_nome:       f.cliente_nome,
       cliente_cnpj:       f.cliente_cnpj,
-      data_faturamento:   f.data_faturamento?.slice(0,10) || null,
-      status:             'cobranca_emitida',
+      data_faturamento:   f.data_faturamento ? f.data_faturamento.slice(0,10) : null,
+      status:             f.status,   // mantém status atual neste update
       nf_servico:         f.nf_servico,
       pedido_servico:     f.pedido_servico,
       valor_servico:      parseFloat(f.valor_servico) || 0,
@@ -1455,13 +1754,20 @@ async function salvarCobranca() {
       categoria:          f.categoria || 'Venda de Serviços',
       obs_pagamento:      f.obs_pagamento,
       observacoes:        f.observacoes,
-      vencimentos:        _cobParcelas.filter(p => p.data_vencimento),
+      vencimentos,
     });
+
+    // 2. Avança o status para cobrança emitida
+    await api.atualizarStatusFaturamento(fatId, 'cobranca_emitida');
+
     fecharModalCobranca();
     carregar();
   } catch (err) {
-    document.getElementById('cob-erro').textContent = err.message || 'Erro ao salvar.';
-    document.getElementById('cob-btn-salvar').disabled = false;
+    const msg = err?.message || String(err) || 'Erro desconhecido';
+    erroEl.textContent = msg;
+    alert('Erro ao salvar cobrança: ' + msg);
+    btnSalvar.disabled = false;
+    btnSalvar.textContent = 'Confirmar cobrança';
   }
 }
 
@@ -1589,6 +1895,124 @@ async function avancarStatus(id, novoStatus, label) {
 }
 
 // ── Modal ──────────────────────────────────────────────────────────────────────
+// ── Anexos do faturamento no modal ────────────────────────────────────────────
+let _fatAnexos = [];
+let _fatAnexosId = null;
+
+const _TIPOS_DOC = [
+  { key: 'nf_servico',     label: 'NF de Serviço',    cor: '#DBEAFE', corText: '#1E40AF' },
+  { key: 'nf_peca',        label: 'NF de Peça',        cor: '#FEF3C7', corText: '#92400E' },
+  { key: 'boleto_servico', label: 'Boleto Serviço',    cor: '#DCFCE7', corText: '#15803D' },
+  { key: 'boleto_peca',    label: 'Boleto Peça',       cor: '#F3E8FF', corText: '#6B21A8' },
+  { key: 'outro',          label: 'Outro',             cor: '#F1F0ED', corText: '#888680' },
+];
+
+function _tipoDocInfo(key) {
+  return _TIPOS_DOC.find(t => t.key === key) || _TIPOS_DOC[4];
+}
+
+async function _carregarEnviosFat(fatId) {
+  const section = document.getElementById('fat-envios-section');
+  const lista   = document.getElementById('fat-envios-lista');
+  if (!section || !lista) return;
+
+  section.style.display = 'none';
+  lista.innerHTML = '';
+
+  try {
+    const envios = await api.listarEnviosFaturamento(fatId);
+    if (!envios.length) return;
+
+    section.style.display = 'flex';
+    lista.innerHTML = envios.map(e => {
+      const docs = e.documentos
+        ? e.documentos.split(',').map(d =>
+            `<span style="background:#F1F0ED;border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:11.5px">${d.trim()}</span>`
+          ).join(' ')
+        : '<span style="color:var(--muted);font-size:11.5px">Sem documentos</span>';
+
+      return `<div style="border:1px solid var(--border);border-radius:9px;padding:12px 14px;background:#FAFAF8;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap">${e.canal || 'E-mail'}</span>
+            <span style="font-size:13px;font-weight:500;color:var(--text)">${e.destinatarios || '—'}</span>
+          </div>
+          <span style="font-size:11.5px;color:var(--muted);white-space:nowrap">${e.enviado_em_fmt}${e.enviado_por ? ' · ' + e.enviado_por : ''}</span>
+        </div>
+        ${e.assunto ? `<div style="font-size:12px;color:var(--muted)">Assunto: <span style="color:var(--text)">${e.assunto}</span></div>` : ''}
+        <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+          <span style="font-size:11.5px;color:var(--muted);margin-right:2px">Docs:</span>${docs}
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    // sem histórico disponível
+  }
+}
+
+async function _carregarAnexosFat(fatId) {
+  _fatAnexosId = fatId;
+  try {
+    _fatAnexos = await api.listarAnexosFaturamento(fatId);
+  } catch { _fatAnexos = []; }
+  _renderAnexosFat();
+}
+
+function _renderAnexosFat() {
+  const section = document.getElementById('fat-anexos-section');
+  const lista   = document.getElementById('fat-anexos-lista');
+  const btns    = document.getElementById('fat-anexos-btns');
+  const dica    = document.getElementById('fat-anexos-dica');
+  if (!section) return;
+
+  section.style.display = _fatAnexosId ? 'flex' : 'none';
+  if (dica) dica.textContent = '';
+
+  // Arquivos salvos
+  lista.innerHTML = _fatAnexos.length
+    ? _fatAnexos.map(a => {
+        const url = api.urlAnexoFaturamento(_fatAnexosId, a.id);
+        return `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;background:#F1F0ED;border:1px solid var(--border);font-size:12.5px">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <a href="${url}" target="_blank" style="color:var(--text);text-decoration:none;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${a.nome_original}</a>
+          <button type="button" onclick="_deletarAnexoFat(${a.id})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 2px">×</button>
+        </div>`;
+      }).join('')
+    : '<span style="font-size:12.5px;color:var(--muted)">Nenhum documento anexado.</span>';
+
+  // Botão único de upload
+  btns.innerHTML = `<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:7px;background:#fff;border:1.5px solid var(--border);color:var(--text)">
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Adicionar documento
+    <input type="file" style="display:none" multiple accept=".pdf,.png,.jpg,.jpeg,.xml" onchange="_uploadAnexosFat(this)"/>
+  </label>`;
+}
+
+async function _uploadAnexosFat(input) {
+  if (!input.files.length || !_fatAnexosId) return;
+  for (const file of input.files) {
+    try {
+      const novo = await api.uploadAnexoFaturamento(_fatAnexosId, file, 'outro');
+      _fatAnexos.push(novo);
+      _renderAnexosFat();
+    } catch (err) {
+      alert('Erro ao enviar "' + file.name + '": ' + err.message);
+    }
+  }
+  input.value = '';
+}
+
+async function _deletarAnexoFat(anexoId) {
+  if (!confirm('Remover este arquivo?')) return;
+  try {
+    await api.deletarAnexoFaturamento(_fatAnexosId, anexoId);
+    _fatAnexos = _fatAnexos.filter(a => a.id !== anexoId);
+    _renderAnexosFat();
+  } catch (err) {
+    alert('Erro ao remover: ' + err.message);
+  }
+}
+
 function _limparModal() {
   _fecharClienteDropdown();
   ['fat-id','fat-cliente','fat-cnpj','fat-os','fat-nf-servico','fat-pedido-servico',
@@ -1665,11 +2089,20 @@ function abrirModalEditar(id) {
   }));
   renderParcelasFat();
 
+  // Carrega histórico de envios e anexos salvos
+  _carregarEnviosFat(f.id);
+  _carregarAnexosFat(f.id);
+
   document.getElementById('modal-fat').style.display = 'flex';
 }
 
 function fecharModal() {
   document.getElementById('modal-fat').style.display = 'none';
+  _fatAnexosId = null;
+  _fatAnexos   = [];
+  document.getElementById('fat-anexos-section').style.display = 'none';
+  document.getElementById('fat-envios-section').style.display = 'none';
+  document.getElementById('fat-envios-lista').innerHTML = '';
 }
 
 document.getElementById('modal-fat').addEventListener('click', e => {

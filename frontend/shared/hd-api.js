@@ -19,6 +19,11 @@ const request = async (method, endpoint, body = null) => {
     return;
   }
 
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Servidor retornou resposta inesperada (HTTP ${response.status}). Verifique se o servidor está rodando.`);
+  }
+
   const data = await response.json();
 
   if (!response.ok) {
@@ -100,6 +105,7 @@ const api = {
   excluirAdiantamento:     (id)    => request('DELETE', `/funcionarios/adiantamento/${id}`),
   listarAdiantamentos:     (id)    => request('GET',   `/funcionarios/${id}/adiantamentos`),
   registrarFerias:         (dados) => request('POST', '/funcionarios/ferias', dados),
+  listarFerias:            (id)    => request('GET',  `/funcionarios/${id}/ferias`),
   registrarRescisao:       (dados) => request('POST', '/funcionarios/rescisao', dados),
   registrarDecimo:         (dados) => request('POST', '/funcionarios/decimo', dados),
   listarDecimos:           (id, ano) => request('GET', `/funcionarios/${id}/decimos${ano ? `?ano=${ano}` : ''}`),
@@ -173,6 +179,47 @@ const api = {
   buscarMecanico: (id) => request('GET', `/mecanicos/${id}`),
   criarMecanico: (dados) => request('POST', '/mecanicos', dados),
   atualizarMecanico: (id, dados) => request('PATCH', `/mecanicos/${id}`, dados),
+
+  // E-mail
+  enviarEmailCobranca: (dados) => request('POST', '/email/enviar-cobranca', dados),
+  enviarEmailComAnexos: (formData) => {
+    return fetch(`${API_URL}/email/enviar-cobranca`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getToken()}` },
+      body: formData,
+    }).then(async r => {
+      const ct = r.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) throw new Error(`Erro do servidor (HTTP ${r.status})`);
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.erro || 'Erro ao enviar e-mail');
+      return data;
+    });
+  },
+
+  // Configurações
+  listarConfiguracoes:  ()      => request('GET',  '/configuracoes'),
+  salvarConfiguracoes:  (dados) => request('PUT',  '/configuracoes', dados),
+  testarEmailConfig:    (setor) => request('POST', '/configuracoes/testar-email', { setor: setor || 'financeiro' }),
+
+  // Anexos de faturamento
+  listarAnexosFaturamento:  (fatId) => request('GET', `/faturamento/${fatId}/anexos`),
+  listarEnviosFaturamento:  (fatId) => request('GET', `/faturamento/${fatId}/envios`),
+  deletarAnexoFaturamento: (fatId, anexoId) => request('DELETE', `/faturamento/${fatId}/anexos/${anexoId}`),
+  uploadAnexoFaturamento: (fatId, arquivo, tipoDoc) => {
+    const form = new FormData();
+    form.append('arquivo', arquivo, arquivo.name);
+    form.append('tipo_doc', tipoDoc || 'outro');
+    return fetch(`${API_URL}/faturamento/${fatId}/anexos`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${getToken()}` },
+      body: form,
+    }).then(async r => {
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.erro || 'Erro ao enviar arquivo');
+      return data;
+    });
+  },
+  urlAnexoFaturamento: (fatId, anexoId) => `${API_URL}/faturamento/${fatId}/anexos/${anexoId}/arquivo`,
 };
 
 window.api = api;

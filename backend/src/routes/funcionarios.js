@@ -4,7 +4,7 @@ const auth    = require('../middlewares/auth');
 const {
   listarFuncionarios, criarFuncionario, atualizarFuncionario, deletarFuncionario,
   registrarAdiantamento, listarAdiantamentos, editarAdiantamento, deletarAdiantamento,
-  registrarFerias,
+  registrarFerias, listarFerias,
   registrarRescisao,
   registrarDecimo, listarDecimos,
   resumoPagamentos,
@@ -22,6 +22,7 @@ router.delete('/adiantamento/:id',   auth, deletarAdiantamento);
 router.get('/:id/adiantamentos',     auth, listarAdiantamentos);
 
 router.post('/ferias',               auth, registrarFerias);
+router.get('/:id/ferias',           auth, listarFerias);
 router.post('/rescisao',             auth, registrarRescisao);
 
 router.post('/decimo',               auth, registrarDecimo);

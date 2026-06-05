@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hidrauldiesel — Configurações</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="../shared/hd-api.js"></script>
+<script src="../shared/hd-auth.js"></script>
+<link rel="stylesheet" href="../shared/hd-nav.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F3F0; --surface: #FFFFFF; --border: #E3E1DA;
+  --text: #12151F; --muted: #888680;
+  --navy: #1B2D5B; --red: #C0152A; --red2: #E01830;
+  --green: #16A34A; --green-bg: #DCFCE7;
+  --radius: 10px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+}
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+aside { width: 228px; min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; padding: 24px 18px; flex-shrink: 0; }
+.logo-wrap { display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.logo-img { width: 180px; height: 180px; object-fit: contain; flex-shrink: 0; }
+.logo-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0; }
+nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+nav a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; text-decoration: none; font-size: 13.5px; color: rgba(255,255,255,0.5); transition: background .15s, color .15s; }
+nav a:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+nav a.active { background: var(--red); color: #fff; font-weight: 500; }
+nav a svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+nav a.active svg { opacity: 1; }
+.sidebar-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; font-size: 12px; color: rgba(255,255,255,0.35); }
+.sidebar-bottom strong { display: block; color: rgba(255,255,255,0.72); font-weight: 500; margin-bottom: 2px; }
+
+main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 15px 32px; display: flex; align-items: center; justify-content: space-between; }
+.page-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.content { flex: 1; padding: 28px 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+.tab-btn { background: none; border: none; font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--muted); padding: 8px 16px 10px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color .15s, border-color .15s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); }
+.tab-panel { display: none; flex-direction: column; gap: 20px; }
+.tab-panel.active { display: flex; }
+
+/* Cards */
+.section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; display: flex; flex-direction: column; gap: 18px; }
+.section-title { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.section-title span { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; background: var(--bg); color: var(--muted); padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border); margin-left: 8px; vertical-align: middle; }
+
+/* Setor badge */
+.setor-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: .04em; text-transform: uppercase; }
+.setor-comercial  { background: #EDE9FE; color: #5B21B6; }
+.setor-financeiro { background: #DBEAFE; color: #1E40AF; }
+
+/* Campos */
+.field-grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.field input, .field select {
+  font-family: var(--font); font-size: 14px; padding: 9px 12px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: #fff; color: var(--text); outline: none;
+  transition: border-color .15s;
+}
+.field input:focus { border-color: var(--navy); }
+.field input[type="password"] { font-family: var(--mono); letter-spacing: 2px; }
+
+/* Botões */
+.btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); font-size: 13.5px; font-weight: 500; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; transition: background .15s, opacity .15s; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--red2); }
+.btn-ghost { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg); }
+.btn-navy { background: var(--navy); color: #fff; }
+.btn-navy:hover:not(:disabled) { background: #243672; }
+
+.actions-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 2px; }
+.feedback { font-size: 13px; padding: 8px 13px; border-radius: 8px; display: none; }
+.feedback.ok  { background: var(--green-bg); color: var(--green); display: block; }
+.feedback.err { background: #FEE2E2; color: #991B1B; display: block; }
+
+.pass-wrap { position: relative; }
+.pass-wrap input { width: 100%; padding-right: 40px; }
+.pass-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); padding: 2px; }
+
+.smtp-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.smtp-badge.ok   { background: var(--green-bg); color: var(--green); }
+.smtp-badge.err  { background: #FEE2E2; color: #991B1B; }
+.smtp-badge.idle { background: #F1F0ED; color: var(--muted); }
+
+.info-box { background: #F8F7F4; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.info-box strong { color: var(--text); }
+.info-box a { color: var(--navy); text-decoration: none; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="logo-wrap"><img src="../imagens/Design sem nome (6).png" alt="" class="logo-img"></div>
+  <div class="logo-divider"></div>
+  <nav>
+    <a href="../dashboard/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="../lista-os/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Ordens de serviço</a>
+    <div class="nav-group" id="nav-group-cad">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-cad')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/><path d="M3 7l9 6 9-6"/></svg>
+        Cadastros <span class="nav-arrow" id="arrow-nav-group-cad">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-cad">
+        <a href="../clientes/" class="nav-submenu-item">Clientes</a>
+        <a href="../estoque/" class="nav-submenu-item">Estoque</a>
+        <a href="../servicos/" class="nav-submenu-item">Serviços</a>
+      </div>
+    </div>
+    <div class="nav-group" id="nav-group-func">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-func')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Funcionários <span class="nav-arrow" id="arrow-nav-group-func">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-func">
+        <a href="../funcionarios/" class="nav-submenu-item">Funcionários</a>
+        <a href="../folha/" class="nav-submenu-item">Folha de Pagamento</a>
+        <a href="../vale-transporte/" class="nav-submenu-item">Vales</a>
+        <a href="../comissionamento/" class="nav-submenu-item">Comissionamento</a>
+        <a href="../ponto/" class="nav-submenu-item">Ponto</a>
+      </div>
+    </div>
+    <a href="../historico/"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Histórico</a>
+    <div class="nav-group" id="nav-group-fin">
+      <div class="nav-group-toggle" onclick="toggleNavGroup('nav-group-fin')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Financeiro <span class="nav-arrow" id="arrow-nav-group-fin">&#9656;</span>
+      </div>
+      <div class="nav-submenu" id="sub-nav-group-fin">
+        <a href="../financeiro/" class="nav-submenu-item">Faturamento</a>
+        <a href="../contas-receber/" class="nav-submenu-item">Contas a Receber</a>
+      </div>
+    </div>
+    <a href="../configuracoes/" class="active"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Configurações</a>
+  </nav>
+  <div class="sidebar-bottom"><strong>Hidrauldiesel</strong>Sistema de Gestão</div>
+</aside>
+
+<main>
+  <header>
+    <span class="page-title">Configurações</span>
+  </header>
+  <div class="content">
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="mudarTab('empresa')">Empresa</button>
+      <button class="tab-btn" onclick="mudarTab('email')">E-mail</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════ EMPRESA -->
+    <div class="tab-panel active" id="tab-empresa">
+
+      <div class="section-card">
+        <div class="section-title">Dados gerais</div>
+        <div class="field-grid g2">
+          <div class="field" style="grid-column:1/-1">
+            <label>Razão Social</label>
+            <input type="text" id="empresa_nome" placeholder="Hidrauldiesel LTDA"/>
+          </div>
+          <div class="field">
+            <label>CNPJ</label>
+            <input type="text" id="empresa_cnpj" placeholder="00.000.000/0000-00"/>
+          </div>
+          <div class="field">
+            <label>Site</label>
+            <input type="text" id="empresa_site" placeholder="www.hidrauldiesel.com.br"/>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Endereço completo</label>
+            <input type="text" id="empresa_endereco" placeholder="Rua, nº, Bairro"/>
+          </div>
+          <div class="field">
+            <label>Cidade / UF</label>
+            <input type="text" id="empresa_cidade" placeholder="Cidade — SP"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          Contatos
+          <span>separados por setor</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+          <!-- Comercial -->
+          <div style="display:flex;flex-direction:column;gap:14px;padding:16px;background:#FAF8FF;border:1px solid #DDD6FE;border-radius:9px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+              <span class="setor-badge setor-comercial">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                Comercial
+              </span>
+            </div>
+            <div class="field">
+              <label>Nome da equipe</label>
+              <input type="text" id="setor_comercial_equipe" placeholder="Equipe Comercial"/>
+            </div>
+            <div class="field">
+              <label>WhatsApp / Telefones</label>
+              <input type="text" id="empresa_whatsapp_comercial" placeholder="(83) 00000-0000"/>
+            </div>
+            <div class="field">
+              <label>Telefones extras (separe com /)</label>
+              <input type="text" id="setor_comercial_telefones" placeholder="83 99999-0000 / 83 3333-0000"/>
+            </div>
+            <div class="field">
+              <label>E-mail Comercial</label>
+              <input type="email" id="empresa_email_comercial" placeholder="comercial@hidrauldiesel.com.br"/>
+            </div>
+          </div>
+
+          <!-- Financeiro -->
+          <div style="display:flex;flex-direction:column;gap:14px;padding:16px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+              <span class="setor-badge setor-financeiro">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                Financeiro
+              </span>
+            </div>
+            <div class="field">
+              <label>Nome da equipe</label>
+              <input type="text" id="setor_financeiro_equipe" placeholder="Equipe Financeira"/>
+            </div>
+            <div class="field">
+              <label>WhatsApp / Telefone principal</label>
+              <input type="text" id="empresa_whatsapp_financeiro" placeholder="(83) 00000-0000"/>
+            </div>
+            <div class="field">
+              <label>Telefones extras (separe com /)</label>
+              <input type="text" id="setor_financeiro_telefones" placeholder="83 99999-0000 / 83 3333-0000"/>
+            </div>
+            <div class="field">
+              <label>E-mail Financeiro</label>
+              <input type="email" id="empresa_email_financeiro" placeholder="financeiro@hidrauldiesel.com.br"/>
+            </div>
+          </div>
+
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="salvarEmpresa()">Salvar dados da empresa</button>
+          <span id="fb-empresa" class="feedback"></span>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          Dados bancários
+          <span>usados na mensagem de cobrança por depósito/PIX</span>
+        </div>
+        <div class="field-grid g2">
+          <div class="field">
+            <label>Titular da conta</label>
+            <input type="text" id="banco_titular" placeholder="Hidrauldiesel Truck Service"/>
+          </div>
+          <div class="field">
+            <label>Banco</label>
+            <input type="text" id="banco_nome" placeholder="Banco Itaú"/>
+          </div>
+          <div class="field">
+            <label>Agência</label>
+            <input type="text" id="banco_agencia" placeholder="0000"/>
+          </div>
+          <div class="field">
+            <label>Conta Corrente</label>
+            <input type="text" id="banco_conta" placeholder="00000-0"/>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Chave PIX (CNPJ, telefone ou e-mail)</label>
+            <input type="text" id="banco_pix" placeholder="00.000.000/0000-00"/>
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="salvarBanco()">Salvar dados bancários</button>
+          <span id="fb-banco" class="feedback"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════ E-MAIL -->
+    <div class="tab-panel" id="tab-email">
+
+      <div class="info-box">
+        Para enviar e-mails via Gmail, use uma <strong>Senha de App</strong> (não a senha normal).<br>
+        Acesse <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a> → crie um app "Hidrauldiesel" → copie a senha de 16 dígitos.
+      </div>
+
+      <!-- E-mail Comercial -->
+      <div class="section-card" style="border-color:#DDD6FE">
+        <div class="section-title">
+          <span class="setor-badge setor-comercial" style="margin-right:8px;vertical-align:middle">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+            Comercial
+          </span>
+          Conta de e-mail — Comercial
+        </div>
+        <div class="field-grid g2">
+          <div class="field">
+            <label>Nome do remetente</label>
+            <input type="text" id="email_comercial_remetente" placeholder="Hidrauldiesel Comercial"/>
+          </div>
+          <div class="field">
+            <label>E-mail de envio</label>
+            <input type="email" id="email_comercial_user" placeholder="comercial@gmail.com"/>
+          </div>
+          <div class="field">
+            <label>Senha de App</label>
+            <div class="pass-wrap">
+              <input type="password" id="email_comercial_pass" placeholder="xxxx xxxx xxxx xxxx" autocomplete="new-password"/>
+              <button class="pass-toggle" type="button" onclick="toggleSenha('email_comercial_pass')">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Servidor SMTP</label>
+            <input type="text" id="email_comercial_host" placeholder="smtp.gmail.com"/>
+          </div>
+          <div class="field">
+            <label>Porta</label>
+            <input type="number" id="email_comercial_port" placeholder="587"/>
+          </div>
+          <div class="field" style="justify-content:flex-end">
+            <label>SSL/TLS</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer;padding:9px 0">
+              <input type="checkbox" id="email_comercial_secure" style="width:16px;height:16px;cursor:pointer"/>
+              Ativar SSL completo (porta 465)
+            </label>
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="salvarEmail('comercial')">Salvar</button>
+          <button class="btn btn-navy" onclick="testarEmail('comercial')">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Testar conexão
+          </button>
+          <span id="smtp-badge-comercial" class="smtp-badge idle">
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg> Não testado
+          </span>
+          <span id="fb-email-comercial" class="feedback"></span>
+        </div>
+      </div>
+
+      <!-- E-mail Financeiro -->
+      <div class="section-card" style="border-color:#BFDBFE">
+        <div class="section-title">
+          <span class="setor-badge setor-financeiro" style="margin-right:8px;vertical-align:middle">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Financeiro
+          </span>
+          Conta de e-mail — Financeiro
+        </div>
+        <div class="field-grid g2">
+          <div class="field">
+            <label>Nome do remetente</label>
+            <input type="text" id="email_financeiro_remetente" placeholder="Hidrauldiesel Financeiro"/>
+          </div>
+          <div class="field">
+            <label>E-mail de envio</label>
+            <input type="email" id="email_financeiro_user" placeholder="financeiro@gmail.com"/>
+          </div>
+          <div class="field">
+            <label>Senha de App</label>
+            <div class="pass-wrap">
+              <input type="password" id="email_financeiro_pass" placeholder="xxxx xxxx xxxx xxxx" autocomplete="new-password"/>
+              <button class="pass-toggle" type="button" onclick="toggleSenha('email_financeiro_pass')">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Servidor SMTP</label>
+            <input type="text" id="email_financeiro_host" placeholder="smtp.gmail.com"/>
+          </div>
+          <div class="field">
+            <label>Porta</label>
+            <input type="number" id="email_financeiro_port" placeholder="587"/>
+          </div>
+          <div class="field" style="justify-content:flex-end">
+            <label>SSL/TLS</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer;padding:9px 0">
+              <input type="checkbox" id="email_financeiro_secure" style="width:16px;height:16px;cursor:pointer"/>
+              Ativar SSL completo (porta 465)
+            </label>
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="salvarEmail('financeiro')">Salvar</button>
+          <button class="btn btn-navy" onclick="testarEmail('financeiro')">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Testar conexão
+          </button>
+          <span id="smtp-badge-financeiro" class="smtp-badge idle">
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg> Não testado
+          </span>
+          <span id="fb-email-financeiro" class="feedback"></span>
+        </div>
+      </div>
+
+    </div><!-- /tab-email -->
+  </div>
+</main>
+
+<script>
+function toggleNavGroup(id) {
+  var sub = document.getElementById('sub-' + id);
+  var arr = document.getElementById('arrow-' + id);
+  if (!sub) return;
+  sub.classList.toggle('open');
+  if (arr) arr.innerHTML = sub.classList.contains('open') ? '&#9662;' : '&#9656;';
+}
+
+function mudarTab(nome) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['empresa','email'][i] === nome);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + nome);
+  });
+}
+
+async function carregar() {
+  try {
+    const cfg = await api.listarConfiguracoes();
+    const emp = cfg.empresa          || {};
+    const emc = cfg.email_comercial  || {};
+    const emf = cfg.email_financeiro || {};
+
+    const set = (id, obj, chave) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const v = obj[chave]?.valor ?? '';
+      if (el.type === 'checkbox') el.checked = v === 'true';
+      else el.value = v;
+    };
+
+    set('empresa_nome',                 emp, 'empresa_nome');
+    set('empresa_cnpj',                 emp, 'empresa_cnpj');
+    set('empresa_endereco',             emp, 'empresa_endereco');
+    set('empresa_cidade',               emp, 'empresa_cidade');
+    set('empresa_site',                 emp, 'empresa_site');
+    set('empresa_whatsapp_comercial',   emp, 'empresa_whatsapp_comercial');
+    set('empresa_email_comercial',      emp, 'empresa_email_comercial');
+    set('setor_comercial_equipe',       emp, 'setor_comercial_equipe');
+    set('setor_comercial_telefones',    emp, 'setor_comercial_telefones');
+    set('empresa_whatsapp_financeiro',  emp, 'empresa_whatsapp_financeiro');
+    set('empresa_email_financeiro',     emp, 'empresa_email_financeiro');
+    set('setor_financeiro_equipe',      emp, 'setor_financeiro_equipe');
+    set('setor_financeiro_telefones',   emp, 'setor_financeiro_telefones');
+
+    const bnc = cfg.banco || {};
+    set('banco_titular', bnc, 'banco_titular');
+    set('banco_nome',    bnc, 'banco_nome');
+    set('banco_agencia', bnc, 'banco_agencia');
+    set('banco_conta',   bnc, 'banco_conta');
+    set('banco_pix',     bnc, 'banco_pix');
+
+    set('email_comercial_remetente', emc, 'email_comercial_remetente');
+    set('email_comercial_user',      emc, 'email_comercial_user');
+    set('email_comercial_pass',      emc, 'email_comercial_pass');
+    set('email_comercial_host',      emc, 'email_comercial_host');
+    set('email_comercial_port',      emc, 'email_comercial_port');
+    set('email_comercial_secure',    emc, 'email_comercial_secure');
+
+    set('email_financeiro_remetente', emf, 'email_financeiro_remetente');
+    set('email_financeiro_user',      emf, 'email_financeiro_user');
+    set('email_financeiro_pass',      emf, 'email_financeiro_pass');
+    set('email_financeiro_host',      emf, 'email_financeiro_host');
+    set('email_financeiro_port',      emf, 'email_financeiro_port');
+    set('email_financeiro_secure',    emf, 'email_financeiro_secure');
+  } catch (err) {
+    console.error('Erro ao carregar configurações:', err.message);
+  }
+}
+
+async function salvarEmpresa() {
+  const fb = document.getElementById('fb-empresa');
+  fb.className = 'feedback';
+  try {
+    await api.salvarConfiguracoes({
+      empresa_nome:                document.getElementById('empresa_nome').value.trim(),
+      empresa_cnpj:                document.getElementById('empresa_cnpj').value.trim(),
+      empresa_endereco:            document.getElementById('empresa_endereco').value.trim(),
+      empresa_cidade:              document.getElementById('empresa_cidade').value.trim(),
+      empresa_site:                document.getElementById('empresa_site').value.trim(),
+      empresa_whatsapp_comercial:  document.getElementById('empresa_whatsapp_comercial').value.trim(),
+      empresa_email_comercial:     document.getElementById('empresa_email_comercial').value.trim(),
+      setor_comercial_equipe:      document.getElementById('setor_comercial_equipe').value.trim(),
+      setor_comercial_telefones:   document.getElementById('setor_comercial_telefones').value.trim(),
+      empresa_whatsapp_financeiro: document.getElementById('empresa_whatsapp_financeiro').value.trim(),
+      empresa_email_financeiro:    document.getElementById('empresa_email_financeiro').value.trim(),
+      setor_financeiro_equipe:     document.getElementById('setor_financeiro_equipe').value.trim(),
+      setor_financeiro_telefones:  document.getElementById('setor_financeiro_telefones').value.trim(),
+    });
+    fb.textContent = '✓ Dados salvos.'; fb.className = 'feedback ok';
+  } catch (err) {
+    fb.textContent = err.message || 'Erro ao salvar.'; fb.className = 'feedback err';
+  }
+  setTimeout(() => { fb.className = 'feedback'; fb.textContent = ''; }, 4000);
+}
+
+async function salvarBanco() {
+  const fb = document.getElementById('fb-banco');
+  fb.className = 'feedback';
+  try {
+    await api.salvarConfiguracoes({
+      banco_titular: document.getElementById('banco_titular').value.trim(),
+      banco_nome:    document.getElementById('banco_nome').value.trim(),
+      banco_agencia: document.getElementById('banco_agencia').value.trim(),
+      banco_conta:   document.getElementById('banco_conta').value.trim(),
+      banco_pix:     document.getElementById('banco_pix').value.trim(),
+    });
+    fb.textContent = '✓ Dados bancários salvos.'; fb.className = 'feedback ok';
+  } catch (err) {
+    fb.textContent = err.message || 'Erro ao salvar.'; fb.className = 'feedback err';
+  }
+  setTimeout(() => { fb.className = 'feedback'; fb.textContent = ''; }, 4000);
+}
+
+async function salvarEmail(setor) {
+  const fb = document.getElementById('fb-email-' + setor);
+  fb.className = 'feedback';
+  const p = 'email_' + setor + '_';
+  const dados = {};
+  ['remetente','user','pass','host','port'].forEach(k => {
+    dados[p + k] = document.getElementById(p + k).value.trim();
+  });
+  dados[p + 'secure'] = document.getElementById(p + 'secure').checked ? 'true' : 'false';
+
+  if (!dados[p + 'user']) {
+    fb.textContent = 'Informe o e-mail de envio.'; fb.className = 'feedback err'; return;
+  }
+  try {
+    await api.salvarConfiguracoes(dados);
+    fb.textContent = '✓ Configurações salvas.'; fb.className = 'feedback ok';
+  } catch (err) {
+    fb.textContent = err.message || 'Erro ao salvar.'; fb.className = 'feedback err';
+  }
+  setTimeout(() => { fb.className = 'feedback'; fb.textContent = ''; }, 4000);
+}
+
+async function testarEmail(setor) {
+  const badge = document.getElementById('smtp-badge-' + setor);
+  const fb    = document.getElementById('fb-email-' + setor);
+  badge.className = 'smtp-badge idle';
+  badge.innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg> Testando…';
+  fb.className = 'feedback';
+  try {
+    await api.testarEmailConfig(setor);
+    badge.className = 'smtp-badge ok';
+    badge.innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg> Conexão OK';
+    fb.textContent = '✓ SMTP autenticado com sucesso.'; fb.className = 'feedback ok';
+  } catch (err) {
+    badge.className = 'smtp-badge err';
+    badge.innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg> Falhou';
+    fb.textContent = err.message || 'Erro ao conectar.'; fb.className = 'feedback err';
+  }
+}
+
+function toggleSenha(id) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+carregar();
+</script>
+</body>
+</html>

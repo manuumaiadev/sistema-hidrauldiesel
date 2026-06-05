@@ -565,6 +565,128 @@ const createTables = async () => {
     // data_faturamento = data de emissão da NF, pode ser nula em registros importados
     await pool.query(`ALTER TABLE faturamentos ALTER COLUMN data_faturamento DROP NOT NULL`).catch(() => {});
 
+    // Desconto fixo mensal descontado na folha do dia 05
+    await pool.query(`ALTER TABLE funcionarios ADD COLUMN IF NOT EXISTS adiantamento_dia05 DECIMAL(10,2) DEFAULT 0`);
+
+    // Data de pagamento das férias (independente do período de gozo)
+    await pool.query(`ALTER TABLE ferias ADD COLUMN IF NOT EXISTS data_pagamento DATE`);
+
+    // Justificativa de falta justificada no ponto
+    await pool.query(`ALTER TABLE ponto ADD COLUMN IF NOT EXISTS justificativa TEXT`);
+
+    // Período de férias agora é opcional — só pagamento é obrigatório
+    await pool.query(`ALTER TABLE ferias ALTER COLUMN data_inicio DROP NOT NULL`).catch(() => {});
+    await pool.query(`ALTER TABLE ferias ALTER COLUMN data_fim    DROP NOT NULL`).catch(() => {});
+
+    // Detalhe das faltas geradas na folha dia 05 (datas e status)
+    await pool.query(`ALTER TABLE folha_pagamento ADD COLUMN IF NOT EXISTS faltas_detalhes JSONB DEFAULT '[]'::jsonb`);
+
+    // Backfill: preenche faltas_detalhes para folhas dia 05 geradas antes dessa coluna existir
+    await pool.query(`
+      UPDATE folha_pagamento fp
+      SET faltas_detalhes = (
+        SELECT COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'data',   TO_CHAR(p.data, 'DD/MM/YYYY'),
+              'status', p.status
+            )
+            ORDER BY p.data
+          ),
+          '[]'::jsonb
+        )
+        FROM ponto p
+        WHERE p.funcionario_id = fp.funcionario_id
+          AND p.status IN ('falta', 'meia_falta')
+          AND EXTRACT(DOW FROM p.data) BETWEEN 1 AND 5
+          AND EXTRACT(MONTH FROM p.data) = EXTRACT(MONTH FROM fp.data_pagamento - INTERVAL '1 month')
+          AND EXTRACT(YEAR  FROM p.data) = EXTRACT(YEAR  FROM fp.data_pagamento - INTERVAL '1 month')
+      )
+      WHERE EXTRACT(DAY FROM fp.data_pagamento) = 5
+        AND (fp.faltas_detalhes IS NULL OR fp.faltas_detalhes = '[]'::jsonb)
+    `).catch(() => {});
+
+    // Configurações do sistema (chave-valor)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS configuracoes (
+        chave   VARCHAR(100) PRIMARY KEY,
+        valor   TEXT,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    // Adiciona colunas extras caso a tabela já existia sem elas
+    await pool.query(`ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS tipo       VARCHAR(20)  DEFAULT 'texto'`);
+    await pool.query(`ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS grupo      VARCHAR(50)  DEFAULT 'geral'`);
+    await pool.query(`ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS label      VARCHAR(150)`);
+    await pool.query(`ALTER TABLE configuracoes ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP    DEFAULT NOW()`).catch(() => {});
+
+    // Insere defaults que ainda não existem
+    await pool.query(`
+      INSERT INTO configuracoes (chave, valor, tipo, grupo, label) VALUES
+        ('empresa_nome',                  'Hidrauldiesel',  'texto',  'empresa',     'Razão Social'),
+        ('empresa_cnpj',                  '',               'texto',  'empresa',     'CNPJ'),
+        ('empresa_endereco',              '',               'texto',  'empresa',     'Endereço'),
+        ('empresa_cidade',                '',               'texto',  'empresa',     'Cidade / UF'),
+        ('empresa_site',                  '',               'texto',  'empresa',     'Site'),
+        ('empresa_whatsapp_comercial',    '',                  'texto', 'empresa', 'WhatsApp Comercial'),
+        ('empresa_email_comercial',       '',                  'texto', 'empresa', 'E-mail Comercial'),
+        ('empresa_whatsapp_financeiro',   '',                  'texto', 'empresa', 'WhatsApp Financeiro'),
+        ('empresa_email_financeiro',      '',                  'texto', 'empresa', 'E-mail Financeiro'),
+        ('setor_comercial_equipe',        'Equipe Comercial',  'texto', 'empresa', 'Nome da equipe Comercial'),
+        ('setor_comercial_telefones',     '',                  'texto', 'empresa', 'Telefones Comercial'),
+        ('setor_financeiro_equipe',       'Equipe Financeira', 'texto', 'empresa', 'Nome da equipe Financeiro'),
+        ('setor_financeiro_telefones',    '',                  'texto', 'empresa', 'Telefones Financeiro'),
+        ('email_comercial_host',          'smtp.gmail.com', 'texto',  'email_comercial', 'Servidor SMTP'),
+        ('email_comercial_port',          '587',            'numero', 'email_comercial', 'Porta'),
+        ('email_comercial_secure',        'false',          'bool',   'email_comercial', 'SSL/TLS'),
+        ('email_comercial_user',          '',               'texto',  'email_comercial', 'E-mail de envio'),
+        ('email_comercial_pass',          '',               'senha',  'email_comercial', 'Senha de App'),
+        ('email_comercial_remetente',     'Hidrauldiesel Comercial', 'texto', 'email_comercial', 'Nome do remetente'),
+        ('email_financeiro_host',         'smtp.gmail.com', 'texto',  'email_financeiro', 'Servidor SMTP'),
+        ('email_financeiro_port',         '587',            'numero', 'email_financeiro', 'Porta'),
+        ('email_financeiro_secure',       'false',          'bool',   'email_financeiro', 'SSL/TLS'),
+        ('email_financeiro_user',         '',               'texto',  'email_financeiro', 'E-mail de envio'),
+        ('email_financeiro_pass',         '',               'senha',  'email_financeiro', 'Senha de App'),
+        ('email_financeiro_remetente',    'Hidrauldiesel Financeiro', 'texto', 'email_financeiro', 'Nome do remetente'),
+        ('banco_titular',  '', 'texto', 'banco', 'Titular da conta'),
+        ('banco_nome',     '', 'texto', 'banco', 'Nome do banco'),
+        ('banco_agencia',  '', 'texto', 'banco', 'Agência'),
+        ('banco_conta',    '', 'texto', 'banco', 'Conta Corrente'),
+        ('banco_pix',      '', 'texto', 'banco', 'Chave PIX')
+      ON CONFLICT (chave) DO NOTHING;
+    `);
+
+    // E-mail do cliente no faturamento
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS cliente_email VARCHAR(200)`);
+
+    // Histórico de envios ao cliente
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS faturamento_envios (
+        id             SERIAL PRIMARY KEY,
+        faturamento_id INTEGER REFERENCES faturamentos(id) ON DELETE CASCADE,
+        enviado_em     TIMESTAMP DEFAULT NOW(),
+        canal          VARCHAR(50),
+        destinatarios  TEXT,
+        assunto        VARCHAR(500),
+        documentos     TEXT,
+        enviado_por    VARCHAR(200)
+      );
+    `);
+
+    // Anexos de faturamento
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS faturamento_anexos (
+        id             SERIAL PRIMARY KEY,
+        faturamento_id INTEGER REFERENCES faturamentos(id) ON DELETE CASCADE,
+        nome_original  VARCHAR(255) NOT NULL,
+        nome_arquivo   VARCHAR(255) NOT NULL,
+        mimetype       VARCHAR(100),
+        tamanho        INTEGER,
+        tipo_doc       VARCHAR(50) DEFAULT 'outro',
+        criado_em      TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
     console.log('✅ Tabelas criadas com sucesso!');
   } catch (err) {
     console.error('❌ Erro ao criar tabelas:', err.message);

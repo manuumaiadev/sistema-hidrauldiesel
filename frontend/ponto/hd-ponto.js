@@ -3,6 +3,7 @@ const fmtValor = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency'
 // Estado
 let _funcionarios = [];
 let _pontoMap = {};
+let _justMap  = {};
 let _mes, _ano;
 
 const CICLO = ['presente', 'meia_falta', 'falta', 'falta_justificada'];
@@ -66,6 +67,7 @@ async function carregarPonto(mes, ano) {
     const dados = await api.buscarPontoMes(mes, ano);
     _funcionarios = dados.funcionarios;
     _pontoMap = dados.ponto;
+    _justMap  = dados.justificativas || {};
     renderizarGrade(mes, ano);
   } catch (err) {
     container.innerHTML = `<div style="color:#DC2626;font-size:13px;padding:32px;text-align:center">${err.message}</div>`;
@@ -105,7 +107,12 @@ function renderizarGrade(mes, ano) {
       if (fds) {
         row += `<td class="fim-semana"><div class="cel-ponto fim-semana">—</div></td>`;
       } else {
-        row += `<td><div class="cel-ponto ${status}" data-func="${f.id}" data-data="${dataStr}" title="${dataStr}">${EMOJI[status]}</div></td>`;
+        const chave = `${f.id}_${dataStr}`;
+        const just  = _justMap[chave] || '';
+        const title = status === 'falta_justificada' && just ? just : dataStr;
+        const ind   = status === 'falta_justificada' && just
+          ? `<span style="display:block;font-size:7px;line-height:1.1;color:#1D4ED8;max-width:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${just}</span>` : '';
+        row += `<td><div class="cel-ponto ${status}" data-func="${f.id}" data-data="${dataStr}" title="${title}">${EMOJI[status]}${ind}</div></td>`;
       }
     }
 
@@ -125,6 +132,80 @@ function renderizarGrade(mes, ano) {
   });
 }
 
+function _mostrarDialogJustificativa(cel, justAtual, callback) {
+  document.getElementById('ponto-just-dialog')?.remove();
+
+  const rect = cel.getBoundingClientRect();
+  const d = document.createElement('div');
+  d.id = 'ponto-just-dialog';
+  d.style.cssText = `position:fixed;top:${Math.min(rect.bottom + 6, window.innerHeight - 160)}px;left:${rect.left}px;
+    background:#fff;border:1px solid #E3E1DA;border-radius:10px;padding:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9999;width:260px;font-family:'DM Sans',sans-serif`;
+  d.innerHTML = `
+    <div style="font-size:12px;font-weight:600;color:#1B2D5B;margin-bottom:8px">Justificativa da falta</div>
+    <textarea id="ponto-just-input" rows="3"
+      style="width:100%;box-sizing:border-box;font-family:inherit;font-size:12.5px;padding:7px 9px;
+             border:1px solid #E3E1DA;border-radius:7px;resize:none;outline:none"
+      placeholder="Ex: atestado médico, licença, declaração…">${justAtual || ''}</textarea>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+      <button id="ponto-just-cancel" style="font-family:inherit;font-size:12.5px;padding:5px 14px;border-radius:7px;border:1px solid #E3E1DA;background:#fff;cursor:pointer">Cancelar</button>
+      <button id="ponto-just-ok" style="font-family:inherit;font-size:12.5px;font-weight:500;padding:5px 14px;border-radius:7px;border:none;background:#1B2D5B;color:#fff;cursor:pointer">Confirmar</button>
+    </div>`;
+  document.body.appendChild(d);
+
+  const input = d.querySelector('#ponto-just-input');
+  input.focus(); input.select();
+
+  const fechar = (val) => { d.remove(); callback(val); };
+
+  d.querySelector('#ponto-just-ok').addEventListener('click',     () => fechar(input.value.trim()));
+  d.querySelector('#ponto-just-cancel').addEventListener('click', () => fechar(null));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape')                    fechar(null);
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) fechar(input.value.trim());
+  });
+
+  // Fechar ao clicar fora
+  setTimeout(() => {
+    document.addEventListener('mousedown', function onOut(e) {
+      if (!d.contains(e.target)) { fechar(null); document.removeEventListener('mousedown', onOut); }
+    });
+  }, 50);
+}
+
+async function _aplicarStatus(cel, func_id, data, chave, status, justificativa) {
+  cel.classList.remove(...CICLO);
+  cel.classList.add(status);
+
+  // Atualiza visual da célula
+  const just = justificativa || '';
+  const ind  = status === 'falta_justificada' && just
+    ? `<span style="display:block;font-size:7px;line-height:1.1;color:#1D4ED8;max-width:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${just}</span>` : '';
+  cel.innerHTML = EMOJI[status] + ind;
+  cel.title = status === 'falta_justificada' && just ? just : data;
+
+  _pontoMap[chave] = status;
+  if (just) _justMap[chave] = just;
+  else delete _justMap[chave];
+
+  // Recalcula total
+  const tr   = cel.closest('tr');
+  const func = _funcionarios.find(f => String(f.id) === String(func_id));
+  if (func) {
+    const dias  = new Date(_ano, _mes, 0).getDate();
+    const desc  = calcDiasDesconto(func_id, dias, _ano, _mes);
+    const val   = calcularValorDesconto(func, desc);
+    const celT  = tr.querySelector('.cel-total');
+    if (celT) { celT.textContent = desc > 0 ? fmtValor(val) : '—'; celT.className = `cel-total ${desc > 0 ? 'tem-desconto' : ''}`; }
+  }
+
+  try {
+    await api.registrarPonto({ funcionario_id: func_id, data, status, justificativa: just || undefined });
+  } catch (err) {
+    console.error('Erro ao salvar ponto:', err.message);
+  }
+}
+
 async function alternarPonto(cel) {
   const func_id = cel.dataset.func;
   const data    = cel.dataset.data;
@@ -132,30 +213,12 @@ async function alternarPonto(cel) {
   const atual   = _pontoMap[chave] || 'presente';
   const proximo = CICLO[(CICLO.indexOf(atual) + 1) % CICLO.length];
 
-  // Atualiza visual imediatamente
-  cel.classList.remove(...CICLO);
-  cel.classList.add(proximo);
-  cel.textContent = EMOJI[proximo];
-  _pontoMap[chave] = proximo;
-
-  // Recalcula total da linha em valor R$
-  const tr = cel.closest('tr');
-  const func = _funcionarios.find(f => String(f.id) === String(func_id));
-  if (func) {
-    const diasNoMes = new Date(_ano, _mes, 0).getDate();
-    const diasDesconto = calcDiasDesconto(func_id, diasNoMes, _ano, _mes);
-    const valorDesconto = calcularValorDesconto(func, diasDesconto);
-    const celTotal = tr.querySelector('.cel-total');
-    if (celTotal) {
-      celTotal.textContent = diasDesconto > 0 ? fmtValor(valorDesconto) : '—';
-      celTotal.className = `cel-total ${diasDesconto > 0 ? 'tem-desconto' : ''}`;
-    }
-  }
-
-  // Salva no backend
-  try {
-    await api.registrarPonto({ funcionario_id: func_id, data, status: proximo });
-  } catch (err) {
-    console.error('Erro ao salvar ponto:', err.message);
+  if (proximo === 'falta_justificada') {
+    _mostrarDialogJustificativa(cel, _justMap[chave] || '', (just) => {
+      if (just === null) return; // cancelado
+      _aplicarStatus(cel, func_id, data, chave, proximo, just);
+    });
+  } else {
+    _aplicarStatus(cel, func_id, data, chave, proximo, null);
   }
 }

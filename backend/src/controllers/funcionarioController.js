@@ -18,12 +18,12 @@ const listarFuncionarios = async (req, res) => {
 };
 
 const criarFuncionario = async (req, res) => {
-  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, vale_alimentacao, percentual_inss, data_admissao, mecanico_id, comentario_importante } = req.body;
+  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, adiantamento_dia05, vale_transporte, vale_alimentacao, percentual_inss, data_admissao, mecanico_id, comentario_importante } = req.body;
   try {
     const resultado = await pool.query(
-      `INSERT INTO funcionarios (nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, vale_alimentacao, percentual_inss, data_admissao, mecanico_id, comentario_importante)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
-      [nome, tipo, cargo, cargo_tipo || 'outro', salario_oficial || 0, salario_adicional || 0, adiantamento_fixo || 0, vale_transporte || 0, vale_alimentacao || 0, percentual_inss || 0, data_admissao || null, mecanico_id || null, comentario_importante || null]
+      `INSERT INTO funcionarios (nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, adiantamento_dia05, vale_transporte, vale_alimentacao, percentual_inss, data_admissao, mecanico_id, comentario_importante)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+      [nome, tipo, cargo, cargo_tipo || 'outro', salario_oficial || 0, salario_adicional || 0, adiantamento_fixo || 0, adiantamento_dia05 || 0, vale_transporte || 0, vale_alimentacao || 0, percentual_inss || 0, data_admissao || null, mecanico_id || null, comentario_importante || null]
     );
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
@@ -34,7 +34,7 @@ const criarFuncionario = async (req, res) => {
 
 const atualizarFuncionario = async (req, res) => {
   const { id } = req.params;
-  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, vale_alimentacao, percentual_inss, percentual_comissao, data_admissao, ativo, status, mecanico_id, comentario_importante } = req.body;
+  const { nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, adiantamento_dia05, vale_transporte, vale_alimentacao, percentual_inss, percentual_comissao, data_admissao, ativo, status, mecanico_id, comentario_importante } = req.body;
   try {
     // Mantém ativo e status sempre em sincronia:
     // se ativo foi explicitamente enviado, status acompanha (a menos que status também seja enviado explicitamente)
@@ -52,17 +52,18 @@ const atualizarFuncionario = async (req, res) => {
         salario_oficial = COALESCE($5, salario_oficial),
         salario_adicional = COALESCE($6, salario_adicional),
         adiantamento_fixo = COALESCE($7, adiantamento_fixo),
-        vale_transporte = COALESCE($8, vale_transporte),
-        percentual_inss = COALESCE($9, percentual_inss),
-        percentual_comissao = COALESCE($10, percentual_comissao),
-        data_admissao = COALESCE($11, data_admissao),
-        ativo = COALESCE($12, ativo),
-        status = COALESCE($13, status),
-        mecanico_id = $14,
-        comentario_importante = COALESCE($15, comentario_importante),
-        vale_alimentacao = COALESCE($16, vale_alimentacao)
-       WHERE id = $17 RETURNING *`,
-      [nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, vale_transporte, percentual_inss, percentual_comissao, data_admissao, ativo, statusFinal, mecanico_id || null, comentario_importante !== undefined ? (comentario_importante || null) : undefined, vale_alimentacao, id]
+        adiantamento_dia05 = COALESCE($8, adiantamento_dia05),
+        vale_transporte = COALESCE($9, vale_transporte),
+        percentual_inss = COALESCE($10, percentual_inss),
+        percentual_comissao = COALESCE($11, percentual_comissao),
+        data_admissao = COALESCE($12, data_admissao),
+        ativo = COALESCE($13, ativo),
+        status = COALESCE($14, status),
+        mecanico_id = $15,
+        comentario_importante = COALESCE($16, comentario_importante),
+        vale_alimentacao = COALESCE($17, vale_alimentacao)
+       WHERE id = $18 RETURNING *`,
+      [nome, tipo, cargo, cargo_tipo, salario_oficial, salario_adicional, adiantamento_fixo, adiantamento_dia05, vale_transporte, percentual_inss, percentual_comissao, data_admissao, ativo, statusFinal, mecanico_id || null, comentario_importante !== undefined ? (comentario_importante || null) : undefined, vale_alimentacao, id]
     );
     res.json(resultado.rows[0]);
   } catch (err) {
@@ -153,22 +154,40 @@ const deletarAdiantamento = async (req, res) => {
 
 // ── Férias ─────────────────────────────────────────────────────────────────────
 
+// Aplica as alterações de schema na tabela ferias — roda ao carregar o módulo
+(async function _fixSchemaFerias() {
+  try {
+    await pool.query(`ALTER TABLE ferias ADD COLUMN IF NOT EXISTS data_pagamento DATE`);
+    await pool.query(`ALTER TABLE ferias ALTER COLUMN data_inicio DROP NOT NULL`);
+    await pool.query(`ALTER TABLE ferias ALTER COLUMN data_fim    DROP NOT NULL`);
+  } catch (_) { /* silencia erros se já aplicado */ }
+})();
+
 const registrarFerias = async (req, res) => {
-  const { funcionario_id, data_inicio, data_fim, valor, observacoes } = req.body;
+  const { funcionario_id, data_inicio, data_fim, data_pagamento, valor, observacoes } = req.body;
+  const temPeriodo = !!(data_inicio && data_fim);
+
+  // Fallback: se as colunas ainda forem NOT NULL, usa data_pagamento como valor provisório
+  const dinicioVal = data_inicio || data_pagamento || null;
+  const dfimVal    = data_fim    || data_pagamento || null;
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const resultado = await client.query(
-      `INSERT INTO ferias (funcionario_id, data_inicio, data_fim, valor, observacoes)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [funcionario_id, data_inicio, data_fim, valor, observacoes]
+      `INSERT INTO ferias (funcionario_id, data_inicio, data_fim, data_pagamento, valor, observacoes)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [funcionario_id, dinicioVal, dfimVal, data_pagamento || null, valor, observacoes]
     );
-    await client.query(`UPDATE funcionarios SET status = 'ferias' WHERE id = $1`, [funcionario_id]);
+    if (temPeriodo) {
+      await client.query(`UPDATE funcionarios SET status = 'ferias' WHERE id = $1`, [funcionario_id]);
+    }
     await client.query('COMMIT');
     res.status(201).json(resultado.rows[0]);
   } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ erro: 'Erro ao registrar férias' });
+    console.error('Erro ao registrar férias:', err.message);
+    res.status(500).json({ erro: err.message });
   } finally {
     client.release();
   }
@@ -433,10 +452,30 @@ const resumoPagamentos = async (req, res) => {
   }
 };
 
+const listarFerias = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const resultado = await pool.query(`
+      SELECT id,
+        TO_CHAR(data_inicio,    'DD/MM/YYYY') AS data_inicio,
+        TO_CHAR(data_fim,       'DD/MM/YYYY') AS data_fim,
+        TO_CHAR(data_pagamento, 'DD/MM/YYYY') AS data_pagamento,
+        valor, observacoes,
+        TO_CHAR(criado_em, 'DD/MM/YYYY') AS criado_em
+      FROM ferias
+      WHERE funcionario_id = $1
+      ORDER BY COALESCE(data_pagamento, data_inicio) DESC
+    `, [id]);
+    res.json(resultado.rows);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao listar férias' });
+  }
+};
+
 module.exports = {
   listarFuncionarios, criarFuncionario, atualizarFuncionario, deletarFuncionario,
   registrarAdiantamento, listarAdiantamentos, editarAdiantamento, deletarAdiantamento,
-  registrarFerias,
+  registrarFerias, listarFerias,
   registrarRescisao,
   registrarDecimo, listarDecimos,
   resumoPagamentos,
