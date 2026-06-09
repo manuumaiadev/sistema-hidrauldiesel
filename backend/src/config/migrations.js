@@ -656,8 +656,10 @@ const createTables = async () => {
       ON CONFLICT (chave) DO NOTHING;
     `);
 
-    // E-mail do cliente no faturamento
+    // E-mail e telefone do cliente no faturamento
     await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS cliente_email VARCHAR(200)`);
+    await pool.query(`ALTER TABLE faturamentos ADD COLUMN IF NOT EXISTS cliente_telefone VARCHAR(30)`);
+    await pool.query(`ALTER TABLE faturamento_anexos ADD COLUMN IF NOT EXISTS parcela_idx INTEGER`);
 
     // Histórico de envios ao cliente
     await pool.query(`

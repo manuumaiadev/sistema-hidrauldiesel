@@ -217,6 +217,10 @@ tbody tr:hover { background: #FAFAF9; }
 .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px; }
 .modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .modal-footer-right { display: flex; gap: 10px; }
+.enf-drop-zone { display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:#F8F7F4;border:1.5px dashed var(--border);border-radius:8px;transition:background .15s,border-color .15s; }
+.enf-drop-zone.drag-over { background:#EEF4FF;border-color:#2563EB; }
+.enf-upload-btn { display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:12px;font-weight:500;padding:4px 11px;border-radius:6px;background:#fff;border:1.5px solid var(--border);color:var(--text);cursor:pointer; }
+.enf-upload-btn:hover { background:#F8F7F4; }
 
 .sec-title { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .sec-title-row { display: flex; justify-content: space-between; align-items: center; }
@@ -395,8 +399,11 @@ tbody tr:hover { background: #FAFAF9; }
 </main>
 
 <!-- ═══ Modal Faturamento ═══ -->
-<div id="modal-fat" class="modal-overlay" style="display:none">
-  <div class="modal-box" style="width:min(1180px,97vw)">
+<div id="modal-fat" class="modal-overlay" style="display:none"
+  ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+  <div class="modal-box" style="width:min(1180px,97vw)"
+    ondragover="event.preventDefault();event.stopPropagation()"
+    ondrop="event.preventDefault();event.stopPropagation()">
     <div class="modal-header">
       <span class="modal-title" id="modal-fat-title">Novo Faturamento</span>
       <button class="modal-close" onclick="fecharModal()">×</button>
@@ -467,6 +474,23 @@ tbody tr:hover { background: #FAFAF9; }
             <label>Informações Complementares</label>
             <textarea id="fat-obs-nfs" rows="4" placeholder="Texto da NFS-e…" style="font-family:var(--mono);font-size:11.5px;resize:vertical"></textarea>
           </div>
+          <!-- Anexos NFS-e -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1D4ED8;margin:0">Arquivos da NFS-e</label>
+              <span id="fat-serv-anex-count" style="font-size:11.5px;color:#1D4ED8"></span>
+            </div>
+            <div id="fat-drop-serv" class="enf-drop-zone" style="border-color:#BFDBFE;background:#EFF6FF">
+              <div id="fat-serv-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <button type="button" class="enf-upload-btn" style="border-color:#BFDBFE;color:#1D4ED8" onclick="event.stopImmediatePropagation();_abrirPickerFat('fat-file-serv-pdf','nf_servico')">
+                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Anexar PDF
+                </button>
+                <span style="font-size:12px;color:#93C5FD">ou arraste aqui</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- NF-e -->
@@ -495,8 +519,33 @@ tbody tr:hover { background: #FAFAF9; }
             <label>Informações Complementares</label>
             <textarea id="fat-obs-nf" rows="4" placeholder="Texto da NF-e…" style="font-family:var(--mono);font-size:11.5px;resize:vertical"></textarea>
           </div>
+          <!-- Anexos NF-e -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#C2410C;margin:0">Arquivos da NF-e</label>
+              <span id="fat-peca-anex-count" style="font-size:11.5px;color:#C2410C"></span>
+            </div>
+            <div id="fat-drop-peca" class="enf-drop-zone" style="border-color:#FED7AA;background:#FFF7ED">
+              <div id="fat-peca-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <button type="button" class="enf-upload-btn" style="border-color:#FED7AA;color:#C2410C" onclick="event.stopImmediatePropagation();_abrirPickerFat('fat-file-peca-pdf','nf_peca')">
+                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Anexar PDF
+                </button>
+                <button type="button" class="enf-upload-btn" style="border-color:#FED7AA;color:#C2410C" onclick="event.stopImmediatePropagation();_abrirPickerFat('fat-file-peca-xml','nf_peca')">
+                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Anexar XML
+                </button>
+                <span style="font-size:12px;color:#FDBA74">ou arraste aqui</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <input type="file" id="fat-file-serv-pdf" style="display:none" accept=".pdf,.zip">
+      <input type="file" id="fat-file-peca-pdf" style="display:none" accept=".pdf,.zip">
+      <input type="file" id="fat-file-peca-xml" style="display:none" accept=".xml,.zip">
 
       <!-- ── Total ── -->
       <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:10px 16px;background:#DCFCE7;border:1px solid #86EFAC;border-radius:9px">
@@ -535,11 +584,12 @@ tbody tr:hover { background: #FAFAF9; }
                 <th style="padding:7px 10px;width:145px;color:#AEACA6;font-size:10px;letter-spacing:.06em">FORMA</th>
                 <th style="padding:7px 10px;width:130px;color:#AEACA6;font-size:10px;letter-spacing:.06em">BANCO</th>
                 <th style="padding:7px 10px;color:#AEACA6;font-size:10px;letter-spacing:.06em">OBSERVAÇÃO</th>
+                <th style="padding:7px 10px;width:150px;color:#AEACA6;font-size:10px;letter-spacing:.06em">BOLETO</th>
                 <th style="padding:7px 10px;width:30px"></th>
               </tr>
             </thead>
             <tbody id="fat-parc-tbody">
-              <tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>
+              <tr><td colspan="9" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>
             </tbody>
           </table>
         </div>
@@ -555,6 +605,7 @@ tbody tr:hover { background: #FAFAF9; }
         <input type="hidden" id="fat-parcelas" value="1"/>
         <input type="hidden" id="fat-valor-parcela"/>
         <input type="hidden" id="fat-forma-pagamento"/>
+        <input type="file" id="fat-file-boleto-parc" accept=".pdf,.zip" style="display:none"/>
       </div>
 
       <!-- ── Observações gerais ── -->
@@ -601,10 +652,13 @@ tbody tr:hover { background: #FAFAF9; }
 <div id="pagto-tip"></div>
 
 <!-- Modal Emitir Cobrança -->
-<div id="modal-cobranca" class="modal-overlay" style="display:none">
-  <div class="modal-box" style="max-width:520px">
+<div id="modal-cobranca" class="modal-overlay" style="display:none"
+  ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+  <div class="modal-box" style="max-width:520px"
+    ondragover="event.preventDefault();event.stopPropagation()"
+    ondrop="event.preventDefault();event.stopPropagation()">
     <div class="modal-header">
-      <span class="modal-title">Confirmar dados de cobrança</span>
+      <span class="modal-title">Emitir Cobrança</span>
       <button class="modal-close" onclick="fecharModalCobranca()">×</button>
     </div>
     <div class="modal-body" style="gap:16px">
@@ -612,9 +666,22 @@ tbody tr:hover { background: #FAFAF9; }
 
       <div style="background:#F8F8F6;border:1px solid var(--border);border-radius:9px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
         <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">OS</span>
+          <span id="cob-os" style="font-size:13px;font-weight:600;font-family:var(--mono)"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">Cliente</span>
           <span id="cob-cliente" style="font-size:13.5px;font-weight:600"></span>
         </div>
+        <div id="cob-nfs-row" style="display:none;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#1D4ED8">NFS-e</span>
+          <span id="cob-nfs-val" style="font-size:13px;font-family:var(--mono);color:#1D4ED8"></span>
+        </div>
+        <div id="cob-nf-row" style="display:none;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#C2410C">NF-e</span>
+          <span id="cob-nf-val" style="font-size:13px;font-family:var(--mono);color:#C2410C"></span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">Total</span>
           <span id="cob-total" style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--navy)"></span>
@@ -649,6 +716,33 @@ tbody tr:hover { background: #FAFAF9; }
         </div>
         <div id="cob-parcelas" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
+
+      <!-- Boletos -->
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Boletos</span>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:12px;color:var(--muted);margin:0">Tipo de boleto</label>
+          <select id="cob-tipo-boleto-sel" onchange="_cobAtualizarNomePrev()"
+            style="font-family:inherit;font-size:13px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text);cursor:pointer">
+            <option value="boleto">Boleto Único — NFS-e + NF-e</option>
+            <option value="boleto_servico">Boleto de Serviço — apenas NFS-e</option>
+            <option value="boleto_peca">Boleto de Peça — apenas NF-e</option>
+          </select>
+          <div id="cob-nome-prev" style="font-size:11.5px;font-family:var(--mono);color:#15803D;padding:5px 10px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:6px;word-break:break-all"></div>
+        </div>
+        <div id="cob-drop-main" class="enf-drop-zone">
+          <div id="cob-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button type="button" class="enf-upload-btn" onclick="event.stopImmediatePropagation();_cobAnexarComTipo()">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Anexar PDF
+            </button>
+            <span style="font-size:12px;color:var(--muted)">ou arraste aqui</span>
+          </div>
+        </div>
+      </div>
+
+      <input type="file" id="cob-file-boleto" style="display:none" accept=".pdf,.zip">
 
       <div id="cob-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
     </div>
@@ -698,6 +792,29 @@ tbody tr:hover { background: #FAFAF9; }
         </div>
       </div>
 
+      <!-- Campos de WhatsApp — visíveis só quando canal = WhatsApp -->
+      <div id="envio-wpp-fields" style="display:none;flex-direction:column;gap:12px">
+        <div style="height:1px;background:var(--border)"></div>
+        <div class="field-grid g2">
+          <div class="field">
+            <label>WhatsApp do destinatário</label>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500">+55</span>
+              <input type="tel" id="envio-wpp-telefone" placeholder="(85) 9 9999-9999" style="flex:1"
+                oninput="this.value=this.value.replace(/[^0-9()\s\-]/g,'')"/>
+            </div>
+            <span id="envio-wpp-dica" style="display:none;font-size:11.5px;color:#16A34A;margin-top:2px">✓ Número sugerido da OS vinculada</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Documentos para baixar e anexar</label>
+          <div id="envio-wpp-boletos" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px">
+            <span style="font-size:12px;color:var(--muted)">Carregando…</span>
+          </div>
+          <span style="font-size:11.5px;color:var(--muted);margin-top:4px;display:block">Ao clicar "Abrir no WhatsApp", todos os arquivos serão baixados automaticamente. Anexe-os na conversa após o WhatsApp abrir.</span>
+        </div>
+      </div>
+
       <!-- Campos de e-mail — visíveis só quando canal = E-mail -->
       <div id="envio-email-fields" style="display:none;flex-direction:column;gap:12px">
         <div style="height:1px;background:var(--border)"></div>
@@ -741,10 +858,14 @@ tbody tr:hover { background: #FAFAF9; }
       <div id="envio-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
     </div>
     <div class="modal-footer">
-      <div>
+      <div style="display:flex;gap:8px">
         <button class="btn btn-ghost" id="envio-btn-email" style="display:none" onclick="enviarPorEmail()">
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
           Enviar por E-mail
+        </button>
+        <button class="btn" id="envio-btn-wpp" style="display:none;background:#25D366;color:#fff;border-color:#25D366" onclick="_abrirWhatsApp()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Abrir no WhatsApp
         </button>
       </div>
       <div class="modal-footer-right">
@@ -756,41 +877,107 @@ tbody tr:hover { background: #FAFAF9; }
 </div>
 
 <!-- Modal Emitir NF -->
-<div id="modal-emitir-nf" class="modal-overlay" style="display:none">
-  <div class="modal-box" style="max-width:460px">
+<div id="modal-emitir-nf" class="modal-overlay" style="display:none"
+  ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+  <div class="modal-box" style="max-width:460px"
+    ondragover="event.preventDefault();event.stopPropagation()"
+    ondrop="event.preventDefault();event.stopPropagation()">
     <div class="modal-header">
       <span class="modal-title">Emitir NF</span>
       <button class="modal-close" onclick="fecharModalEmitirNF()">×</button>
     </div>
     <div class="modal-body" style="gap:16px">
-      <p style="font-size:13px;color:var(--muted);margin:0">Informe os números das notas emitidas. Somente após preencher todos os campos obrigatórios o status será atualizado.</p>
 
-      <div id="enf-campo-servico" style="display:none">
-        <div class="field">
-          <label>Nº NF de Serviço (NFS-e) <span style="color:var(--red)">*</span></label>
+      <!-- Resumo: OS + cliente + data de emissão -->
+      <div id="enf-resumo" style="background:#F8F7F4;border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:9px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span id="enf-res-os"  style="font-size:12px;font-weight:600;color:var(--navy);background:#E8EEF8;border-radius:6px;padding:3px 9px;white-space:nowrap"></span>
+          <span id="enf-res-cli" style="font-size:12.5px;font-weight:500;color:#1a1a1a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        </div>
+        <div id="enf-res-cnpj-row" style="display:none;align-items:center;gap:6px">
+          <span style="font-size:11.5px;color:var(--muted)">CNPJ</span>
+          <span id="enf-res-cnpj" style="font-size:12px;font-family:var(--mono);color:#444"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--muted)">Data de emissão</span>
+          <input type="date" id="enf-data" style="font-family:inherit;font-size:12.5px;padding:4px 8px;border:1px solid var(--border);border-radius:7px;background:#fff;outline:none;color:var(--text)"/>
+        </div>
+      </div>
+
+      <!-- NFS-e de Serviço -->
+      <div id="enf-campo-servico" style="display:none;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#1E40AF">NFS-e de Serviço</span>
+          <span id="enf-res-serv" style="font-size:13.5px;font-weight:700;color:#2563EB"></span>
+        </div>
+        <div class="field" style="margin:0">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+            <label style="margin:0;font-size:12.5px">Nº NFS-e <span style="color:var(--red)">*</span></label>
+            <span id="enf-hint-serv" style="font-size:11.5px;color:var(--muted)"></span>
+          </div>
           <input type="text" id="enf-nf-servico" placeholder="Ex: 000456" oninput="enfValidar()"/>
         </div>
-      </div>
-
-      <div id="enf-campo-peca" style="display:none">
-        <div class="field">
-          <label>Nº NF de Peça (NF-e) <span style="color:var(--red)">*</span></label>
-          <input type="text" id="enf-nf-peca" placeholder="Ex: 000789" oninput="enfValidar()"/>
+        <div class="field" style="margin:0">
+          <label style="font-size:12.5px">Informação complementar</label>
+          <textarea id="enf-obs-servico" rows="2" placeholder="Obs. da NFS-e…" style="resize:vertical;font-size:12.5px"></textarea>
+        </div>
+        <div id="enf-drop-serv" class="enf-drop-zone">
+          <div id="enf-serv-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button type="button" class="enf-upload-btn" onclick="event.stopImmediatePropagation();_abrirPicker('enf-file-serv-pdf')">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Anexar PDF
+            </button>
+            <span style="font-size:11.5px;color:var(--muted)">ou arraste o arquivo aqui</span>
+          </div>
         </div>
       </div>
 
-      <div class="field">
-        <label>Data de emissão</label>
-        <input type="date" id="enf-data"/>
+      <!-- NF-e de Peça -->
+      <div id="enf-campo-peca" style="display:none;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#92400E">NF-e de Peça</span>
+          <span id="enf-res-peca" style="font-size:13.5px;font-weight:700;color:#EA580C"></span>
+        </div>
+        <div class="field" style="margin:0">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+            <label style="margin:0;font-size:12.5px">Nº NF-e <span style="color:var(--red)">*</span></label>
+            <span id="enf-hint-peca" style="font-size:11.5px;color:var(--muted)"></span>
+          </div>
+          <input type="text" id="enf-nf-peca" placeholder="Ex: 000789" oninput="enfValidar()"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label style="font-size:12.5px">Informação complementar</label>
+          <textarea id="enf-obs-peca" rows="2" placeholder="Obs. da NF-e…" style="resize:vertical;font-size:12.5px"></textarea>
+        </div>
+        <div id="enf-drop-peca" class="enf-drop-zone">
+          <div id="enf-peca-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <button type="button" class="enf-upload-btn" onclick="event.stopImmediatePropagation();_abrirPicker('enf-file-peca-pdf')">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Anexar PDF
+            </button>
+            <button type="button" class="enf-upload-btn" onclick="event.stopImmediatePropagation();_abrirPicker('enf-file-peca-xml')">
+              <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Anexar XML
+            </button>
+            <span style="font-size:11.5px;color:var(--muted)">ou arraste aqui</span>
+          </div>
+        </div>
       </div>
 
       <div id="enf-erro" style="color:var(--red);font-size:12.5px;min-height:18px"></div>
+
+      <!-- inputs de file isolados — disparados programaticamente -->
+      <input type="file" id="enf-file-serv-pdf" style="display:none" accept=".pdf,.zip">
+      <input type="file" id="enf-file-peca-pdf" style="display:none" accept=".pdf,.zip">
+      <input type="file" id="enf-file-peca-xml" style="display:none" accept=".xml,.zip">
     </div>
     <div class="modal-footer">
       <div></div>
       <div class="modal-footer-right">
-        <button class="btn btn-ghost" onclick="fecharModalEmitirNF()">Cancelar</button>
-        <button class="btn btn-primary" id="enf-btn-salvar" onclick="salvarEmissaoNF()" disabled>Emitir NF</button>
+        <button type="button" class="btn btn-ghost"    onclick="fecharModalEmitirNF()">Cancelar</button>
+        <button type="button" class="btn btn-primary"  id="enf-btn-salvar" onclick="salvarEmissaoNF()" disabled>Emitir NF</button>
       </div>
     </div>
   </div>
@@ -1098,15 +1285,19 @@ function renderTabela(lista) {
 
   const iconServ = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`;
   const iconPeca = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`;
-  const wrapCell = (nf, ped, val, cls, lbl, icon, bg, obs) => {
-    const hasContent = !!nf || !!ped || parseFloat(val || 0) > 0;
+  const wrapCell = (nf, ped, val, cls, lbl, icon, bg, obs, osId, osNum) => {
+    if (parseFloat(val || 0) <= 0) return `<span style="color:#D4D2CC;font-size:13px">—</span>`;
     const inner = cellNF(nf, ped, val, cls, lbl);
-    if (!hasContent) return inner;
-    const iconEl = obs
-      ? `<div class="cell-icon cell-icon-obs" style="background:${bg}" onclick="copiarObs(this,event)" data-obs="${obs.replace(/"/g,'&quot;').replace(/\n/g,'&#10;')}">
-           ${icon}
-         </div>`
-      : `<div class="cell-icon" style="background:${bg}">${icon}</div>`;
+    const safeObs = obs ? obs.replace(/"/g,'&quot;').replace(/\n/g,'&#10;') : '';
+    const iconEl = `<div class="cell-icon cell-icon-obs" style="background:${bg}"
+        onclick="copiarObs(this,event)"
+        data-obs="${safeObs}"
+        data-os-id="${osId || ''}"
+        data-os-num="${encodeURIComponent(osNum || '')}"
+        data-tipo="${lbl}"
+        data-pedido="${encodeURIComponent(ped || '')}">
+        ${icon}
+      </div>`;
     return `<div class="cell-nf-wrap">${iconEl}${inner}</div>`;
   };
 
@@ -1121,7 +1312,7 @@ function renderTabela(lista) {
         <div class="dropdown-sep"></div>
         <button class="dropdown-item" onclick="emitirCobranca(${f.id});fecharMenus()">
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          Cobrança Emitida
+          Emitir Cobrança
         </button>
         <button class="dropdown-item" onclick="marcarEnviado(${f.id});fecharMenus()">
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1162,8 +1353,8 @@ function renderTabela(lista) {
         : `<span style="font-weight:600;font-size:13.5px">${f.cliente_nome || '<span style="color:#D4D2CC">—</span>'}</span>`
       }</td>
       <td><span class="status-badge ${si.cls}">${si.label}</span></td>
-      <td>${wrapCell(f.nf_servico, f.pedido_servico, f.valor_servico, 'cs-val-serv', 'NFS', iconServ, '#EFF6FF', f.obs_nfs)}</td>
-      <td>${wrapCell(f.nf_peca,    f.pedido_peca,    f.valor_peca,    'cs-val-peca', 'NF',  iconPeca, '#FFF7ED', f.obs_nf)}</td>
+      <td>${wrapCell(f.nf_servico, f.pedido_servico, f.valor_servico, 'cs-val-serv', 'NFS', iconServ, '#EFF6FF', f.obs_nfs, f.os_id, f.os_numero)}</td>
+      <td>${wrapCell(f.nf_peca,    f.pedido_peca,    f.valor_peca,    'cs-val-peca', 'NF',  iconPeca, '#FFF7ED', f.obs_nf,  f.os_id, f.os_numero)}</td>
       <td>${_tooltipPagamento(f)}</td>
       <td>
         <div class="dropdown-wrap">
@@ -1255,6 +1446,7 @@ function sortBy(col) {
 // ── Modal Enviar ao Cliente ───────────────────────────────────────────────────
 let _envioFatId    = null;
 let _envioAnexosSalvos = [];   // anexos já salvos no faturamento
+let _envioOS = null;           // OS vinculada ao faturamento (carregada em background)
 let _cfgBanco      = null;     // dados bancários carregados das configurações
 
 async function _carregarConfigBanco() {
@@ -1277,17 +1469,23 @@ async function marcarEnviado(id) {
   const f = _faturamentos.find(x => x.id === id);
   if (!f) return;
   _envioFatId = id;
+  _envioOS    = null;
 
   document.getElementById('envio-canal').value              = '';
   document.getElementById('envio-obs').value                = f.observacoes || '';
   document.getElementById('envio-erro').textContent         = '';
   document.getElementById('envio-btn-salvar').disabled      = false;
   document.getElementById('envio-email-fields').style.display = 'none';
+  document.getElementById('envio-wpp-fields').style.display   = 'none';
   document.getElementById('envio-btn-email').style.display    = 'none';
+  document.getElementById('envio-btn-wpp').style.display      = 'none';
   document.getElementById('envio-email-para').value           = '';
   document.getElementById('envio-email-assunto').value        = '';
+  document.getElementById('envio-wpp-telefone').value         = '';
   const _dica = document.getElementById('envio-email-dica');
   if (_dica) _dica.style.display = 'none';
+  const _dicaWpp = document.getElementById('envio-wpp-dica');
+  if (_dicaWpp) _dicaWpp.style.display = 'none';
   _envioAnexos = [];
   _renderAnexos();
 
@@ -1295,11 +1493,16 @@ async function marcarEnviado(id) {
   document.getElementById('envio-msg').value = _gerarMensagem(f, null);
   document.getElementById('modal-envio').style.display = 'flex';
 
-  // Busca OS em background para complementar com placa/modelo
+  // Busca OS em background para complementar com placa/modelo e telefone
   if (f.os_id) {
     try {
       const os = await api.buscarOS(f.os_id);
+      _envioOS = os;
       document.getElementById('envio-msg').value = _gerarMensagem(f, os);
+      // Preenche telefone se o campo WhatsApp já estiver visível
+      if (document.getElementById('envio-canal').value === 'WhatsApp') {
+        _preencherTelefoneWpp();
+      }
     } catch { /* sem OS vinculada, mantém mensagem base */ }
   }
 }
@@ -1405,6 +1608,7 @@ function copiarMensagemEnvio() {
 function fecharModalEnvio() {
   document.getElementById('modal-envio').style.display = 'none';
   _envioFatId = null;
+  _envioOS    = null;
   _envioAnexos = [];
   _renderAnexos();
 }
@@ -1450,12 +1654,19 @@ function _removerAnexo(i) {
 }
 
 function toggleEmailFields() {
-  const canal      = document.getElementById('envio-canal').value;
-  const fields     = document.getElementById('envio-email-fields');
-  const btnEmail   = document.getElementById('envio-btn-email');
-  const isEmail    = canal === 'E-mail';
-  fields.style.display   = isEmail ? 'flex' : 'none';
-  btnEmail.style.display = isEmail ? 'inline-flex' : 'none';
+  const canal    = document.getElementById('envio-canal').value;
+  const isEmail  = canal === 'E-mail';
+  const isWpp    = canal === 'WhatsApp';
+
+  document.getElementById('envio-email-fields').style.display = isEmail ? 'flex' : 'none';
+  document.getElementById('envio-wpp-fields').style.display   = isWpp   ? 'flex' : 'none';
+  document.getElementById('envio-btn-email').style.display    = isEmail ? 'inline-flex' : 'none';
+  document.getElementById('envio-btn-wpp').style.display      = isWpp   ? 'inline-flex' : 'none';
+
+  if (isWpp) {
+    _preencherTelefoneWpp();
+    _carregarBoletosWpp();
+  }
 
   if (isEmail) {
     const f = _faturamentos.find(x => x.id === _envioFatId);
@@ -1627,6 +1838,26 @@ async function salvarEnvio() {
       observacoes:        obs,
       vencimentos,
     });
+    // Grava no histórico de envios para WhatsApp e Impressa
+    if (canal === 'WhatsApp' || canal === 'Impressa (em mãos)') {
+      const destinatarios = canal === 'WhatsApp'
+        ? document.getElementById('envio-wpp-telefone').value.trim() || null
+        : null;
+      try {
+        const resultado = await api.registrarEnvioFaturamento(_envioFatId, { canal, destinatarios, observacoes: obs });
+        // Atualiza o telefone salvo em todos os faturamentos do mesmo cliente em memória
+        if (resultado?.cliente_telefone_salvo && _envioFatId) {
+          const fatAtual = _faturamentos.find(x => x.id === _envioFatId);
+          const cnpj = fatAtual?.cliente_cnpj;
+          _faturamentos.forEach(x => {
+            if (cnpj ? x.cliente_cnpj === cnpj : x.id === _envioFatId) {
+              x.cliente_telefone = resultado.cliente_telefone_salvo;
+            }
+          });
+        }
+      } catch { /* histórico opcional, não bloqueia */ }
+    }
+
     fecharModalEnvio();
     carregar();
   } catch (err) {
@@ -1635,21 +1866,271 @@ async function salvarEnvio() {
   }
 }
 
-document.getElementById('modal-envio').addEventListener('click', e => {
-  if (e.target === e.currentTarget) fecharModalEnvio();
-});
+// modal-envio: fecha apenas pelo botão de fechar
+
+// ── WhatsApp ──────────────────────────────────────────────────────────────────
+function _preencherTelefoneWpp() {
+  const telInput = document.getElementById('envio-wpp-telefone');
+  const dica     = document.getElementById('envio-wpp-dica');
+  if (!telInput || telInput.value) return;
+
+  const f = _faturamentos.find(x => x.id === _envioFatId);
+  let tel = '';
+  let origem = '';
+
+  // 1. Telefone já salvo no próprio faturamento
+  if (f?.cliente_telefone) {
+    tel    = f.cliente_telefone;
+    origem = 'Sugerido de envios anteriores';
+  }
+  // 2. Outro faturamento do mesmo cliente com telefone salvo
+  if (!tel && f) {
+    const outro = _faturamentos.find(x =>
+      x.id !== _envioFatId && x.cliente_telefone &&
+      (f.cliente_cnpj ? x.cliente_cnpj === f.cliente_cnpj : x.cliente_nome === f.cliente_nome)
+    );
+    if (outro) {
+      tel    = outro.cliente_telefone;
+      origem = 'Sugerido de envios anteriores';
+    }
+  }
+  // 3. Telefone da OS vinculada (carregado em background)
+  if (!tel && _envioOS?.cliente_telefone) {
+    tel    = _envioOS.cliente_telefone;
+    origem = 'Sugerido da OS vinculada';
+  }
+
+  if (tel) {
+    telInput.value = tel;
+    if (dica) { dica.textContent = origem; dica.style.display = 'block'; }
+  }
+}
+
+async function _carregarBoletosWpp() {
+  const container = document.getElementById('envio-wpp-boletos');
+  if (!container) return;
+  container.innerHTML = '<span style="font-size:12px;color:var(--muted)">Carregando…</span>';
+  if (!_envioFatId) { container.innerHTML = ''; return; }
+  try {
+    const lista = await api.listarAnexosFaturamento(_envioFatId);
+    if (!lista.length) {
+      container.innerHTML = '<span style="font-size:12px;color:var(--muted)">Nenhum documento cadastrado neste faturamento.</span>';
+      return;
+    }
+    // Ordem: NFs primeiro, depois boletos, depois outros
+    const ordem = ['nf_servico','nf_peca','boleto','boleto_servico','boleto_peca','outro'];
+    const sorted = [...lista].sort((a, b) => ordem.indexOf(a.tipo_doc) - ordem.indexOf(b.tipo_doc));
+    container.innerHTML = sorted.map(a => {
+      const t = _tipoDocInfo(a.tipo_doc);
+      const icone = ['nf_servico','nf_peca'].includes(a.tipo_doc)
+        ? `<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+        : `<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+      return `<button type="button" id="btn-dl-${a.id}"
+        onclick="_baixarAnexo(${_envioFatId},${a.id},'${a.nome_original.replace(/'/g,"\\'")}')"
+        style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:7px;background:${t.cor};border:1px solid ${t.corText}33;color:${t.corText};font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit">
+        ${icone}
+        ${a.nome_original}
+      </button>`;
+    }).join('');
+  } catch {
+    container.innerHTML = '<span style="font-size:12px;color:var(--muted)">Não foi possível carregar os documentos.</span>';
+  }
+}
+
+async function _baixarAnexo(fatId, anexoId, nomeOriginal) {
+  const btn = document.getElementById(`btn-dl-${anexoId}`);
+  if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+  try {
+    const resp = await api.baixarAnexoFaturamento(fatId, anexoId);
+    if (!resp.ok) throw new Error('Arquivo não encontrado');
+    const blob = await resp.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = nomeOriginal;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 8000);
+  } catch {
+    mostrarToast('Erro ao baixar o arquivo', 'erro');
+  } finally {
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+  }
+}
+
+async function _abrirWhatsApp() {
+  const telRaw = document.getElementById('envio-wpp-telefone').value.replace(/\D/g, '');
+  const msg    = document.getElementById('envio-msg').value.trim();
+  const erroEl = document.getElementById('envio-erro');
+  const btn    = document.getElementById('envio-btn-wpp');
+
+  if (!telRaw || telRaw.length < 10) {
+    erroEl.textContent = 'Informe o número de WhatsApp do destinatário (com DDD).';
+    return;
+  }
+  if (!msg) {
+    erroEl.textContent = 'A mensagem não pode estar vazia.';
+    return;
+  }
+  erroEl.textContent = '';
+
+  const numero = telRaw.startsWith('55') ? telRaw : '55' + telRaw;
+  window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, '_blank');
+}
 
 // ── Modal Emitir Cobrança ─────────────────────────────────────────────────────
-let _cobFatId    = null;
-let _cobParcelas = [];
+let _cobFatId            = null;
+let _cobParcelas         = [];
+let _cobAnexos           = [];
+let _cobNeedServ         = false;
+let _cobNeedPeca         = false;
+let _cobPickerActive     = false;
+let _cobPickerTipo       = null;
+let _cobPendingDropFiles = null;
+
+function _cobNomeBoleto(nomeOriginal, tipo) {
+  const f   = _faturamentos.find(x => x.id === _cobFatId);
+  const os  = (f?.os_numero  || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'OS';
+  const nfs = (f?.nf_servico || '').replace(/[^a-zA-Z0-9]/g, '');
+  const nfp = (f?.nf_peca    || '').replace(/[^a-zA-Z0-9]/g, '');
+  const ext = (nomeOriginal.split('.').pop() || 'pdf').toLowerCase();
+  if (tipo === 'boleto') {
+    const partes = [`OS${os}`];
+    if (nfs) partes.push(`NFS${nfs}`);
+    if (nfp) partes.push(`NF${nfp}`);
+    partes.push('BOLETO');
+    return `${partes.join('-')}.${ext}`;
+  }
+  if (tipo === 'boleto_servico') return `OS${os}-NFS${nfs || 'SERV'}-BOLETO.${ext}`;
+  return `OS${os}-NF${nfp || 'PECA'}-BOLETO.${ext}`;
+}
+
+function _cobTipoSelecionado() {
+  return document.getElementById('cob-tipo-boleto-sel')?.value || 'boleto';
+}
+
+function _cobAtualizarNomePrev() {
+  const prev = document.getElementById('cob-nome-prev');
+  if (prev) prev.textContent = _cobNomeBoleto('arquivo.pdf', _cobTipoSelecionado());
+}
+
+function _cobAnexarComTipo() {
+  _cobPickerTipo = _cobTipoSelecionado();
+  _abrirPickerCob('cob-file-boleto');
+}
+
+function _abrirPickerCob(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  _cobPickerActive = true;
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  const modal = document.getElementById('modal-cobranca');
+  const btns  = modal ? Array.from(modal.querySelectorAll('button')) : [];
+  const prevDisabled = btns.map(b => b.disabled);
+  btns.forEach(b => { b.disabled = true; b.style.pointerEvents = 'none'; });
+  const _liberar = () => {
+    setTimeout(() => {
+      _cobPickerActive = false;
+      btns.forEach((b, i) => { b.disabled = prevDisabled[i]; b.style.pointerEvents = ''; });
+    }, 500);
+  };
+  const onDone = async () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_cobPickerTimer);
+    if (input.files && input.files.length) {
+      const tipo     = _cobPickerTipo || 'boleto';
+      const nome     = _cobNomeBoleto(input.files[0].name, tipo);
+      const renomado = new File([input.files[0]], nome, { type: input.files[0].type });
+      const fakeInput = { files: [renomado] };
+      await _uploadAnexoCobTipo(fakeInput, tipo);
+    }
+    input.value = '';
+    _cobPickerTipo = null;
+    _liberar();
+  };
+  const onCancel = () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_cobPickerTimer);
+    input.value = '';
+    _cobPickerTipo = null;
+    _liberar();
+  };
+  const _cobPickerTimer = setTimeout(() => { _cobPickerTipo = null; _liberar(); }, 300000);
+  input.addEventListener('change', onDone);
+  input.addEventListener('cancel', onCancel);
+  input.click();
+}
+
+async function _carregarAnexosCob(fatId) {
+  try { _cobAnexos = await api.listarAnexosFaturamento(fatId); }
+  catch { _cobAnexos = []; }
+  _renderAnexosCob();
+}
+
+function _renderAnexosCob() {
+  const lista = document.getElementById('cob-anex-lista');
+  if (!lista) return;
+  const boletos = _cobAnexos.filter(a => ['boleto','boleto_servico','boleto_peca'].includes(a.tipo_doc));
+  lista.innerHTML = boletos.length
+    ? boletos.map(a => {
+        const t   = _tipoDocInfo(a.tipo_doc);
+        const url = api.urlAnexoFaturamento(_cobFatId, a.id);
+        return `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;background:${t.cor};border:1px solid rgba(0,0,0,.06);font-size:12px">
+          <span style="font-size:10px;font-weight:700;color:${t.corText};white-space:nowrap">${t.label}</span>
+          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="${t.corText}" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <a href="${url}" target="_blank" style="color:${t.corText};text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${a.nome_original}</a>
+          <button type="button" onclick="_deletarAnexoCob(${a.id})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 2px">×</button>
+        </div>`;
+      }).join('')
+    : '<span style="font-size:12px;color:var(--muted)">Nenhum arquivo.</span>';
+}
+
+async function _uploadAnexoCobTipo(input, tipo) {
+  if (!input.files.length || !_cobFatId) return;
+  for (const file of input.files) {
+    try {
+      const data  = await api.uploadAnexoFaturamento(_cobFatId, file, tipo);
+      const novos = _expandirUpload(data);
+      novos.forEach(n => { _cobAnexos.push(n); if (_fatAnexosId === _cobFatId) _fatAnexos.push(n); });
+      _renderAnexosCob();
+      if (_fatAnexosId === _cobFatId) _renderAnexosFat();
+    } catch (err) {
+      alert('Erro ao enviar "' + file.name + '": ' + err.message);
+    }
+  }
+}
+
+async function _deletarAnexoCob(anexoId) {
+  if (!confirm('Remover este arquivo?')) return;
+  try {
+    await api.deletarAnexoFaturamento(_cobFatId, anexoId);
+    _cobAnexos = _cobAnexos.filter(a => a.id !== anexoId);
+    _renderAnexosCob();
+    if (_fatAnexosId === _cobFatId) { _fatAnexos = _fatAnexos.filter(a => a.id !== anexoId); _renderAnexosFat(); }
+  } catch (err) {
+    alert('Erro ao remover: ' + err.message);
+  }
+}
 
 function emitirCobranca(id) {
   const f = _faturamentos.find(x => x.id === id);
   if (!f) return;
   _cobFatId = id;
 
+  document.getElementById('cob-os').textContent       = f.os_numero || '—';
   document.getElementById('cob-cliente').textContent  = f.cliente_nome || '—';
   document.getElementById('cob-total').textContent    = fmtValor(f.valor_total);
+
+  const servVal = parseFloat(f.valor_servico || 0);
+  const pecaVal = parseFloat(f.valor_peca    || 0);
+  const nfsRow  = document.getElementById('cob-nfs-row');
+  const nfRow   = document.getElementById('cob-nf-row');
+  if (nfsRow) { nfsRow.style.display = servVal > 0 ? 'flex' : 'none'; }
+  if (nfRow)  { nfRow.style.display  = pecaVal > 0 ? 'flex' : 'none'; }
+  const nfsVal = document.getElementById('cob-nfs-val');
+  const nfVal  = document.getElementById('cob-nf-val');
+  if (nfsVal) nfsVal.textContent = servVal > 0 ? `NFS ${f.nf_servico || '—'}  ·  ${fmtValor(servVal)}` : '';
+  if (nfVal)  nfVal.textContent  = pecaVal > 0 ? `NF ${f.nf_peca    || '—'}  ·  ${fmtValor(pecaVal)}`  : '';
   document.getElementById('cob-forma').value          = f.forma_pagamento    || '';
   document.getElementById('cob-banco').value          = f.banco              || '';
   document.getElementById('cob-condicao').value       = f.condicao_pagamento || '';
@@ -1668,6 +2149,23 @@ function emitirCobranca(id) {
     const total = parseFloat(f.valor_total) || 0;
     _cobParcelas = [{ data_vencimento: '', valor: total, pago: false }];
   }
+
+  _cobNeedServ = parseFloat(f.valor_servico || 0) > 0;
+  _cobNeedPeca = parseFloat(f.valor_peca    || 0) > 0;
+  _cobAnexos = [];
+  _cobPickerTipo = null;
+  _cobPendingDropFiles = null;
+
+  // define o padrão do dropdown conforme as NFs existentes
+  const sel = document.getElementById('cob-tipo-boleto-sel');
+  if (sel) {
+    sel.value = (_cobNeedServ && _cobNeedPeca) ? 'boleto'
+              : _cobNeedPeca ? 'boleto_peca'
+              : 'boleto_servico';
+  }
+  _cobAtualizarNomePrev();
+  _renderAnexosCob();
+  _carregarAnexosCob(id);
 
   renderCobParcelas();
   document.getElementById('modal-cobranca').style.display = 'flex';
@@ -1703,9 +2201,12 @@ function cobAdicionarParcela() {
 }
 
 function fecharModalCobranca() {
+  if (_cobPickerActive) return;
   document.getElementById('modal-cobranca').style.display = 'none';
-  _cobFatId = null;
-  _cobParcelas = [];
+  _cobFatId       = null;
+  _cobParcelas    = [];
+  _cobAnexos      = [];
+  _cobPickerActive = false;
 }
 
 async function salvarCobranca() {
@@ -1771,14 +2272,272 @@ async function salvarCobranca() {
   }
 }
 
-document.getElementById('modal-cobranca').addEventListener('click', e => {
-  if (e.target === e.currentTarget) fecharModalCobranca();
-});
+// modal-cobranca: fecha apenas pelo botão de fechar
+
+// Normaliza resposta de upload: arquivo normal → [row], ZIP → row.arquivos[]
+function _expandirUpload(data) {
+  return data?.zip ? data.arquivos : [data];
+}
 
 // ── Modal Emitir NF ───────────────────────────────────────────────────────────
 let _enfFatId = null;
 let _enfNeedServ = false;
 let _enfNeedPeca = false;
+let _enfAnexos = [];
+let _enfPickerActive = false; // bloqueia fecharModalEmitirNF enquanto file picker está aberto
+let _enfDragActive   = false; // bloqueia fecharModalEmitirNF enquanto drag de arquivo está ativo
+
+function _abrirPicker(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  _enfPickerActive = true;
+
+  // blur no botão focado impede Enter do diálogo OS acionar click no botão
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+
+  // desabilita todos os botões do modal (bloqueia mouse E teclado)
+  const modal = document.getElementById('modal-emitir-nf');
+  const btns  = modal ? Array.from(modal.querySelectorAll('button')) : [];
+  const prevDisabled = btns.map(b => b.disabled);
+  btns.forEach(b => { b.disabled = true; b.style.pointerEvents = 'none'; });
+
+  const _liberar = () => {
+    // mantém flag ativo até os botões serem reabilitados — absorve click vazado do OS dialog
+    setTimeout(() => {
+      _enfPickerActive = false;
+      btns.forEach((b, i) => { b.disabled = prevDisabled[i]; b.style.pointerEvents = ''; });
+    }, 500);
+  };
+
+  const onDone = async () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_enfPickerTimer);
+    if (input.files && input.files.length) {
+      const tipo = inputId.startsWith('enf-file-serv') ? 'nf_servico' : 'nf_peca';
+      await _uploadAnexoENFTipo(input, tipo);
+    }
+    input.value = '';
+    _liberar();
+  };
+  const onCancel = () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_enfPickerTimer);
+    input.value = '';
+    _liberar();
+  };
+  // fallback: alguns browsers não disparam 'cancel' — libera após 5 min
+  const _enfPickerTimer = setTimeout(() => { _liberar(); }, 300000);
+
+  input.addEventListener('change', onDone);
+  input.addEventListener('cancel', onCancel);
+  input.click();
+}
+
+async function _carregarAnexosENF(fatId) {
+  try { _enfAnexos = await api.listarAnexosFaturamento(fatId); }
+  catch { _enfAnexos = []; }
+  _renderAnexosENF();
+}
+
+function _renderAnexosENFLista(listaId, countId, tipo) {
+  const lista = document.getElementById(listaId);
+  const count = document.getElementById(countId);
+  if (!lista) return;
+  const itens = _enfAnexos.filter(a => a.tipo_doc === tipo);
+  if (count) count.textContent = itens.length ? `${itens.length} arquivo${itens.length > 1 ? 's' : ''}` : '';
+  lista.innerHTML = itens.length
+    ? itens.map(a => {
+        const url = api.urlAnexoFaturamento(_enfFatId, a.id);
+        return `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;background:#F1F0ED;border:1px solid var(--border);font-size:12.5px">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <a href="${url}" target="_blank" style="color:var(--text);text-decoration:none;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${a.nome_original}</a>
+          <button type="button" onclick="_deletarAnexoENF(${a.id})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 2px">×</button>
+        </div>`;
+      }).join('')
+    : '<span style="font-size:12px;color:var(--muted)">Nenhum arquivo.</span>';
+}
+
+function _renderAnexosENF() {
+  _renderAnexosENFLista('enf-serv-anex-lista', 'enf-serv-anex-count', 'nf_servico');
+  _renderAnexosENFLista('enf-peca-anex-lista', 'enf-peca-anex-count', 'nf_peca');
+}
+
+// impede o browser de navegar para arquivo solto — fase de captura garante que
+// preventDefault() seja chamado antes de qualquer handler de elemento (fix Chrome)
+document.addEventListener('dragover', e => e.preventDefault(), { capture: true });
+document.addEventListener('drop',     e => e.preventDefault(), { capture: true });
+
+// rastreia drag ativo no modal Emitir NF para bloquear fechamento acidental
+// (Chrome dispara click no elemento sob cursor após drop de arquivo externo)
+(function() {
+  const mENF = document.getElementById('modal-emitir-nf');
+  if (!mENF) return;
+  let _dragCnt = 0;
+  let _dragTimer = null;
+  mENF.addEventListener('dragenter', () => {
+    _dragCnt++;
+    _enfDragActive = true;
+    clearTimeout(_dragTimer);
+  }, true);
+  mENF.addEventListener('dragleave', e => {
+    if (!mENF.contains(e.relatedTarget)) {
+      _dragCnt = 0;
+      clearTimeout(_dragTimer);
+      _dragTimer = setTimeout(() => { _enfDragActive = false; }, 600);
+    }
+  }, true);
+  mENF.addEventListener('drop', () => {
+    _dragCnt = 0;
+    clearTimeout(_dragTimer);
+    // mantém flag ativo por 600ms — Chrome pode disparar click pós-drop com atraso
+    _dragTimer = setTimeout(() => { _enfDragActive = false; }, 600);
+  }, true);
+})();
+
+// drag & drop nas zonas de anexo do modal Emitir NF
+(function() {
+  function setupDropZone(zoneId, tipo) {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+
+    zone.addEventListener('dragover', e => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', e => {
+      if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', async e => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      if (!files.length || !_enfFatId) return;
+      for (const file of files) {
+        try {
+          const data  = await api.uploadAnexoFaturamento(_enfFatId, file, tipo);
+          const novos = _expandirUpload(data);
+          novos.forEach(n => { _enfAnexos.push(n); if (_fatAnexosId === _enfFatId) _fatAnexos.push(n); });
+          _renderAnexosENF();
+          if (_fatAnexosId === _enfFatId) _renderAnexosFat();
+        } catch (err) {
+          alert('Erro ao enviar "' + file.name + '": ' + err.message);
+        }
+      }
+    });
+  }
+
+  setupDropZone('enf-drop-serv', 'nf_servico');
+  setupDropZone('enf-drop-peca', 'nf_peca');
+
+  // Drop zones inline nos cards do modal Editar Faturamento
+  function setupDropZoneFat(zoneId, tipo) {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', async e => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      if (!files.length || !_fatAnexosId) return;
+      for (const file of files) {
+        try {
+          const data  = await api.uploadAnexoFaturamento(_fatAnexosId, file, tipo);
+          const novos = _expandirUpload(data);
+          novos.forEach(n => { _fatAnexos.push(n); if (_enfFatId === _fatAnexosId) _enfAnexos.push(n); });
+          _renderAnexosFat();
+          if (_enfFatId === _fatAnexosId) _renderAnexosENF();
+        } catch (err) { alert('Erro ao enviar "' + file.name + '": ' + err.message); }
+      }
+    });
+  }
+  setupDropZoneFat('fat-drop-serv', 'nf_servico');
+  setupDropZoneFat('fat-drop-peca', 'nf_peca');
+
+  // Drop zones do modal de cobrança (boletos)
+  function setupDropZoneCob(zoneId, tipo) {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', async e => {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      if (!files.length || !_cobFatId) return;
+      for (const file of files) {
+        try {
+          const data  = await api.uploadAnexoFaturamento(_cobFatId, file, tipo);
+          const novos = _expandirUpload(data);
+          novos.forEach(n => { _cobAnexos.push(n); if (_fatAnexosId === _cobFatId) _fatAnexos.push(n); });
+          _renderAnexosCob();
+          if (_fatAnexosId === _cobFatId) _renderAnexosFat();
+        } catch (err) { alert('Erro ao enviar "' + file.name + '": ' + err.message); }
+      }
+    });
+  }
+  // Drop zone unificada do modal de cobrança — abre modal de escolha antes de fazer upload
+  const cobZone = document.getElementById('cob-drop-main');
+  if (cobZone) {
+    cobZone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); cobZone.classList.add('drag-over'); });
+    cobZone.addEventListener('dragleave', e => { if (!cobZone.contains(e.relatedTarget)) cobZone.classList.remove('drag-over'); });
+    cobZone.addEventListener('drop', async e => {
+      e.preventDefault(); e.stopPropagation();
+      cobZone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files);
+      if (!files.length || !_cobFatId) return;
+      const tipo = _cobTipoSelecionado();
+      for (const file of files) {
+        try {
+          const nome     = _cobNomeBoleto(file.name, tipo);
+          const renomado = new File([file], nome, { type: file.type });
+          const data     = await api.uploadAnexoFaturamento(_cobFatId, renomado, tipo);
+          const novos    = _expandirUpload(data);
+          novos.forEach(n => { _cobAnexos.push(n); if (_fatAnexosId === _cobFatId) _fatAnexos.push(n); });
+          _renderAnexosCob();
+          if (_fatAnexosId === _cobFatId) _renderAnexosFat();
+        } catch (err) { alert('Erro ao enviar "' + file.name + '": ' + err.message); }
+      }
+    });
+  }
+})();
+
+async function _uploadAnexoENFTipo(input, tipo) {
+  if (!input.files.length || !_enfFatId) return;
+  for (const file of input.files) {
+    try {
+      const data  = await api.uploadAnexoFaturamento(_enfFatId, file, tipo);
+      const novos = _expandirUpload(data);
+      novos.forEach(n => { _enfAnexos.push(n); if (_fatAnexosId === _enfFatId) _fatAnexos.push(n); });
+      _renderAnexosENF();
+      if (_fatAnexosId === _enfFatId) _renderAnexosFat();
+    } catch (err) {
+      alert('Erro ao enviar "' + file.name + '": ' + err.message);
+    }
+  }
+  input.value = '';
+}
+
+function _proximoNumeroNF(campo) {
+  const registros = _faturamentos
+    .map(x => (x[campo] || '').trim())
+    .filter(v => v && /\d/.test(v));
+  if (!registros.length) return null;
+  let maxNum = 0, maxStr = '';
+  registros.forEach(v => {
+    const n = parseInt(v.replace(/\D/g, '')) || 0;
+    if (n > maxNum) { maxNum = n; maxStr = v; }
+  });
+  if (!maxNum) return null;
+  const prox = maxNum + 1;
+  // preserva zeros à esquerda se o formato original os tiver
+  if (/^\d+$/.test(maxStr) && maxStr.startsWith('0'))
+    return String(prox).padStart(maxStr.length, '0');
+  return String(prox);
+}
 
 function emitirNF(id) {
   const f = _faturamentos.find(x => x.id === id);
@@ -1794,21 +2553,73 @@ function emitirNF(id) {
     return;
   }
 
-  document.getElementById('enf-campo-servico').style.display = _enfNeedServ ? '' : 'none';
-  document.getElementById('enf-campo-peca').style.display    = _enfNeedPeca ? '' : 'none';
-  document.getElementById('enf-nf-servico').value = f.nf_servico || '';
-  document.getElementById('enf-nf-peca').value    = f.nf_peca    || '';
+  // resumo: OS + cliente (data já fica no enf-data abaixo)
+  document.getElementById('enf-res-os').textContent  = f.os_numero ? `OS ${f.os_numero}` : '—';
+  document.getElementById('enf-res-cli').textContent = f.cliente_nome || '—';
+  const cnpjRow = document.getElementById('enf-res-cnpj-row');
+  if (f.cliente_cnpj) {
+    document.getElementById('enf-res-cnpj').textContent = f.cliente_cnpj;
+    cnpjRow.style.display = 'flex';
+  } else {
+    cnpjRow.style.display = 'none';
+  }
+  // valor de cada nota ao lado do seu título
+  const servVal = parseFloat(f.valor_servico || 0);
+  const pecaVal = parseFloat(f.valor_peca    || 0);
+  document.getElementById('enf-res-serv').textContent = servVal > 0 ? servVal.toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : '';
+  document.getElementById('enf-res-peca').textContent = pecaVal > 0 ? pecaVal.toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : '';
+
+  document.getElementById('enf-campo-servico').style.display = _enfNeedServ ? 'flex' : 'none';
+  document.getElementById('enf-campo-peca').style.display    = _enfNeedPeca ? 'flex' : 'none';
+
+  // NFS-e: mantém valor já salvo; se vazio, sugere o próximo
+  const proxServ = _proximoNumeroNF('nf_servico');
+  const inpServ  = document.getElementById('enf-nf-servico');
+  inpServ.value  = f.nf_servico || (proxServ || '');
+  document.getElementById('enf-hint-serv').textContent =
+    proxServ ? `sugestão: ${proxServ}` : '';
+
+  // NF-e: idem
+  const proxPeca = _proximoNumeroNF('nf_peca');
+  const inpPeca  = document.getElementById('enf-nf-peca');
+  inpPeca.value  = f.nf_peca || (proxPeca || '');
+  document.getElementById('enf-hint-peca').textContent =
+    proxPeca ? `sugestão: ${proxPeca}` : '';
+
+  document.getElementById('enf-obs-servico').value = f.obs_nfs || '';
+  document.getElementById('enf-obs-peca').value    = f.obs_nf  || '';
+
   document.getElementById('enf-data').value       = f.data_faturamento
     ? f.data_faturamento.slice(0,10)
     : new Date().toISOString().slice(0,10);
   document.getElementById('enf-erro').textContent = '';
   enfValidar();
+  _enfAnexos = [];
+  _renderAnexosENF();          // mostra seções corretas já vazias
+  _carregarAnexosENF(id);      // atualiza com arquivos já existentes
   document.getElementById('modal-emitir-nf').style.display = 'flex';
 }
 
 function fecharModalEmitirNF() {
+  // não fecha se o file picker ou drag estiver ativo — evita fechamento acidental
+  if (_enfPickerActive || _enfDragActive) { console.warn('[ENF] fechar bloqueado — picker:', _enfPickerActive, 'drag:', _enfDragActive); return; }
+  console.trace('[ENF] fecharModalEmitirNF chamado');
   document.getElementById('modal-emitir-nf').style.display = 'none';
   _enfFatId = null;
+  _enfAnexos = [];
+  _enfPickerActive = false;
+}
+
+async function _deletarAnexoENF(anexoId) {
+  if (!confirm('Remover este arquivo?')) return;
+  try {
+    await api.deletarAnexoFaturamento(_enfFatId, anexoId);
+    _enfAnexos = _enfAnexos.filter(a => a.id !== anexoId);
+    _renderAnexosENF();
+    if (_fatAnexosId === _enfFatId) { _fatAnexos = _fatAnexos.filter(a => a.id !== anexoId); _renderAnexosFat(); }
+  } catch (err) {
+    alert('Erro ao remover: ' + err.message);
+  }
 }
 
 function enfValidar() {
@@ -1855,11 +2666,11 @@ async function salvarEmissaoNF() {
       nf_servico:         nfServ,
       pedido_servico:     f.pedido_servico,
       valor_servico:      parseFloat(f.valor_servico) || 0,
-      obs_nfs:            f.obs_nfs,
+      obs_nfs:            document.getElementById('enf-obs-servico').value.trim() || null,
       nf_peca:            nfPeca,
       pedido_peca:        f.pedido_peca,
       valor_peca:         parseFloat(f.valor_peca) || 0,
-      obs_nf:             f.obs_nf,
+      obs_nf:             document.getElementById('enf-obs-peca').value.trim() || null,
       valor_total:        parseFloat(f.valor_total) || 0,
       qtd_parcelas:       f.qtd_parcelas || 1,
       valor_parcela:      parseFloat(f.valor_parcela) || 0,
@@ -1879,9 +2690,7 @@ async function salvarEmissaoNF() {
   }
 }
 
-document.getElementById('modal-emitir-nf').addEventListener('click', e => {
-  if (e.target === e.currentTarget) fecharModalEmitirNF();
-});
+// modal-emitir-nf: fecha apenas pelo botão de fechar
 
 // ── Status ────────────────────────────────────────────────────────────────────
 async function avancarStatus(id, novoStatus, label) {
@@ -1896,12 +2705,63 @@ async function avancarStatus(id, novoStatus, label) {
 
 // ── Modal ──────────────────────────────────────────────────────────────────────
 // ── Anexos do faturamento no modal ────────────────────────────────────────────
-let _fatAnexos = [];
-let _fatAnexosId = null;
+let _fatAnexos       = [];
+let _fatAnexosId     = null;
+let _fatPickerActive = false;
+
+function _abrirPickerFat(inputId, tipo) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  _fatPickerActive = true;
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  const modal = document.getElementById('modal-fat');
+  const btns  = modal ? Array.from(modal.querySelectorAll('button')) : [];
+  const prevDisabled = btns.map(b => b.disabled);
+  btns.forEach(b => { b.disabled = true; b.style.pointerEvents = 'none'; });
+  const _liberar = () => {
+    setTimeout(() => {
+      _fatPickerActive = false;
+      btns.forEach((b, i) => { b.disabled = prevDisabled[i]; b.style.pointerEvents = ''; });
+    }, 500);
+  };
+  const onDone = async () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_fatPickerTimer);
+    if (input.files && input.files.length) await _uploadAnexosFatTipo(input, tipo);
+    input.value = '';
+    _liberar();
+  };
+  const onCancel = () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_fatPickerTimer);
+    input.value = '';
+    _liberar();
+  };
+  const _fatPickerTimer = setTimeout(() => { _liberar(); }, 300000);
+  input.addEventListener('change', onDone);
+  input.addEventListener('cancel', onCancel);
+  input.click();
+}
+
+async function _uploadAnexosFatTipo(input, tipo) {
+  if (!input.files.length || !_fatAnexosId) return;
+  for (const file of input.files) {
+    try {
+      const data  = await api.uploadAnexoFaturamento(_fatAnexosId, file, tipo);
+      const novos = _expandirUpload(data);
+      novos.forEach(n => { _fatAnexos.push(n); if (_enfFatId === _fatAnexosId) _enfAnexos.push(n); });
+      _renderAnexosFat();
+      if (_enfFatId === _fatAnexosId) _renderAnexosENF();
+    } catch (err) { alert('Erro ao enviar "' + file.name + '": ' + err.message); }
+  }
+}
 
 const _TIPOS_DOC = [
   { key: 'nf_servico',     label: 'NF de Serviço',    cor: '#DBEAFE', corText: '#1E40AF' },
   { key: 'nf_peca',        label: 'NF de Peça',        cor: '#FEF3C7', corText: '#92400E' },
+  { key: 'boleto',         label: 'Boleto Único',      cor: '#F0FDF4', corText: '#166534' },
   { key: 'boleto_servico', label: 'Boleto Serviço',    cor: '#DCFCE7', corText: '#15803D' },
   { key: 'boleto_peca',    label: 'Boleto Peça',       cor: '#F3E8FF', corText: '#6B21A8' },
   { key: 'outro',          label: 'Outro',             cor: '#F1F0ED', corText: '#888680' },
@@ -1958,7 +2818,32 @@ async function _carregarAnexosFat(fatId) {
   _renderAnexosFat();
 }
 
+function _renderAnexosFatCard(listaId, countId, tipo, corLink) {
+  const lista = document.getElementById(listaId);
+  const count = document.getElementById(countId);
+  if (!lista) return;
+  const itens = _fatAnexos.filter(a => (a.tipo_doc || 'outro') === tipo);
+  if (count) count.textContent = itens.length ? `${itens.length} arquivo${itens.length > 1 ? 's' : ''}` : '';
+  lista.innerHTML = itens.length
+    ? itens.map(a => {
+        const url = api.urlAnexoFaturamento(_fatAnexosId, a.id);
+        return `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:7px;background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.08);font-size:12px">
+          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <a href="${url}" target="_blank" style="color:${corLink};text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${a.nome_original}</a>
+          <button type="button" onclick="_deletarAnexoFat(${a.id})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 2px">×</button>
+        </div>`;
+      }).join('')
+    : '<span style="font-size:12px;color:var(--muted)">Nenhum arquivo.</span>';
+}
+
 function _renderAnexosFat() {
+  // Renderiza nas seções inline dos cards NFS-e / NF-e
+  _renderAnexosFatCard('fat-serv-anex-lista', 'fat-serv-anex-count', 'nf_servico', '#1D4ED8');
+  _renderAnexosFatCard('fat-peca-anex-lista', 'fat-peca-anex-count', 'nf_peca',    '#C2410C');
+  // Atualiza chips de boleto nas linhas de parcela
+  renderParcelasFat();
+
+  // Seção "Documentos Anexados" no fundo — só boletos e outros
   const section = document.getElementById('fat-anexos-section');
   const lista   = document.getElementById('fat-anexos-lista');
   const btns    = document.getElementById('fat-anexos-btns');
@@ -1968,23 +2853,35 @@ function _renderAnexosFat() {
   section.style.display = _fatAnexosId ? 'flex' : 'none';
   if (dica) dica.textContent = '';
 
-  // Arquivos salvos
-  lista.innerHTML = _fatAnexos.length
-    ? _fatAnexos.map(a => {
-        const url = api.urlAnexoFaturamento(_fatAnexosId, a.id);
-        return `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;background:#F1F0ED;border:1px solid var(--border);font-size:12.5px">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-          <a href="${url}" target="_blank" style="color:var(--text);text-decoration:none;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${a.nome_original}</a>
-          <button type="button" onclick="_deletarAnexoFat(${a.id})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 2px">×</button>
-        </div>`;
-      }).join('')
-    : '<span style="font-size:12.5px;color:var(--muted)">Nenhum documento anexado.</span>';
+  const tiposBase = _TIPOS_DOC.filter(t => t.key !== 'nf_servico' && t.key !== 'nf_peca');
+  const grupos = [];
+  tiposBase.forEach(t => {
+    const itens = _fatAnexos.filter(a => (a.tipo_doc || 'outro') === t.key);
+    if (itens.length) grupos.push({ ...t, itens });
+  });
 
-  // Botão único de upload
+  lista.innerHTML = grupos.length
+    ? grupos.map(g => `
+        <div style="display:flex;flex-direction:column;gap:6px;width:100%">
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+                       background:${g.cor};color:${g.corText};padding:2px 8px;border-radius:20px;width:fit-content">${g.label}</span>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${g.itens.map(a => {
+              const url = api.urlAnexoFaturamento(_fatAnexosId, a.id);
+              return `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;background:#F1F0ED;border:1px solid var(--border);font-size:12.5px">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                <a href="${url}" target="_blank" style="color:var(--text);text-decoration:none;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${a.nome_original}</a>
+                <button type="button" onclick="_deletarAnexoFat(${a.id})" style="background:none;border:none;cursor:pointer;color:#AEACA6;font-size:14px;line-height:1;padding:0 2px">×</button>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')
+    : '<span style="font-size:12.5px;color:var(--muted)">Nenhum documento adicional.</span>';
+
   btns.innerHTML = `<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:7px;background:#fff;border:1.5px solid var(--border);color:var(--text)">
     <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Adicionar documento
-    <input type="file" style="display:none" multiple accept=".pdf,.png,.jpg,.jpeg,.xml" onchange="_uploadAnexosFat(this)"/>
+    <input type="file" style="display:none" multiple accept=".pdf,.png,.jpg,.jpeg,.xml,.zip" onchange="_uploadAnexosFat(this)"/>
   </label>`;
 }
 
@@ -1992,8 +2889,9 @@ async function _uploadAnexosFat(input) {
   if (!input.files.length || !_fatAnexosId) return;
   for (const file of input.files) {
     try {
-      const novo = await api.uploadAnexoFaturamento(_fatAnexosId, file, 'outro');
-      _fatAnexos.push(novo);
+      const data  = await api.uploadAnexoFaturamento(_fatAnexosId, file, 'outro');
+      const novos = _expandirUpload(data);
+      novos.forEach(n => _fatAnexos.push(n));
       _renderAnexosFat();
     } catch (err) {
       alert('Erro ao enviar "' + file.name + '": ' + err.message);
@@ -2047,6 +2945,7 @@ function abrirModalEditar(id) {
   if (!f) return;
   _limparModal();
   _currentFatOsId = f.os_id || null;
+  _cachedFatOS = null;
 
   document.getElementById('fat-id').value               = f.id;
   document.getElementById('modal-fat-title').textContent = 'Editar Faturamento';
@@ -2074,6 +2973,9 @@ function abrirModalEditar(id) {
   document.getElementById('fat-obs').value              = f.observacoes || '';
   document.getElementById('btn-excluir-fat').style.display = 'inline-flex';
 
+  // auto-preenche obs complementares se ainda estiverem vazias
+  _autoGerarObs(true);
+
   // atualiza display do total
   const disp = document.getElementById('fat-total-display');
   if (disp) disp.textContent = fmtValor(parseFloat(f.valor_total) || 0);
@@ -2097,17 +2999,17 @@ function abrirModalEditar(id) {
 }
 
 function fecharModal() {
+  if (_fatPickerActive) return;
   document.getElementById('modal-fat').style.display = 'none';
-  _fatAnexosId = null;
-  _fatAnexos   = [];
+  _fatAnexosId     = null;
+  _fatAnexos       = [];
+  _fatPickerActive = false;
   document.getElementById('fat-anexos-section').style.display = 'none';
   document.getElementById('fat-envios-section').style.display = 'none';
   document.getElementById('fat-envios-lista').innerHTML = '';
 }
 
-document.getElementById('modal-fat').addEventListener('click', e => {
-  if (e.target === e.currentTarget) fecharModal();
-});
+// modal-fat: fecha apenas pelo botão de fechar
 
 // ── Excluir ───────────────────────────────────────────────────────────────────
 async function excluirFaturamento() {
@@ -2148,7 +3050,7 @@ function renderParcelasFat() {
   if (!tbody) return;
 
   if (!_parcelasFat.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--muted);font-size:12.5px">Nenhuma parcela definida</td></tr>';
     if (resumo) resumo.textContent = '';
     return;
   }
@@ -2193,6 +3095,7 @@ function renderParcelasFat() {
           style="${inp('width:100%')}"
           oninput="_parcelasFat[${i}].observacao=this.value"/>
       </td>
+      <td style="padding:4px 6px">${_renderBoletoCellFat(i)}</td>
       <td style="padding:4px 6px;text-align:center">
         <button type="button" onclick="_remParcelaFat(${i})"
           style="background:none;border:none;cursor:pointer;color:#CBD5E1;padding:2px 4px;border-radius:4px"
@@ -2221,6 +3124,82 @@ function _fatDataChange(i, val) {
 function _remParcelaFat(i) {
   _parcelasFat.splice(i, 1);
   renderParcelasFat();
+}
+
+function _renderBoletoCellFat(i) {
+  const isSingle = _parcelasFat.length === 1;
+  const boletos  = _fatAnexos.filter(a =>
+    ['boleto','boleto_servico','boleto_peca'].includes(a.tipo_doc) &&
+    (a.parcela_idx === i || (a.parcela_idx === null && isSingle))
+  );
+  const chips = boletos.map(a => {
+    const t = _tipoDocInfo(a.tipo_doc);
+    const nome = a.nome_original.length > 18 ? a.nome_original.slice(0,16) + '…' : a.nome_original;
+    return `<div style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px 2px 6px;border-radius:5px;background:${t.cor};border:1px solid ${t.corText}33;font-size:11px;color:${t.corText};max-width:140px">
+      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.nome_original}">${nome}</span>
+      <button type="button" onclick="event.stopImmediatePropagation();_removerBoletoParcelaFat(${a.id})"
+        style="background:none;border:none;cursor:pointer;color:${t.corText};opacity:.55;padding:0 1px;font-size:13px;line-height:1;flex-shrink:0">×</button>
+    </div>`;
+  }).join('');
+  return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+    ${chips}
+    <button type="button" onclick="event.stopImmediatePropagation();_abrirPickerFatParcela(${i})"
+      style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;border:1.5px dashed #D1D5DB;background:#FAFAF9;color:#888680;font-size:11px;cursor:pointer;white-space:nowrap;font-family:inherit;flex-shrink:0">
+      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      ${boletos.length ? 'Trocar' : '+ Boleto'}
+    </button>
+  </div>`;
+}
+
+let _fatParcelaPickerIdx = null;
+
+function _abrirPickerFatParcela(i) {
+  const input = document.getElementById('fat-file-boleto-parc');
+  if (!input) return;
+  _fatParcelaPickerIdx = i;
+  _fatPickerActive = true;
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  const modal = document.getElementById('modal-fat');
+  const btns  = modal ? Array.from(modal.querySelectorAll('button')) : [];
+  const prevDisabled = btns.map(b => b.disabled);
+  btns.forEach(b => { b.disabled = true; b.style.pointerEvents = 'none'; });
+  const _liberar = () => {
+    setTimeout(() => {
+      _fatPickerActive = false;
+      btns.forEach((b, idx) => { b.disabled = prevDisabled[idx]; b.style.pointerEvents = ''; });
+    }, 500);
+  };
+  const onDone = async () => {
+    input.removeEventListener('change', onDone);
+    input.removeEventListener('cancel', onCancel);
+    clearTimeout(_fatParcTimer);
+    if (input.files && input.files.length && _fatAnexosId !== null) {
+      const file = input.files[0];
+      try {
+        const data  = await api.uploadAnexoFaturamento(_fatAnexosId, file, 'boleto', _fatParcelaPickerIdx);
+        const novos = _expandirUpload(data);
+        novos.forEach(n => _fatAnexos.push(n));
+        renderParcelasFat();
+      } catch (err) { alert('Erro ao enviar boleto: ' + err.message); }
+    }
+    input.value = '';
+    _liberar();
+  };
+  const onCancel = () => { input.removeEventListener('change', onDone); input.removeEventListener('cancel', onCancel); clearTimeout(_fatParcTimer); _liberar(); };
+  const _fatParcTimer = setTimeout(() => _liberar(), 300000);
+  input.addEventListener('change', onDone);
+  input.addEventListener('cancel', onCancel);
+  input.click();
+}
+
+async function _removerBoletoParcelaFat(anexoId) {
+  if (!confirm('Remover este boleto?')) return;
+  try {
+    await api.deletarAnexoFaturamento(_fatAnexosId, anexoId);
+    _fatAnexos = _fatAnexos.filter(a => a.id !== anexoId);
+    renderParcelasFat();
+  } catch (err) { alert('Erro ao remover: ' + err.message); }
 }
 
 function adicionarParcelaFat() {
@@ -2293,16 +3272,52 @@ function copiarCnpj(cnpj, e) {
 }
 
 // ── copiar obs do ícone ───────────────────────────────────────────────────────
-function copiarObs(el, e) {
+async function copiarObs(el, e) {
   e.stopPropagation();
-  const texto = el.dataset.obs;
+  let texto = (el.dataset.obs || '').replace(/&#10;/g, '\n');
+
+  if (!texto) {
+    // obs não está salva — gera a partir da OS
+    const osId  = el.dataset.osId  ? parseInt(el.dataset.osId) : null;
+    const osNum = el.dataset.osNum ? decodeURIComponent(el.dataset.osNum) : '';
+    const tipo  = el.dataset.tipo;
+    const ped   = el.dataset.pedido ? decodeURIComponent(el.dataset.pedido) : '';
+    if (!osId && !osNum) return;
+    try {
+      const os = osId ? await api.buscarOS(osId) : await api.buscarOSByNumero(osNum);
+      const partes = [];
+      partes.push(`OS: ${os.numero_os || os.numero}`);
+      const placa = os.placa || os.obs_tecnica?.match(/Placa:\s*([^\s|]+)/i)?.[1];
+      if (placa) partes.push(`PLACA: ${placa}`);
+      const frota = os.frota || os.obs_tecnica?.match(/Frota:\s*([^\s|]+)/i)?.[1];
+      if (frota) partes.push(`FROTA: ${frota}`);
+      if (tipo === 'NFS') {
+        const pedServ = ped || os.num_pedido_servico;
+        if (pedServ) partes.push(`PEDIDO DE SERVIÇO: ${pedServ}`);
+        texto = partes.join(' | ');
+        if (os.servicos && os.servicos.length > 0) {
+          texto += '\nSERVIÇOS REALIZADOS:';
+          os.servicos.forEach((s, i) => {
+            const val = parseFloat(s.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            texto += `\n${i + 1}. ${s.descricao} - ${val}`;
+          });
+        }
+      } else {
+        const pedCompra = ped || os.num_pedido_compra;
+        if (pedCompra) partes.push(`PEDIDO DE COMPRA: ${pedCompra}`);
+        texto = partes.join(' | ');
+      }
+      // guarda em cache no elemento para próximos cliques
+      el.dataset.obs = texto.replace(/\n/g, '&#10;');
+    } catch { return; }
+  }
+
   if (!texto) return;
   navigator.clipboard.writeText(texto).then(() => {
     el.style.outline = '2px solid #22C55E';
     el.style.outlineOffset = '2px';
     setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1200);
   }).catch(() => {
-    // fallback
     const ta = document.createElement('textarea');
     ta.value = texto;
     ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -2534,10 +3549,7 @@ async function _fetchOSDoForm() {
   }
 }
 
-async function gerarObsNFS() {
-  const os = await _fetchOSDoForm();
-  if (!os) return;
-
+function _buildObsNFS(os) {
   const partes = [];
   partes.push(`OS: ${os.numero_os || os.numero}`);
   const placa = os.placa || os.obs_tecnica?.match(/Placa:\s*([^\s|]+)/i)?.[1];
@@ -2546,9 +3558,7 @@ async function gerarObsNFS() {
   if (frota) partes.push(`FROTA: ${frota}`);
   const pedServ = document.getElementById('fat-pedido-servico').value.trim() || os.num_pedido_servico;
   if (pedServ) partes.push(`PEDIDO DE SERVIÇO: ${pedServ}`);
-
   let texto = partes.join(' | ');
-
   if (os.servicos && os.servicos.length > 0) {
     texto += '\nSERVIÇOS REALIZADOS:';
     os.servicos.forEach((s, i) => {
@@ -2556,14 +3566,10 @@ async function gerarObsNFS() {
       texto += `\n${i + 1}. ${s.descricao} - ${val}`;
     });
   }
-
-  document.getElementById('fat-obs-nfs').value = texto;
+  return texto;
 }
 
-async function gerarObsNF() {
-  const os = await _fetchOSDoForm();
-  if (!os) return;
-
+function _buildObsNF(os) {
   const partes = [];
   partes.push(`OS: ${os.numero_os || os.numero}`);
   const placa = os.placa || os.obs_tecnica?.match(/Placa:\s*([^\s|]+)/i)?.[1];
@@ -2572,9 +3578,61 @@ async function gerarObsNF() {
   if (frota) partes.push(`FROTA: ${frota}`);
   const pedCompra = document.getElementById('fat-pedido-peca').value.trim() || os.num_pedido_compra;
   if (pedCompra) partes.push(`PEDIDO DE COMPRA: ${pedCompra}`);
-
-  document.getElementById('fat-obs-nf').value = partes.join(' | ');
+  return partes.join(' | ');
 }
+
+async function gerarObsNFS() {
+  const os = await _fetchOSDoForm();
+  if (!os) return;
+  _cachedFatOS = os;
+  document.getElementById('fat-obs-nfs').value = _buildObsNFS(os);
+}
+
+async function gerarObsNF() {
+  const os = await _fetchOSDoForm();
+  if (!os) return;
+  _cachedFatOS = os;
+  document.getElementById('fat-obs-nf').value = _buildObsNF(os);
+}
+
+let _cachedFatOS = null;
+
+// Preenchimento automático — silencioso, usado ao abrir o modal e ao mudar campos-chave
+async function _autoGerarObs(onlyEmpty) {
+  try {
+    const hasId = !!_currentFatOsId;
+    const numero = document.getElementById('fat-os').value.trim();
+    if (!hasId && !numero) return;
+    const os = hasId ? await api.buscarOS(_currentFatOsId) : await api.buscarOSByNumero(numero);
+    _cachedFatOS = os;
+    const elNFS = document.getElementById('fat-obs-nfs');
+    const elNF  = document.getElementById('fat-obs-nf');
+    if (!onlyEmpty || !elNFS.value.trim()) elNFS.value = _buildObsNFS(os);
+    if (!onlyEmpty || !elNF.value.trim())  elNF.value  = _buildObsNF(os);
+  } catch { /* silencioso */ }
+}
+
+let _autoObsTimer = null;
+function _debounceAutoObs(onlyEmpty) {
+  clearTimeout(_autoObsTimer);
+  _autoObsTimer = setTimeout(() => _autoGerarObs(onlyEmpty), 600);
+}
+
+document.getElementById('fat-pedido-servico').addEventListener('input', () => {
+  if (_cachedFatOS) {
+    document.getElementById('fat-obs-nfs').value = _buildObsNFS(_cachedFatOS);
+  } else {
+    _debounceAutoObs(false);
+  }
+});
+
+document.getElementById('fat-pedido-peca').addEventListener('input', () => {
+  if (_cachedFatOS) {
+    document.getElementById('fat-obs-nf').value = _buildObsNF(_cachedFatOS);
+  } else {
+    _debounceAutoObs(false);
+  }
+});
 
 // Inicia com o mês atual nos filtros de data para as métricas
 (function() {

@@ -166,6 +166,11 @@ const api = {
     });
   },
 
+  // Resumo mensal de vales
+  resumoMensalVales: (meses) => request('GET', `/vale-transporte/resumo-mensal${meses ? `?meses=${meses}` : ''}`),
+  // Resumo mensal de folha
+  resumoMensalFolha: (meses) => request('GET', `/folha/resumo-mensal${meses ? `?meses=${meses}` : ''}`),
+
   // Contas a Receber
   listarContasReceber: (filtros) => {
     const p = new URLSearchParams(filtros || {}).toString();
@@ -205,10 +210,11 @@ const api = {
   listarAnexosFaturamento:  (fatId) => request('GET', `/faturamento/${fatId}/anexos`),
   listarEnviosFaturamento:  (fatId) => request('GET', `/faturamento/${fatId}/envios`),
   deletarAnexoFaturamento: (fatId, anexoId) => request('DELETE', `/faturamento/${fatId}/anexos/${anexoId}`),
-  uploadAnexoFaturamento: (fatId, arquivo, tipoDoc) => {
+  uploadAnexoFaturamento: (fatId, arquivo, tipoDoc, parcelaIdx) => {
     const form = new FormData();
     form.append('arquivo', arquivo, arquivo.name);
     form.append('tipo_doc', tipoDoc || 'outro');
+    if (parcelaIdx !== undefined && parcelaIdx !== null) form.append('parcela_idx', String(parcelaIdx));
     return fetch(`${API_URL}/faturamento/${fatId}/anexos`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${getToken()}` },
@@ -220,6 +226,10 @@ const api = {
     });
   },
   urlAnexoFaturamento: (fatId, anexoId) => `${API_URL}/faturamento/${fatId}/anexos/${anexoId}/arquivo`,
+  registrarEnvioFaturamento: (id, dados) => request('POST', `/faturamento/${id}/registrar-envio`, dados),
+  baixarAnexoFaturamento: (fatId, anexoId) => fetch(`${API_URL}/faturamento/${fatId}/anexos/${anexoId}/arquivo`, {
+    headers: { 'Authorization': `Bearer ${getToken()}` },
+  }),
 };
 
 window.api = api;
