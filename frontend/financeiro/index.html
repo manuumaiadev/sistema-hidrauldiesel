@@ -400,9 +400,9 @@ tbody tr:hover { background: #FAFAF9; }
 
 <!-- ═══ Modal Faturamento ═══ -->
 <div id="modal-fat" class="modal-overlay" style="display:none"
-  ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+  ondragover="event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy'" ondrop="event.preventDefault()">
   <div class="modal-box" style="width:min(1180px,97vw)"
-    ondragover="event.preventDefault();event.stopPropagation()"
+    ondragover="event.preventDefault();event.stopPropagation();if(event.dataTransfer)event.dataTransfer.dropEffect='copy'"
     ondrop="event.preventDefault();event.stopPropagation()">
     <div class="modal-header">
       <span class="modal-title" id="modal-fat-title">Novo Faturamento</span>
@@ -653,9 +653,9 @@ tbody tr:hover { background: #FAFAF9; }
 
 <!-- Modal Emitir Cobrança -->
 <div id="modal-cobranca" class="modal-overlay" style="display:none"
-  ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+  ondragover="event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy'" ondrop="event.preventDefault()">
   <div class="modal-box" style="max-width:520px"
-    ondragover="event.preventDefault();event.stopPropagation()"
+    ondragover="event.preventDefault();event.stopPropagation();if(event.dataTransfer)event.dataTransfer.dropEffect='copy'"
     ondrop="event.preventDefault();event.stopPropagation()">
     <div class="modal-header">
       <span class="modal-title">Emitir Cobrança</span>
@@ -878,9 +878,9 @@ tbody tr:hover { background: #FAFAF9; }
 
 <!-- Modal Emitir NF -->
 <div id="modal-emitir-nf" class="modal-overlay" style="display:none"
-  ondragover="event.preventDefault()" ondrop="event.preventDefault()">
+  ondragover="event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy'" ondrop="event.preventDefault()">
   <div class="modal-box" style="max-width:460px"
-    ondragover="event.preventDefault();event.stopPropagation()"
+    ondragover="event.preventDefault();event.stopPropagation();if(event.dataTransfer)event.dataTransfer.dropEffect='copy'"
     ondrop="event.preventDefault();event.stopPropagation()">
     <div class="modal-header">
       <span class="modal-title">Emitir NF</span>
@@ -917,10 +917,9 @@ tbody tr:hover { background: #FAFAF9; }
           </div>
           <input type="text" id="enf-nf-servico" placeholder="Ex: 000456" oninput="enfValidar()"/>
         </div>
-        <div class="field" style="margin:0">
-          <label style="font-size:12.5px">Informação complementar</label>
-          <textarea id="enf-obs-servico" rows="2" placeholder="Obs. da NFS-e…" style="resize:vertical;font-size:12.5px"></textarea>
-        </div>
+        <button type="button" id="enf-btn-obs-serv" style="display:none;width:28px;height:28px;border-radius:7px;background:#EFF6FF;border:none;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0" onclick="_enfCopiarObs('nfs')" title="Copiar informação complementar da NFS-e">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        </button>
         <div id="enf-drop-serv" class="enf-drop-zone">
           <div id="enf-serv-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -946,10 +945,9 @@ tbody tr:hover { background: #FAFAF9; }
           </div>
           <input type="text" id="enf-nf-peca" placeholder="Ex: 000789" oninput="enfValidar()"/>
         </div>
-        <div class="field" style="margin:0">
-          <label style="font-size:12.5px">Informação complementar</label>
-          <textarea id="enf-obs-peca" rows="2" placeholder="Obs. da NF-e…" style="resize:vertical;font-size:12.5px"></textarea>
-        </div>
+        <button type="button" id="enf-btn-obs-peca" style="display:none;width:28px;height:28px;border-radius:7px;background:#FFF7ED;border:none;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0" onclick="_enfCopiarObs('nf')" title="Copiar informação complementar da NF-e">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
         <div id="enf-drop-peca" class="enf-drop-zone">
           <div id="enf-peca-anex-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1512,7 +1510,7 @@ function _gerarMensagem(f, os) {
 
   // referência descritiva da OS em linha única
   const ref = [];
-  if (f.os_numero)      ref.push(`OS nº *${f.os_numero}*`);
+  if (f.os_numero)      ref.push(`OS *${f.os_numero}*`);
   if (os?.placa)        ref.push(`placa *${os.placa}*`);
   if (os?.modelo)       ref.push(os.modelo + (os.ano ? ` ${os.ano}` : ''));
   if (f.pedido_servico && f.pedido_peca && f.pedido_servico !== f.pedido_peca)
@@ -1544,25 +1542,19 @@ function _gerarMensagem(f, os) {
 
   if (vencs.length === 1) {
     const dt = vencs[0].data_vencimento?.slice(0,10);
-    linhasPgto.push(`  • Vence *${dt ? fmtData(dt) : '—'}* — *${fmtValor(vencs[0].valor)}*`);
+    linhasPgto.push(`  • Valor: *${fmtValor(vencs[0].valor)}*\n  • Vencimento: *${dt ? fmtData(dt) : '—'}*`);
   } else if (vencs.length > 1) {
     vencs.forEach((v, i) => {
       const dt = v.data_vencimento?.slice(0,10);
-      linhasPgto.push(`  • ${i+1}ª parcela: *${dt ? fmtData(dt) : '—'}* — *${fmtValor(v.valor)}*`);
+      linhasPgto.push(`  • ${i+1}ª parcela — Valor: *${fmtValor(v.valor)}*\n    Vencimento: *${dt ? fmtData(dt) : '—'}*`);
     });
     if (total > 0) linhasPgto.push(`  • Total: *${fmtValor(total)}*`);
   } else if (total > 0 && !forma) {
-    linhasPgto.push(`  • *${fmtValor(total)}*`);
+    linhasPgto.push(`  • Valor: *${fmtValor(total)}*`);
   }
 
   const blocoPgto = linhasPgto.length ? `\n\n*Dados para pagamento:*\n${linhasPgto.join('\n')}` : '';
 
-  // prazo de vencimento para o aviso
-  let avisoVenc = '';
-  if (vencs.length > 0) {
-    const primeiraDt = vencs[0].data_vencimento?.slice(0,10);
-    avisoVenc = primeiraDt ? ` até *${fmtData(primeiraDt)}*` : '';
-  }
 
   // Bloco de dados bancários (depósito / TED / PIX)
   const formaLower = (f.forma_pagamento || '').toLowerCase();
@@ -1584,7 +1576,7 @@ function _gerarMensagem(f, os) {
 
 Segue em anexo a cobrança referente à ${refTexto}.${blocoNF}${blocoPgto}${blocoBanco}
 
-*Solicitamos que o pagamento seja efetuado${avisoVenc}.* Títulos em aberto após *7 dias do vencimento* serão encaminhados ao Serasa.
+*Solicitamos que o pagamento seja efetuado no prazo indicado.* Títulos em aberto após *7 dias do vencimento* serão encaminhados ao Serasa.
 
 Em caso de dúvidas sobre o faturamento ou os serviços realizados, nosso setor financeiro está à disposição para atendimento.`;
 }
@@ -2365,10 +2357,51 @@ function _renderAnexosENF() {
   _renderAnexosENFLista('enf-peca-anex-lista', 'enf-peca-anex-count', 'nf_peca');
 }
 
-// impede o browser de navegar para arquivo solto — fase de captura garante que
-// preventDefault() seja chamado antes de qualquer handler de elemento (fix Chrome)
-document.addEventListener('dragover', e => e.preventDefault(), { capture: true });
+// impede o browser de navegar para arquivo solto em qualquer nível
+// dropEffect='copy' sinaliza ao Chrome que a página aceita o drop (não navega)
+window.addEventListener('dragover',   e => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; }, { capture: true });
+window.addEventListener('drop',       e => e.preventDefault(), { capture: true });
+document.addEventListener('dragover', e => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; }, { capture: true });
 document.addEventListener('drop',     e => e.preventDefault(), { capture: true });
+
+// proteção permanente: bloqueia qualquer tentativa de reload/navegação com modal aberto
+function _algumModalAberto() {
+  return _enfFatId !== null || _cobFatId !== null || _fatAnexosId !== null;
+}
+
+// Navigation API (Chrome 102+): cancela reload/navegação SILENCIOSAMENTE enquanto modal aberto
+// Isso elimina o dialog "Atualizar o site?" completamente — a navegação é descartada sem aviso
+if (window.navigation) {
+  window.navigation.addEventListener('navigate', e => {
+    if (window._hdLogout) return; // deixa passar redirect de sessão expirada
+    if (e.cancelable && _algumModalAberto()) {
+      e.preventDefault();
+    }
+  });
+}
+
+// Fallback para browsers sem Navigation API: mostra dialog mas protege o modal
+window.addEventListener('beforeunload', e => {
+  if (window._hdLogout) return; // deixa passar redirect de sessão expirada
+  if (_algumModalAberto()) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+
+// bloqueia submit de formulário (belt-and-suspenders)
+document.addEventListener('submit', e => {
+  if (_algumModalAberto()) e.preventDefault();
+}, { capture: true });
+
+// bloqueia Enter quando modal com picker está aberto — impede replay do Enter do OS file dialog
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && _algumModalAberto()) {
+    const tag = (e.target || document.body).tagName;
+    if (tag !== 'TEXTAREA') e.preventDefault();
+  }
+}, { capture: true });
 
 // rastreia drag ativo no modal Emitir NF para bloquear fechamento acidental
 // (Chrome dispara click no elemento sob cursor após drop de arquivo externo)
@@ -2405,6 +2438,7 @@ document.addEventListener('drop',     e => e.preventDefault(), { capture: true }
 
     zone.addEventListener('dragover', e => {
       e.preventDefault(); e.stopPropagation();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
       zone.classList.add('drag-over');
     });
     zone.addEventListener('dragleave', e => {
@@ -2436,7 +2470,7 @@ document.addEventListener('drop',     e => e.preventDefault(), { capture: true }
   function setupDropZoneFat(zoneId, tipo) {
     const zone = document.getElementById(zoneId);
     if (!zone) return;
-    zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; zone.classList.add('drag-over'); });
     zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
     zone.addEventListener('drop', async e => {
       e.preventDefault(); e.stopPropagation();
@@ -2461,7 +2495,7 @@ document.addEventListener('drop',     e => e.preventDefault(), { capture: true }
   function setupDropZoneCob(zoneId, tipo) {
     const zone = document.getElementById(zoneId);
     if (!zone) return;
-    zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; zone.classList.add('drag-over'); });
     zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
     zone.addEventListener('drop', async e => {
       e.preventDefault(); e.stopPropagation();
@@ -2482,7 +2516,7 @@ document.addEventListener('drop',     e => e.preventDefault(), { capture: true }
   // Drop zone unificada do modal de cobrança — abre modal de escolha antes de fazer upload
   const cobZone = document.getElementById('cob-drop-main');
   if (cobZone) {
-    cobZone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); cobZone.classList.add('drag-over'); });
+    cobZone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; cobZone.classList.add('drag-over'); });
     cobZone.addEventListener('dragleave', e => { if (!cobZone.contains(e.relatedTarget)) cobZone.classList.remove('drag-over'); });
     cobZone.addEventListener('drop', async e => {
       e.preventDefault(); e.stopPropagation();
@@ -2572,22 +2606,35 @@ function emitirNF(id) {
   document.getElementById('enf-campo-servico').style.display = _enfNeedServ ? 'flex' : 'none';
   document.getElementById('enf-campo-peca').style.display    = _enfNeedPeca ? 'flex' : 'none';
 
-  // NFS-e: mantém valor já salvo; se vazio, sugere o próximo
-  const proxServ = _proximoNumeroNF('nf_servico');
+  // NFS-e: mantém valor já salvo; se vazio e campo é necessário, pré-preenche com sugestão
+  const proxServ = _enfNeedServ ? _proximoNumeroNF('nf_servico') : null;
   const inpServ  = document.getElementById('enf-nf-servico');
-  inpServ.value  = f.nf_servico || (proxServ || '');
+  inpServ.value  = f.nf_servico || (_enfNeedServ ? (proxServ || '') : '');
   document.getElementById('enf-hint-serv').textContent =
     proxServ ? `sugestão: ${proxServ}` : '';
 
   // NF-e: idem
-  const proxPeca = _proximoNumeroNF('nf_peca');
+  const proxPeca = _enfNeedPeca ? _proximoNumeroNF('nf_peca') : null;
   const inpPeca  = document.getElementById('enf-nf-peca');
-  inpPeca.value  = f.nf_peca || (proxPeca || '');
+  inpPeca.value  = f.nf_peca || (_enfNeedPeca ? (proxPeca || '') : '');
   document.getElementById('enf-hint-peca').textContent =
     proxPeca ? `sugestão: ${proxPeca}` : '';
 
-  document.getElementById('enf-obs-servico').value = f.obs_nfs || '';
-  document.getElementById('enf-obs-peca').value    = f.obs_nf  || '';
+  // Botão de copiar obs complementar: sempre visível quando o campo é necessário
+  const btnObsServ = document.getElementById('enf-btn-obs-serv');
+  const btnObsPeca = document.getElementById('enf-btn-obs-peca');
+  if (btnObsServ) {
+    btnObsServ.style.display  = _enfNeedServ ? 'inline-flex' : 'none';
+    btnObsServ.disabled       = !f.obs_nfs;
+    btnObsServ.style.opacity  = f.obs_nfs ? '1' : '0.4';
+    btnObsServ.title          = f.obs_nfs ? 'Copiar informação complementar da NFS-e' : 'Sem informação complementar';
+  }
+  if (btnObsPeca) {
+    btnObsPeca.style.display  = _enfNeedPeca ? 'inline-flex' : 'none';
+    btnObsPeca.disabled       = !f.obs_nf;
+    btnObsPeca.style.opacity  = f.obs_nf ? '1' : '0.4';
+    btnObsPeca.title          = f.obs_nf ? 'Copiar informação complementar da NF-e' : 'Sem informação complementar';
+  }
 
   document.getElementById('enf-data').value       = f.data_faturamento
     ? f.data_faturamento.slice(0,10)
@@ -2600,15 +2647,52 @@ function emitirNF(id) {
   document.getElementById('modal-emitir-nf').style.display = 'flex';
 }
 
+function _enfCopiarObs(tipo) {
+  const f = _faturamentos.find(x => x.id === _enfFatId);
+  if (!f) return;
+  const texto = tipo === 'nfs' ? f.obs_nfs : f.obs_nf;
+  if (!texto) return;
+  const btn = document.getElementById(tipo === 'nfs' ? 'enf-btn-obs-serv' : 'enf-btn-obs-peca');
+  navigator.clipboard.writeText(texto).then(() => {
+    if (btn) {
+      const orig = btn.innerHTML, origBg = btn.style.background;
+      btn.innerHTML = '<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      btn.style.background = '#DCFCE7';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = origBg; }, 1500);
+    }
+  }).catch(() => {
+    if (btn) {
+      const orig = btn.innerHTML, origBg = btn.style.background;
+      btn.innerHTML = '<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      btn.style.background = '#FEE2E2';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = origBg; }, 1500);
+    }
+  });
+}
+
+let _enfPodeFechar = false; // só permite fechar via esta função
+
 function fecharModalEmitirNF() {
-  // não fecha se o file picker ou drag estiver ativo — evita fechamento acidental
-  if (_enfPickerActive || _enfDragActive) { console.warn('[ENF] fechar bloqueado — picker:', _enfPickerActive, 'drag:', _enfDragActive); return; }
-  console.trace('[ENF] fecharModalEmitirNF chamado');
+  if (_enfPickerActive || _enfDragActive) return;
+  _enfPodeFechar = true;
   document.getElementById('modal-emitir-nf').style.display = 'none';
+  _enfPodeFechar = false;
   _enfFatId = null;
   _enfAnexos = [];
   _enfPickerActive = false;
 }
+
+// Guarda contra qualquer fechamento externo (outro JS, drag-to-file-navigate, etc.)
+(function() {
+  const el = document.getElementById('modal-emitir-nf');
+  if (!el) return;
+  new MutationObserver(() => {
+    if (el.style.display === 'none' && !_enfPodeFechar && _enfFatId !== null) {
+      console.error('[ENF] modal fechado por fonte externa — restaurando');
+      el.style.display = 'flex';
+    }
+  }).observe(el, { attributes: true, attributeFilter: ['style'] });
+})();
 
 async function _deletarAnexoENF(anexoId) {
   if (!confirm('Remover este arquivo?')) return;
@@ -2633,8 +2717,8 @@ async function salvarEmissaoNF() {
   const f = _faturamentos.find(x => x.id === _enfFatId);
   if (!f) return;
 
-  const nfServ = document.getElementById('enf-nf-servico').value.trim() || null;
-  const nfPeca = document.getElementById('enf-nf-peca').value.trim()    || null;
+  const nfServ = _enfNeedServ ? (document.getElementById('enf-nf-servico').value.trim() || null) : null;
+  const nfPeca = _enfNeedPeca ? (document.getElementById('enf-nf-peca').value.trim()    || null) : null;
   const data   = document.getElementById('enf-data').value              || null;
 
   if (_enfNeedServ && !nfServ) {
@@ -2666,11 +2750,11 @@ async function salvarEmissaoNF() {
       nf_servico:         nfServ,
       pedido_servico:     f.pedido_servico,
       valor_servico:      parseFloat(f.valor_servico) || 0,
-      obs_nfs:            document.getElementById('enf-obs-servico').value.trim() || null,
+      obs_nfs:            f.obs_nfs || null,
       nf_peca:            nfPeca,
       pedido_peca:        f.pedido_peca,
       valor_peca:         parseFloat(f.valor_peca) || 0,
-      obs_nf:             document.getElementById('enf-obs-peca').value.trim() || null,
+      obs_nf:             f.obs_nf  || null,
       valor_total:        parseFloat(f.valor_total) || 0,
       qtd_parcelas:       f.qtd_parcelas || 1,
       valor_parcela:      parseFloat(f.valor_parcela) || 0,

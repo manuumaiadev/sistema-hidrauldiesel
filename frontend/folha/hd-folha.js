@@ -295,20 +295,20 @@ async function carregarHistorico() {
       el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px">Nenhuma folha gerada ainda.</div>';
       return;
     }
+    const MABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     el.innerHTML = lista.map(f => {
-      const dp        = sliceDate(f.data_pagamento);
-      const titulo    = tituloFolha(dp);
-      const isMensal  = f.tipo === 'mensal';
-      const diaBadge  = isMensal ? '05' : '20';
-      const tipoBadge = isMensal ? 'Mensal' : 'Quinzena';
-      const badgeClass = isMensal ? 'badge-mensal' : 'badge-quinzena';
+      const dp     = sliceDate(f.data_pagamento);
+      const titulo = tituloFolha(dp);
+      const [,mes,dia] = dp.split('-').map(Number);
+      const diaBadge   = String(dia).padStart(2, '0');
+      const mesBadge   = MABREV[mes - 1].toUpperCase();
       return `
         <div class="historico-card">
           <div class="historico-card-header" onclick="toggleFolhaItem('${dp}', this)">
             <div class="historico-card-left">
-              <div class="historico-tipo-badge ${badgeClass}">
+              <div class="historico-tipo-badge">
                 <span class="badge-dia">${diaBadge}</span>
-                <span class="badge-tipo">${tipoBadge}</span>
+                <span class="badge-tipo">${mesBadge}</span>
               </div>
               <div class="historico-info">
                 <div class="historico-data">${titulo}</div>
@@ -670,3 +670,122 @@ window.imprimirFolhaResumida = async function(dp) {
 };
 
 carregarHistorico();
+carregarResumoMensalFolha();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GRÁFICO MENSAL
+// ══════════════════════════════════════════════════════════════════════════════
+
+const _MABREV_F = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+async function carregarResumoMensalFolha() {
+  try {
+    const dados = await api.resumoMensalFolha(6);
+    if (!dados || !dados.length) return;
+    document.getElementById('grafico-folha-card').style.display = '';
+    _renderDestaqueF(dados);
+    document.getElementById('grafico-folha-svg').innerHTML = _renderBarChartF(dados);
+  } catch (err) {
+    console.warn('[grafico-folha]', err.message);
+  }
+}
+
+function _renderDestaqueF(dados) {
+  const atual = dados[dados.length - 1];
+  const [ano, mes] = atual.mes.split('-');
+  const d05clt  = Number(atual.d05_clt)      || 0;
+  const d05inf  = Number(atual.d05_informal)  || 0;
+  const d20clt  = Number(atual.d20_clt)       || 0;
+  const d20inf  = Number(atual.d20_informal)  || 0;
+  const total   = d05clt + d05inf + d20clt + d20inf;
+  const dot = (cor) => `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${cor};flex-shrink:0;margin-right:4px"></span>`;
+  document.getElementById('grafico-folha-destaque').innerHTML = `
+    <div class="grafico-destaque-mes">${_MABREV_F[parseInt(mes)-1].toUpperCase()} ${ano}</div>
+    <div class="grafico-destaque-total">${fmtValor(total)}</div>
+    <div class="grafico-destaque-divider"></div>
+    <div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Dia 05</div>
+    <div class="grafico-destaque-linha">
+      <span class="grafico-destaque-chave">${dot('#1B2D5B')}CLT</span>
+      <span class="grafico-destaque-valor">${fmtValor(d05clt)}</span>
+    </div>
+    <div class="grafico-destaque-linha">
+      <span class="grafico-destaque-chave">${dot('#4B8EDB')}Informal</span>
+      <span class="grafico-destaque-valor">${fmtValor(d05inf)}</span>
+    </div>
+    <div style="font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:4px 0 2px">Dia 20</div>
+    <div class="grafico-destaque-linha">
+      <span class="grafico-destaque-chave">${dot('#7C3AED')}CLT</span>
+      <span class="grafico-destaque-valor">${fmtValor(d20clt)}</span>
+    </div>
+    <div class="grafico-destaque-linha">
+      <span class="grafico-destaque-chave">${dot('#A78BFA')}Informal</span>
+      <span class="grafico-destaque-valor">${fmtValor(d20inf)}</span>
+    </div>`;
+}
+
+function _renderBarChartF(dados) {
+  const n = dados.length;
+  const maxTotal = Math.max(...dados.map(d =>
+    Number(d.d05_clt) + Number(d.d05_informal) + Number(d.d20_clt) + Number(d.d20_informal)
+  ), 1);
+
+  const VB_W = 500, VB_H = 150;
+  const BAR_H = 88, TOP_PAD = 26, BASE_Y = TOP_PAD + BAR_H;
+  const PAD_L = 10, PAD_R = 10;
+  const SLOT_W = (VB_W - PAD_L - PAD_R) / n;
+  // 2 barras por slot com gap entre elas
+  const BAR_W  = Math.min(SLOT_W * 0.26, 26);
+  const GAP    = Math.min(SLOT_W * 0.06, 5);
+
+  const bars = dados.map((d, i) => {
+    const d05c  = Number(d.d05_clt)      || 0;
+    const d05i  = Number(d.d05_informal)  || 0;
+    const d20c  = Number(d.d20_clt)       || 0;
+    const d20i  = Number(d.d20_informal)  || 0;
+    const total = d05c + d05i + d20c + d20i;
+    const isCur = i === n - 1;
+    const a     = isCur ? 'FF' : '77';
+
+    const cx = PAD_L + i * SLOT_W + SLOT_W / 2;
+    // barra esquerda = Dia 05, barra direita = Dia 20
+    const x05 = cx - GAP / 2 - BAR_W;
+    const x20 = cx + GAP / 2;
+
+    const h05c = (d05c / maxTotal) * BAR_H;
+    const h05i = (d05i / maxTotal) * BAR_H;
+    const h20c = (d20c / maxTotal) * BAR_H;
+    const h20i = (d20i / maxTotal) * BAR_H;
+    const h05  = h05c + h05i;
+    const h20  = h20c + h20i;
+
+    // barra Dia 05: base CLT (navy) + topo Informal (blue)
+    const r05 = h05 > 0 ? `
+      <rect x="${x05}" y="${BASE_Y - h05}" width="${BAR_W}" height="${h05}" fill="#1B2D5B${a}" rx="3"/>
+      ${h05i > 0 ? `<rect x="${x05}" y="${BASE_Y - h05}" width="${BAR_W}" height="${h05i}" fill="#4B8EDB${a}" rx="3"/>
+      ${h05c > 0 ? `<rect x="${x05}" y="${BASE_Y - h05 + h05i - 2}" width="${BAR_W}" height="4" fill="#4B8EDB${a}"/>` : ''}` : ''}
+    ` : '';
+
+    // barra Dia 20: base CLT (purple) + topo Informal (lavender)
+    const r20 = h20 > 0 ? `
+      <rect x="${x20}" y="${BASE_Y - h20}" width="${BAR_W}" height="${h20}" fill="#7C3AED${a}" rx="3"/>
+      ${h20i > 0 ? `<rect x="${x20}" y="${BASE_Y - h20}" width="${BAR_W}" height="${h20i}" fill="#A78BFA${a}" rx="3"/>
+      ${h20c > 0 ? `<rect x="${x20}" y="${BASE_Y - h20 + h20i - 2}" width="${BAR_W}" height="4" fill="#A78BFA${a}"/>` : ''}` : ''}
+    ` : '';
+
+    const maxH = Math.max(h05, h20);
+    const [ano, mes] = d.mes.split('-');
+    const label    = _MABREV_F[parseInt(mes) - 1] + '/' + ano.slice(2);
+    const valLabel = total > 0 ? 'R$' + Math.round(total).toLocaleString('pt-BR') : '';
+
+    return `<g>
+      ${r05}${r20}
+      ${total > 0 ? `<text x="${cx}" y="${BASE_Y - maxH - 5}" text-anchor="middle" font-size="9.5" font-weight="${isCur ? 600 : 400}" fill="${isCur ? '#12151F' : '#AAAAAA'}" font-family="DM Sans,sans-serif">${valLabel}</text>` : ''}
+      <text x="${cx}" y="${BASE_Y + 16}" text-anchor="middle" font-size="11" font-weight="${isCur ? 700 : 400}" fill="${isCur ? '#1B2D5B' : '#AAAAAA'}" font-family="DM Sans,sans-serif">${label}</text>
+    </g>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${VB_W} ${VB_H}" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <line x1="${PAD_L}" y1="${BASE_Y}" x2="${VB_W - PAD_R}" y2="${BASE_Y}" stroke="#E3E1DA" stroke-width="1"/>
+    ${bars}
+  </svg>`;
+}

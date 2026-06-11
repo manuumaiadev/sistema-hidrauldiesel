@@ -45,19 +45,13 @@ function vtRowHTML(f) {
   const nomeEsc = (f.funcionario_nome || '').replace(/'/g, "\\'");
   return `<tr id="vtr-${f.funcionario_id}">
     <td>${f.funcionario_nome}</td>
-    <td class="mono" style="text-align:right">${fmtValor(f.vale_original)}</td>
+    <td style="text-align:right;font-family:var(--mono)">${fmtValor(f.vale_original)}</td>
     <td style="text-align:right;color:var(--muted)">${f.dias_desconto || 0}</td>
-    <td class="mono" style="text-align:right;color:#DC2626">${fmtValor(f.desconto || 0)}</td>
-    <td class="mono" style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
-    <td style="text-align:right;padding-right:12px;white-space:nowrap">
-      <button onclick="editarVTRow(${f.funcionario_id})"
-        style="background:none;border:1px solid #1B2D5B;color:#1B2D5B;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:6px">
-        Editar
-      </button>
-      <button onclick="removerVTRow(${f.funcionario_id},'${nomeEsc}')"
-        style="background:none;border:1px solid #DC2626;color:#DC2626;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit">
-        Remover
-      </button>
+    <td style="text-align:right;font-family:var(--mono);color:#DC2626">${fmtValor(f.desconto || 0)}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
+    <td style="text-align:right;padding-right:14px;white-space:nowrap">
+      <button onclick="editarVTRow(${f.funcionario_id})" class="btn-tbl btn-tbl-outline" style="margin-right:6px">Editar</button>
+      <button onclick="removerVTRow(${f.funcionario_id},'${nomeEsc}')" class="btn-tbl btn-tbl-danger">Remover</button>
     </td>
   </tr>`;
 }
@@ -68,8 +62,8 @@ function renderAddRow() {
   if (!foraVT.length) return '';
   const iStyle = 'padding:5px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit';
   const opts = foraVT.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
-  return `<tr id="vt-add-row" style="border-top:2px dashed #E3E1DA;background:#F7F6F3">
-    <td style="padding:10px 12px">
+  return `<tr id="vt-add-row" style="border-top:2px dashed var(--border);background:#F7F6F3">
+    <td style="padding:10px 16px">
       <select id="add-vt-select" style="${iStyle};width:100%">
         <option value="">Selecione um funcionário…</option>
         ${opts}
@@ -80,11 +74,8 @@ function renderAddRow() {
         style="${iStyle};width:140px;text-align:right"/>
     </td>
     <td colspan="3"></td>
-    <td style="padding:10px 12px;text-align:right;padding-right:12px">
-      <button onclick="adicionarAoVTTabela()"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit">
-        Adicionar
-      </button>
+    <td style="padding:10px 14px;text-align:right">
+      <button onclick="adicionarAoVTTabela()" class="btn-tbl btn-tbl-primary">Adicionar</button>
     </td>
   </tr>`;
 }
@@ -148,21 +139,15 @@ window.editarVTRow = function(funcId) {
   const iStyle = 'padding:4px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit;width:110px;text-align:right';
   document.getElementById(`vtr-${funcId}`).innerHTML = `
     <td>${f.funcionario_nome}</td>
-    <td style="padding:6px 8px">
+    <td style="padding:6px 12px">
       <input id="edit-vt-row-${funcId}" type="number" min="0" step="0.01" value="${f.vale_original}" style="${iStyle}"/>
     </td>
     <td style="text-align:right;color:var(--muted)">${f.dias_desconto || 0}</td>
-    <td class="mono" style="text-align:right;color:#DC2626">${fmtValor(f.desconto || 0)}</td>
-    <td class="mono" style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
-    <td style="text-align:right;padding-right:12px;white-space:nowrap">
-      <button onclick="salvarVTRow(${funcId})"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:6px">
-        Salvar
-      </button>
-      <button onclick="cancelarVTRow(${funcId})"
-        style="background:none;border:1px solid #C8C5BE;color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit">
-        Cancelar
-      </button>
+    <td style="text-align:right;font-family:var(--mono);color:#DC2626">${fmtValor(f.desconto || 0)}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
+    <td style="text-align:right;padding-right:14px;white-space:nowrap">
+      <button onclick="salvarVTRow(${funcId})" class="btn-tbl btn-tbl-primary" style="margin-right:6px">Salvar</button>
+      <button onclick="cancelarVTRow(${funcId})" class="btn-tbl btn-tbl-ghost">Cancelar</button>
     </td>`;
   document.getElementById(`edit-vt-row-${funcId}`)?.focus();
 };
@@ -205,6 +190,8 @@ function mostrarErro(msg) {
 }
 
 // ── Histórico VT ──────────────────────────────────────────────────────────────
+const _MABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
 async function carregarHistoricoVT() {
   const el = document.getElementById('vt-historico-lista');
   try {
@@ -214,32 +201,37 @@ async function carregarHistoricoVT() {
       return;
     }
     el.innerHTML = lista.map(v => {
-      const dp    = sliceDate(v.data_pagamento);
+      const dp = sliceDate(v.data_pagamento);
+      const [,mes,dia] = dp.split('-').map(Number);
       const titulo = tituloVT(dp);
       return `
-        <div class="vt-accordion" data-dp="${dp}" style="background:#fff;border:1px solid #E3E1DA;border-radius:10px;margin-bottom:10px;overflow:hidden">
-          <div class="vt-acc-header" onclick="toggleVTAcc('${dp}')"
-               style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none">
-            <div>
-              <div class="historico-data">${titulo}</div>
-              <div class="historico-tipo">${v.qtd_funcionarios || '—'} funcionários</div>
+        <div class="historico-card">
+          <div class="historico-card-header" onclick="toggleVTAcc('${dp}')">
+            <div class="historico-card-left">
+              <div class="historico-tipo-badge">
+                <span class="badge-dia">${String(dia).padStart(2,'0')}</span>
+                <span class="badge-tipo">${_MABREV[mes-1].toUpperCase()}</span>
+              </div>
+              <div class="historico-info">
+                <div class="historico-data">${titulo}</div>
+                <div class="historico-meta">
+                  <span class="historico-qtd"><strong>${v.qtd_funcionarios || '—'}</strong> funcionários</span>
+                </div>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <span class="historico-total">${fmtValor(v.total_pago)}</span>
-              <span class="vt-acc-icon" id="vt-icon-${dp}" style="font-size:12px;color:var(--muted);min-width:10px">▼</span>
-              <button onclick="event.stopPropagation();imprimirVT('${dp}')"
-                      style="background:none;border:1px solid #93C5FD;color:#1D4ED8;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit">
-                Imprimir
-              </button>
-              <button onclick="event.stopPropagation();excluirValeHistorico('${dp}')"
-                      style="background:none;border:1px solid #DC2626;color:#DC2626;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit">
-                Apagar
-              </button>
+            <div class="historico-card-right">
+              <div class="historico-total-wrap">
+                <span class="historico-total-label">Total pago</span>
+                <span class="historico-total">${fmtValor(v.total_pago)}</span>
+              </div>
+              <div class="historico-actions">
+                <button class="btn-imprimir btn-imprimir-completo" onclick="event.stopPropagation();imprimirVT('${dp}')">Imprimir</button>
+                <button class="btn-excluir" onclick="event.stopPropagation();excluirValeHistorico('${dp}')">Apagar</button>
+                <span class="toggle-arrow-btn" id="vt-icon-${dp}">▼</span>
+              </div>
             </div>
           </div>
-          <div id="vt-body-${dp}" style="display:none;border-top:1px solid #E3E1DA">
-            <div style="padding:14px 20px;color:var(--muted);font-size:13px">Carregando…</div>
-          </div>
+          <div id="vt-body-${dp}" class="historico-body" style="display:none"></div>
         </div>`;
     }).join('');
   } catch (_) {
@@ -260,10 +252,8 @@ function accRowHTML(dp, f) {
     <td style="text-align:right;color:#DC2626">${fmtValor(f.desconto)}</td>
     <td style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
     <td style="text-align:right;white-space:nowrap;padding-right:4px">
-      <button onclick="editarAccRow('${dp}',${f.funcionario_id})"
-        style="background:none;border:1px solid #1B2D5B;color:#1B2D5B;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:5px">Editar</button>
-      <button onclick="removerAccRow('${dp}',${f.funcionario_id},'${nomeEsc}')"
-        style="background:none;border:1px solid #DC2626;color:#DC2626;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">Remover</button>
+      <button onclick="editarAccRow('${dp}',${f.funcionario_id})" class="btn-tbl btn-tbl-outline" style="margin-right:5px">Editar</button>
+      <button onclick="removerAccRow('${dp}',${f.funcionario_id},'${nomeEsc}')" class="btn-tbl btn-tbl-danger">Remover</button>
     </td>
   </tr>`;
 }
@@ -274,13 +264,12 @@ function renderAccAddRow(dp) {
   if (!foraVT.length) return '';
   const iS = 'padding:5px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit';
   const opts = foraVT.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
-  return `<tr style="border-top:2px dashed #E3E1DA;background:#F7F6F3">
+  return `<tr style="border-top:2px dashed var(--border);background:#F7F6F3">
     <td style="padding:9px 8px"><select id="acc-add-sel-${dp}" style="${iS};width:100%"><option value="">Selecione…</option>${opts}</select></td>
     <td style="padding:9px 8px"><input id="acc-add-vt-${dp}" type="number" min="0" step="0.01" placeholder="VT semanal (R$)" style="${iS};width:130px;text-align:right"/></td>
     <td colspan="3"></td>
-    <td style="padding:9px 4px;text-align:right">
-      <button onclick="adicionarAccRow('${dp}')"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:5px 13px;font-size:12px;cursor:pointer;font-family:inherit">Adicionar</button>
+    <td style="padding:9px 8px;text-align:right">
+      <button onclick="adicionarAccRow('${dp}')" class="btn-tbl btn-tbl-primary">Adicionar</button>
     </td>
   </tr>`;
 }
@@ -324,9 +313,13 @@ window.toggleVTAcc = async function(dp) {
   const icon = document.getElementById(`vt-icon-${dp}`);
   if (!body) return;
   const aberto = body.style.display !== 'none';
-  if (aberto) { body.style.display = 'none'; icon.textContent = '▼'; return; }
+  if (aberto) {
+    body.style.display = 'none';
+    if (icon) icon.textContent = '▼';
+    return;
+  }
   body.style.display = 'block';
-  icon.textContent = '▲';
+  if (icon) icon.textContent = '▲';
   if (body.dataset.carregado) return;
   body.innerHTML = '<div style="padding:14px 20px;color:var(--muted);font-size:13px">Carregando…</div>';
   try {
@@ -346,15 +339,13 @@ window.editarAccRow = function(dp, funcId) {
   const iS = 'padding:4px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit;width:110px;text-align:right';
   document.getElementById(`accr-${dp}-${funcId}`).innerHTML = `
     <td>${f.funcionario_nome}</td>
-    <td style="padding:5px 6px"><input id="acc-edit-vt-${dp}-${funcId}" type="number" min="0" step="0.01" value="${f.vale_original}" style="${iS}"/></td>
+    <td style="padding:5px 8px"><input id="acc-edit-vt-${dp}-${funcId}" type="number" min="0" step="0.01" value="${f.vale_original}" style="${iS}"/></td>
     <td style="text-align:right;color:var(--muted)">${f.dias_desconto || 0}</td>
-    <td style="text-align:right;color:#DC2626">${fmtValor(f.desconto)}</td>
-    <td style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
-    <td style="text-align:right;white-space:nowrap;padding-right:4px">
-      <button onclick="salvarAccRow('${dp}',${funcId})"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:3px 11px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:5px">Salvar</button>
-      <button onclick="cancelarAccRow('${dp}',${funcId})"
-        style="background:none;border:1px solid #C8C5BE;color:var(--muted);border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">Cancelar</button>
+    <td style="text-align:right;font-family:var(--mono);color:#DC2626">${fmtValor(f.desconto)}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
+    <td style="text-align:right;white-space:nowrap;padding-right:8px">
+      <button onclick="salvarAccRow('${dp}',${funcId})" class="btn-tbl btn-tbl-primary" style="margin-right:5px">Salvar</button>
+      <button onclick="cancelarAccRow('${dp}',${funcId})" class="btn-tbl btn-tbl-ghost">Cancelar</button>
     </td>`;
   document.getElementById(`acc-edit-vt-${dp}-${funcId}`)?.focus();
 };
@@ -488,6 +479,7 @@ window.imprimirVT = async function(dp) {
 };
 
 carregarHistoricoVT();
+carregarResumoMensal();
 
 // ══════════════════════════════════════════════════════════════════════════════
 // VALE ALIMENTAÇÃO
@@ -545,19 +537,13 @@ function vaRowHTML(f) {
   const nomeEsc = (f.funcionario_nome || '').replace(/'/g, "\\'");
   return `<tr id="var-${f.funcionario_id}">
     <td>${f.funcionario_nome}</td>
-    <td class="mono" style="text-align:right">${fmtValor(f.vale_original)}</td>
+    <td style="text-align:right;font-family:var(--mono)">${fmtValor(f.vale_original)}</td>
     <td style="text-align:right;color:var(--muted)">${f.dias_desconto || 0}</td>
-    <td class="mono" style="text-align:right;color:#DC2626">${fmtValor(f.desconto || 0)}</td>
-    <td class="mono" style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
-    <td style="text-align:right;padding-right:12px;white-space:nowrap">
-      <button onclick="editarVARow(${f.funcionario_id})"
-        style="background:none;border:1px solid #1B2D5B;color:#1B2D5B;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:6px">
-        Editar
-      </button>
-      <button onclick="removerVARow(${f.funcionario_id},'${nomeEsc}')"
-        style="background:none;border:1px solid #DC2626;color:#DC2626;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit">
-        Remover
-      </button>
+    <td style="text-align:right;font-family:var(--mono);color:#DC2626">${fmtValor(f.desconto || 0)}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
+    <td style="text-align:right;padding-right:14px;white-space:nowrap">
+      <button onclick="editarVARow(${f.funcionario_id})" class="btn-tbl btn-tbl-outline" style="margin-right:6px">Editar</button>
+      <button onclick="removerVARow(${f.funcionario_id},'${nomeEsc}')" class="btn-tbl btn-tbl-danger">Remover</button>
     </td>
   </tr>`;
 }
@@ -568,8 +554,8 @@ function renderVAAddRow() {
   if (!foraVA.length) return '';
   const iStyle = 'padding:5px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit';
   const opts = foraVA.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
-  return `<tr id="va-add-row" style="border-top:2px dashed #E3E1DA;background:#F7F6F3">
-    <td style="padding:10px 12px">
+  return `<tr id="va-add-row" style="border-top:2px dashed var(--border);background:#F7F6F3">
+    <td style="padding:10px 16px">
       <select id="add-va-select" style="${iStyle};width:100%">
         <option value="">Selecione um funcionário…</option>
         ${opts}
@@ -580,11 +566,8 @@ function renderVAAddRow() {
         style="${iStyle};width:140px;text-align:right"/>
     </td>
     <td colspan="3"></td>
-    <td style="padding:10px 12px;text-align:right;padding-right:12px">
-      <button onclick="adicionarAoVATabela()"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit">
-        Adicionar
-      </button>
+    <td style="padding:10px 14px;text-align:right">
+      <button onclick="adicionarAoVATabela()" class="btn-tbl btn-tbl-primary">Adicionar</button>
     </td>
   </tr>`;
 }
@@ -648,21 +631,15 @@ window.editarVARow = function(funcId) {
   const iStyle = 'padding:4px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit;width:110px;text-align:right';
   document.getElementById(`var-${funcId}`).innerHTML = `
     <td>${f.funcionario_nome}</td>
-    <td style="padding:6px 8px">
+    <td style="padding:6px 12px">
       <input id="edit-va-row-${funcId}" type="number" min="0" step="0.01" value="${f.vale_original}" style="${iStyle}"/>
     </td>
     <td style="text-align:right;color:var(--muted)">${f.dias_desconto || 0}</td>
-    <td class="mono" style="text-align:right;color:#DC2626">${fmtValor(f.desconto || 0)}</td>
-    <td class="mono" style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
-    <td style="text-align:right;padding-right:12px;white-space:nowrap">
-      <button onclick="salvarVARow(${funcId})"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:6px">
-        Salvar
-      </button>
-      <button onclick="cancelarVARow(${funcId})"
-        style="background:none;border:1px solid #C8C5BE;color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit">
-        Cancelar
-      </button>
+    <td style="text-align:right;font-family:var(--mono);color:#DC2626">${fmtValor(f.desconto || 0)}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
+    <td style="text-align:right;padding-right:14px;white-space:nowrap">
+      <button onclick="salvarVARow(${funcId})" class="btn-tbl btn-tbl-primary" style="margin-right:6px">Salvar</button>
+      <button onclick="cancelarVARow(${funcId})" class="btn-tbl btn-tbl-ghost">Cancelar</button>
     </td>`;
   document.getElementById(`edit-va-row-${funcId}`)?.focus();
 };
@@ -698,32 +675,37 @@ async function carregarHistoricoVA() {
       return;
     }
     el.innerHTML = lista.map(v => {
-      const dp    = sliceDate(v.data_pagamento);
+      const dp = sliceDate(v.data_pagamento);
+      const [,mes,dia] = dp.split('-').map(Number);
       const titulo = tituloVA(dp);
       return `
-        <div style="background:#fff;border:1px solid #E3E1DA;border-radius:10px;margin-bottom:10px;overflow:hidden">
-          <div onclick="toggleVAAcc('${dp}')"
-               style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none">
-            <div>
-              <div class="historico-data">${titulo}</div>
-              <div class="historico-tipo">${v.qtd_funcionarios || '—'} funcionários</div>
+        <div class="historico-card">
+          <div class="historico-card-header" onclick="toggleVAAcc('${dp}')">
+            <div class="historico-card-left">
+              <div class="historico-tipo-badge">
+                <span class="badge-dia">${String(dia).padStart(2,'0')}</span>
+                <span class="badge-tipo">${_MABREV[mes-1].toUpperCase()}</span>
+              </div>
+              <div class="historico-info">
+                <div class="historico-data">${titulo}</div>
+                <div class="historico-meta">
+                  <span class="historico-qtd"><strong>${v.qtd_funcionarios || '—'}</strong> funcionários</span>
+                </div>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <span class="historico-total">${fmtValor(v.total_pago)}</span>
-              <span id="va-icon-${dp}" style="font-size:12px;color:var(--muted);min-width:10px">▼</span>
-              <button onclick="event.stopPropagation();imprimirVA('${dp}')"
-                      style="background:none;border:1px solid #93C5FD;color:#1D4ED8;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit">
-                Imprimir
-              </button>
-              <button onclick="event.stopPropagation();excluirVAHistorico('${dp}')"
-                      style="background:none;border:1px solid #DC2626;color:#DC2626;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit">
-                Apagar
-              </button>
+            <div class="historico-card-right">
+              <div class="historico-total-wrap">
+                <span class="historico-total-label">Total pago</span>
+                <span class="historico-total">${fmtValor(v.total_pago)}</span>
+              </div>
+              <div class="historico-actions">
+                <button class="btn-imprimir btn-imprimir-completo" onclick="event.stopPropagation();imprimirVA('${dp}')">Imprimir</button>
+                <button class="btn-excluir" onclick="event.stopPropagation();excluirVAHistorico('${dp}')">Apagar</button>
+                <span class="toggle-arrow-btn" id="va-icon-${dp}">▼</span>
+              </div>
             </div>
           </div>
-          <div id="va-body-${dp}" style="display:none;border-top:1px solid #E3E1DA">
-            <div style="padding:14px 20px;color:var(--muted);font-size:13px">Carregando…</div>
-          </div>
+          <div id="va-body-${dp}" class="historico-body" style="display:none"></div>
         </div>`;
     }).join('');
   } catch (_) {
@@ -743,10 +725,8 @@ function accRowVAHTML(dp, f) {
     <td style="text-align:right;color:#DC2626">${fmtValor(f.desconto)}</td>
     <td style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
     <td style="text-align:right;white-space:nowrap;padding-right:4px">
-      <button onclick="editarAccVARow('${dp}',${f.funcionario_id})"
-        style="background:none;border:1px solid #1B2D5B;color:#1B2D5B;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:5px">Editar</button>
-      <button onclick="removerAccVARow('${dp}',${f.funcionario_id},'${nomeEsc}')"
-        style="background:none;border:1px solid #DC2626;color:#DC2626;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">Remover</button>
+      <button onclick="editarAccVARow('${dp}',${f.funcionario_id})" class="btn-tbl btn-tbl-outline" style="margin-right:5px">Editar</button>
+      <button onclick="removerAccVARow('${dp}',${f.funcionario_id},'${nomeEsc}')" class="btn-tbl btn-tbl-danger">Remover</button>
     </td>
   </tr>`;
 }
@@ -757,13 +737,12 @@ function renderAccVAAddRow(dp) {
   if (!foraVA.length) return '';
   const iS = 'padding:5px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit';
   const opts = foraVA.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
-  return `<tr style="border-top:2px dashed #E3E1DA;background:#F7F6F3">
+  return `<tr style="border-top:2px dashed var(--border);background:#F7F6F3">
     <td style="padding:9px 8px"><select id="acc-add-va-sel-${dp}" style="${iS};width:100%"><option value="">Selecione…</option>${opts}</select></td>
     <td style="padding:9px 8px"><input id="acc-add-va-val-${dp}" type="number" min="0" step="0.01" placeholder="VA semanal (R$)" style="${iS};width:130px;text-align:right"/></td>
     <td colspan="3"></td>
-    <td style="padding:9px 4px;text-align:right">
-      <button onclick="adicionarAccVARow('${dp}')"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:5px 13px;font-size:12px;cursor:pointer;font-family:inherit">Adicionar</button>
+    <td style="padding:9px 8px;text-align:right">
+      <button onclick="adicionarAccVARow('${dp}')" class="btn-tbl btn-tbl-primary">Adicionar</button>
     </td>
   </tr>`;
 }
@@ -807,9 +786,13 @@ window.toggleVAAcc = async function(dp) {
   const icon = document.getElementById(`va-icon-${dp}`);
   if (!body) return;
   const aberto = body.style.display !== 'none';
-  if (aberto) { body.style.display = 'none'; icon.textContent = '▼'; return; }
+  if (aberto) {
+    body.style.display = 'none';
+    if (icon) icon.textContent = '▼';
+    return;
+  }
   body.style.display = 'block';
-  icon.textContent = '▲';
+  if (icon) icon.textContent = '▲';
   if (body.dataset.carregado) return;
   body.innerHTML = '<div style="padding:14px 20px;color:var(--muted);font-size:13px">Carregando…</div>';
   try {
@@ -829,15 +812,13 @@ window.editarAccVARow = function(dp, funcId) {
   const iS = 'padding:4px 8px;border:1px solid #C8C5BE;border-radius:6px;font-size:13px;font-family:inherit;width:110px;text-align:right';
   document.getElementById(`accva-${dp}-${funcId}`).innerHTML = `
     <td>${f.funcionario_nome}</td>
-    <td style="padding:5px 6px"><input id="acc-edit-va-${dp}-${funcId}" type="number" min="0" step="0.01" value="${f.vale_original}" style="${iS}"/></td>
+    <td style="padding:5px 8px"><input id="acc-edit-va-${dp}-${funcId}" type="number" min="0" step="0.01" value="${f.vale_original}" style="${iS}"/></td>
     <td style="text-align:right;color:var(--muted)">${f.dias_desconto || 0}</td>
-    <td style="text-align:right;color:#DC2626">${fmtValor(f.desconto)}</td>
-    <td style="text-align:right;font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
-    <td style="text-align:right;white-space:nowrap;padding-right:4px">
-      <button onclick="salvarAccVARow('${dp}',${funcId})"
-        style="background:#1B2D5B;border:none;color:#fff;border-radius:6px;padding:3px 11px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:5px">Salvar</button>
-      <button onclick="cancelarAccVARow('${dp}',${funcId})"
-        style="background:none;border:1px solid #C8C5BE;color:var(--muted);border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">Cancelar</button>
+    <td style="text-align:right;font-family:var(--mono);color:#DC2626">${fmtValor(f.desconto)}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--navy)">${fmtValor(f.valor_pago)}</td>
+    <td style="text-align:right;white-space:nowrap;padding-right:8px">
+      <button onclick="salvarAccVARow('${dp}',${funcId})" class="btn-tbl btn-tbl-primary" style="margin-right:5px">Salvar</button>
+      <button onclick="cancelarAccVARow('${dp}',${funcId})" class="btn-tbl btn-tbl-ghost">Cancelar</button>
     </td>`;
   document.getElementById(`acc-edit-va-${dp}-${funcId}`)?.focus();
 };
@@ -971,3 +952,91 @@ window.imprimirVA = async function(dp) {
 };
 
 carregarHistoricoVA();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GRÁFICO MENSAL
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function carregarResumoMensal() {
+  try {
+    const dados = await api.resumoMensalVales(6);
+    if (!dados || !dados.length) return;
+    document.getElementById('grafico-card').style.display = '';
+    _renderDestaqueAtual(dados);
+    document.getElementById('grafico-svg-wrap').innerHTML = _renderBarChart(dados);
+  } catch (err) {
+    console.warn('[grafico-vales]', err.message);
+  }
+}
+
+function _renderDestaqueAtual(dados) {
+  const atual = dados[dados.length - 1];
+  const [ano, mes] = atual.mes.split('-');
+  const mesNome = MESES[parseInt(mes) - 1];
+  const vt = Number(atual.total_vt) || 0;
+  const va = Number(atual.total_va) || 0;
+  const total = vt + va;
+  document.getElementById('grafico-destaque').innerHTML = `
+    <div class="grafico-destaque-mes">${mesNome} ${ano}</div>
+    <div class="grafico-destaque-total">${fmtValor(total)}</div>
+    <div class="grafico-destaque-divider"></div>
+    <div class="grafico-destaque-linha">
+      <span class="grafico-destaque-chave"><span class="legenda-dot legenda-dot-vt"></span>VT</span>
+      <span class="grafico-destaque-valor">${fmtValor(vt)}</span>
+    </div>
+    <div class="grafico-destaque-linha">
+      <span class="grafico-destaque-chave"><span class="legenda-dot legenda-dot-va"></span>VA</span>
+      <span class="grafico-destaque-valor">${fmtValor(va)}</span>
+    </div>`;
+}
+
+function _renderBarChart(dados) {
+  const n = dados.length;
+  const maxTotal = Math.max(...dados.map(d => Number(d.total_vt) + Number(d.total_va)), 1);
+
+  // viewBox sempre 500 × 150 — SVG ocupa 100% da largura com altura fixa via CSS
+  const VB_W = 500, VB_H = 150;
+  const BAR_H = 88, TOP_PAD = 26, BOT_PAD = VB_H - TOP_PAD - BAR_H; // 36
+  const BASE_Y = TOP_PAD + BAR_H;
+  const PAD_L = 10, PAD_R = 10;
+  const SLOT_W = (VB_W - PAD_L - PAD_R) / n;
+  const BAR_W  = Math.min(SLOT_W * 0.52, 60);
+
+  const bars = dados.map((d, i) => {
+    const vt = Number(d.total_vt) || 0;
+    const va = Number(d.total_va) || 0;
+    const total = vt + va;
+    const totalH = (total / maxTotal) * BAR_H;
+    const vtH    = (vt    / maxTotal) * BAR_H;
+    const vaH    = (va    / maxTotal) * BAR_H;
+
+    const cx     = PAD_L + i * SLOT_W + SLOT_W / 2;
+    const x      = cx - BAR_W / 2;
+    const barTopY = BASE_Y - totalH;
+    const isCur  = i === n - 1;
+
+    const [ano, mes] = d.mes.split('-');
+    const label = MESES[parseInt(mes) - 1].slice(0, 3) + '/' + ano.slice(2);
+    const valLabel = 'R$' + Math.round(total).toLocaleString('pt-BR');
+
+    let rects = '';
+    if (totalH > 0) {
+      rects += `<rect x="${x}" y="${barTopY}" width="${BAR_W}" height="${totalH}" fill="${isCur ? '#1B2D5B' : '#1B2D5B66'}" rx="4"/>`;
+      if (vaH > 0) {
+        rects += `<rect x="${x}" y="${barTopY}" width="${BAR_W}" height="${vaH}" fill="${isCur ? '#15803D' : '#15803D66'}" rx="4"/>`;
+        if (vtH > 0) rects += `<rect x="${x}" y="${barTopY + vaH - 3}" width="${BAR_W}" height="6" fill="${isCur ? '#15803D' : '#15803D66'}"/>`;
+      }
+    }
+
+    return `<g>
+      ${rects}
+      ${totalH > 0 ? `<text x="${cx}" y="${barTopY - 5}" text-anchor="middle" font-size="10" font-weight="${isCur ? 600 : 400}" fill="${isCur ? '#12151F' : '#AAAAAA'}" font-family="DM Sans,sans-serif">${valLabel}</text>` : ''}
+      <text x="${cx}" y="${BASE_Y + 16}" text-anchor="middle" font-size="11" font-weight="${isCur ? 700 : 400}" fill="${isCur ? '#1B2D5B' : '#AAAAAA'}" font-family="DM Sans,sans-serif">${label}</text>
+    </g>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${VB_W} ${VB_H}" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <line x1="${PAD_L}" y1="${BASE_Y}" x2="${VB_W - PAD_R}" y2="${BASE_Y}" stroke="#E3E1DA" stroke-width="1"/>
+    ${bars}
+  </svg>`;
+}

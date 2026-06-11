@@ -142,6 +142,157 @@ td.cel-acoes { text-align: right; padding-right: 10px; white-space: nowrap; }
 
 .historico-body { border-top: 1px solid var(--border); }
 
+/* ── Gráfico mensal (folha e vales) ─────────────────────────── */
+.grafico-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.grafico-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px 11px;
+  border-bottom: 1px solid var(--border);
+}
+.grafico-titulo {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.grafico-legenda { display: flex; gap: 14px; }
+.legenda-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+.legenda-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.grafico-body { display: flex; align-items: stretch; height: 200px; }
+.grafico-destaque {
+  width: 180px;
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.grafico-destaque-mes {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+}
+.grafico-destaque-total {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.grafico-destaque-divider { height: 1px; background: var(--border); margin: 3px 0; }
+.grafico-destaque-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.grafico-destaque-chave { color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.grafico-destaque-valor { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text); }
+.grafico-svg-wrap {
+  flex: 1;
+  padding: 10px 16px 8px;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+
+/* ── Vale Transporte / Alimentação — card gerado ─────────────── */
+.folha-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 14px 20px;
+}
+.folha-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
+}
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table-wrap thead th {
+  padding: 9px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+  background: #FAFAF8;
+  white-space: nowrap;
+}
+.table-wrap thead th:first-child { text-align: left; padding-left: 16px; }
+.table-wrap tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table-wrap tbody td:first-child { padding-left: 16px; font-weight: 500; }
+.table-wrap tbody tr:last-child td { border-bottom: none; }
+.table-wrap tbody tr:hover td { background: #FAFAF8; }
+
+/* Botões compactos para uso dentro de tabelas */
+.btn-tbl {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 11px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+.btn-tbl:active { opacity: .75; }
+.btn-tbl-outline {
+  background: transparent;
+  border: 1px solid var(--navy);
+  color: var(--navy);
+}
+.btn-tbl-outline:hover { background: rgba(27,45,91,.05); }
+.btn-tbl-danger {
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+.btn-tbl-danger:hover { background: #FFF5F5; }
+.btn-tbl-primary {
+  background: var(--navy);
+  border: 1px solid var(--navy);
+  color: #fff;
+}
+.btn-tbl-primary:hover { opacity: .88; }
+.btn-tbl-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-tbl-ghost:hover { background: var(--bg); }
+
 /* Tooltip comentário importante */
 .badge-comentario { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: #F59E0B; color: #fff; font-size: 10px; font-weight: 700; cursor: help; margin-left: 6px; vertical-align: middle; flex-shrink: 0; }
 .badge-comentario .tooltip-box { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #1B2D5B; color: #fff; font-size: 12px; font-weight: 400; padding: 8px 12px; border-radius: 8px; white-space: normal; width: max-content; max-width: 260px; z-index: 200; pointer-events: none; line-height: 1.45; box-shadow: 0 4px 16px rgba(0,0,0,0.18); }

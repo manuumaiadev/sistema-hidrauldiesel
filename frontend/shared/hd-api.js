@@ -15,6 +15,7 @@ const request = async (method, endpoint, body = null) => {
 
   if (response.status === 401) {
     sessionStorage.clear();
+    window._hdLogout = true;
     window.location.href = '/login/hd-login.html';
     return;
   }

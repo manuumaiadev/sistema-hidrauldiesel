@@ -36,6 +36,10 @@
   color: var(--navy, #1B2D5B);
   box-shadow: 0 1px 4px rgba(0,0,0,.1);
 }
+
+/* cores específicas dos dots de vales */
+.legenda-dot-vt { background: #1B2D5B; }
+.legenda-dot-va { background: #15803D; }
 </style>
 </head>
 <body>
@@ -98,6 +102,23 @@
   </header>
 
   <div class="content">
+
+    <!-- Gráfico mensal -->
+    <div class="grafico-card" id="grafico-card" style="display:none">
+      <div class="grafico-card-header">
+        <span class="grafico-titulo">Gastos com Vales — Últimos 6 meses</span>
+        <div class="grafico-legenda">
+          <span class="legenda-item"><span class="legenda-dot legenda-dot-vt"></span>Vale Transporte</span>
+          <span class="legenda-item"><span class="legenda-dot legenda-dot-va"></span>Vale Alimentação</span>
+        </div>
+      </div>
+      <div class="grafico-body">
+        <div class="grafico-destaque" id="grafico-destaque">
+          <div class="grafico-destaque-mes" style="color:var(--muted)">Carregando…</div>
+        </div>
+        <div class="grafico-svg-wrap" id="grafico-svg-wrap"></div>
+      </div>
+    </div>
 
     <!-- Tabs -->
     <div class="vales-tabs">

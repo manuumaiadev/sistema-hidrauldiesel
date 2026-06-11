@@ -398,4 +398,26 @@ const excluirFolha = async (req, res) => {
   }
 };
 
-module.exports = { gerarFolhaDia05, gerarFolhaDia20, buscarFolha, atualizarLancamento, listarFolhas, excluirFolha, adicionarFuncionarioFolha, removerLancamento };
+const resumoMensalFolha = async (req, res) => {
+  const meses = Math.min(parseInt(req.query.meses) || 6, 24);
+  try {
+    const { rows } = await pool.query(`
+      SELECT TO_CHAR(fp.data_pagamento, 'YYYY-MM') AS mes,
+             SUM(CASE WHEN fp.tipo = 'mensal'   AND f.tipo = 'clt'      THEN fp.valor_pago ELSE 0 END)::numeric AS d05_clt,
+             SUM(CASE WHEN fp.tipo = 'mensal'   AND f.tipo = 'informal' THEN fp.valor_pago ELSE 0 END)::numeric AS d05_informal,
+             SUM(CASE WHEN fp.tipo = 'quinzena' AND f.tipo = 'clt'      THEN fp.valor_pago ELSE 0 END)::numeric AS d20_clt,
+             SUM(CASE WHEN fp.tipo = 'quinzena' AND f.tipo = 'informal' THEN fp.valor_pago ELSE 0 END)::numeric AS d20_informal,
+             SUM(fp.valor_pago)::numeric AS total
+      FROM folha_pagamento fp
+      JOIN funcionarios f ON f.id = fp.funcionario_id
+      GROUP BY mes
+      ORDER BY mes DESC
+      LIMIT $1
+    `, [meses]);
+    res.json(rows.reverse());
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+};
+
+module.exports = { gerarFolhaDia05, gerarFolhaDia20, buscarFolha, atualizarLancamento, listarFolhas, excluirFolha, adicionarFuncionarioFolha, removerLancamento, resumoMensalFolha };

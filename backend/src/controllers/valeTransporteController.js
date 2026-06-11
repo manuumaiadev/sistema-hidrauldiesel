@@ -307,4 +307,29 @@ const excluirValeAlimentacao = async (req, res) => {
   }
 };
 
-module.exports = { gerarValeTransporte, listarVales, buscarVale, excluirVale, gerarValeAlimentacao, listarValesAlimentacao, buscarValeAlimentacao, excluirValeAlimentacao };
+const resumoMensalVales = async (req, res) => {
+  const meses = Math.min(parseInt(req.query.meses) || 6, 24);
+  try {
+    const { rows } = await pool.query(`
+      SELECT mes,
+             SUM(total_vt)::numeric AS total_vt,
+             SUM(total_va)::numeric AS total_va,
+             (SUM(total_vt) + SUM(total_va))::numeric AS total
+      FROM (
+        SELECT TO_CHAR(data_pagamento, 'YYYY-MM') AS mes, SUM(valor) AS total_vt, 0::numeric AS total_va
+        FROM vale_transporte GROUP BY mes
+        UNION ALL
+        SELECT TO_CHAR(data_pagamento, 'YYYY-MM') AS mes, 0::numeric AS total_vt, SUM(valor) AS total_va
+        FROM vale_alimentacao GROUP BY mes
+      ) t
+      GROUP BY mes
+      ORDER BY mes DESC
+      LIMIT $1
+    `, [meses]);
+    res.json(rows.reverse());
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+};
+
+module.exports = { gerarValeTransporte, listarVales, buscarVale, excluirVale, gerarValeAlimentacao, listarValesAlimentacao, buscarValeAlimentacao, excluirValeAlimentacao, resumoMensalVales };
